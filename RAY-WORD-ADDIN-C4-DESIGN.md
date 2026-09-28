@@ -147,31 +147,3 @@ handler reads the selection's control. Gate every insert on "all controls
 written" after the reading step. Unmodelled and to specify: partial-batch
 rollback when an insert fails mid-run, and two assignees autofilling the same
 file at once.
-
-## Revision after the whole-feature and Assign councils (28 Sep 2026)
-
-Applied to the mock in full, no release split:
-- **Autofill document fills fields again.** The Autofill screen lists the
-  standard fields first (matched value and source, filled ones ticked), then
-  the open questions. One press writes the fields in place as tracked changes,
-  then drafts the questions for reading. Nothing is inserted unread.
-- **Track Changes is not optional.** The ribbon toggle is gone; every Ray
-  write is tracked, and the status derivation depends on it.
-- **Vocabulary.** "Ready · in the pane" → "Draft ready". "Drafted · accept in
-  Review" → "In document · needs accepting". "Accept in Review" → "Accept in
-  Word". Batch insert says up front that every draft becomes a tracked change
-  to accept or reject in Word's Review tab.
-- **Folder defaults to Default.** Choose a tender goes straight to reading; the
-  reading screen shows "Saving to <tender> · Default · Change folder".
-- **Assign User:** the one dropdown now carries a real due date (native date
-  input) and an optional note. A section header has an assign icon that
-  assigns every open question in the section. The menu states the rule:
-  stored in the question's tag, syncs because the file is on SharePoint.
-- **Assignee side:** the card shows who assigned it, the due date and the note,
-  with **Hand back** for questions assigned to you.
-- **Team:** Changelog half removed (fiction until identity is real). The tab
-  is Assignments only, with the SharePoint rule as a footer line.
-
-Not changed, by decision: tick-box question types (Daniel: ignore the
-checkbox mention), a 139-question data set (the mock stays at 9 so the demo
-reads), demo data (drafts are already about the tenderer's own company).
