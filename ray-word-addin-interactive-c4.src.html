@@ -292,6 +292,7 @@ td .cc.sel::before{display:none}
 .ray-head .av.me{width:28px;height:28px;font-size:10px;border:0;margin:0 6px 0 0;flex:none;cursor:default}
 .ray-head .bell{position:relative}.ray-head .bell b{position:absolute;top:1px;right:0;min-width:14px;height:14px;border-radius:999px;background:var(--r-deny-tx);color:#fff;font-size:9px;font-weight:700;font-family:'Outfit',sans-serif;display:grid;place-items:center;padding:0 3px;border:1.5px solid #fff}
 .cmenu.notes{min-width:280px;max-width:300px;font-family:'Outfit',sans-serif}.cmenu.notes div[data-do]{align-items:flex-start;gap:8px;padding:8px 12px}.cmenu.notes div[data-do] i{width:7px;height:7px;border-radius:50%;background:transparent;margin-top:6px;flex:none}.cmenu.notes div.unread i{background:#1D9E75}.cmenu.notes div[data-do] span{display:block;font-size:12px;color:var(--r-tx);line-height:1.35;white-space:normal}.cmenu.notes div.unread span{font-weight:600}.cmenu.notes div[data-do] small{display:block;font-size:10.5px;color:var(--r-tx-3);margin-top:2px}
+.demo{display:none}body.showdemo .demo{display:block}body.showdemo .demo.open{display:flex}
 </style></head>
 <body>
 <div class="demo" id="demo"><div class="demo-btn" data-do="demotog"><span class="ms">smart_display</span>Demo</div><div class="demo-list">
@@ -622,6 +623,7 @@ document.addEventListener('keydown',e=>{
   if(e.key==='Escape'){$('.cmenu')?.remove();if(ui.view!=='list'){ui.view='list';renderPane();}}
 });
 document.addEventListener('click',e=>{const cc=e.target.closest('[data-cc]');if(!cc)return;const key=cc.dataset.cc;ui.sel=key;if(key.startsWith('q:')){ui.cur=key.slice(2);ui.tab='q';ui.view=stOf(ui.cur)==='done'?'context':'list';}renderPage();renderPane();});
+if(location.search.includes('demo'))document.body.classList.add('showdemo');
 fresh();renderPage();renderPane();
 // Word lets the user drag the task pane edge; the add-in only sees the new width
 $('#grip').addEventListener('pointerdown',e=>{e.preventDefault();const body=$('#body'),w=body.getBoundingClientRect();const move=ev=>{const px=Math.min(Math.max(w.right-ev.clientX,280),w.width*0.5);body.style.setProperty('--pw',px+'px');};document.body.classList.add('resizing');$('#grip').classList.add('on');document.addEventListener('pointermove',move);document.addEventListener('pointerup',()=>{document.removeEventListener('pointermove',move);document.body.classList.remove('resizing');$('#grip').classList.remove('on');},{once:true});});
