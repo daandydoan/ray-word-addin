@@ -434,13 +434,14 @@ function renderPage(){
 function renderPane(){
   const p=$('#pinner');
   if(ui.view==='tender'){p.innerHTML=brand()+`<div class="pbody"><div class="k">Choose a tender</div><div class="tpick"><div class="lib-s"><span class="ms">search</span>Search tenders…</div>${TENDERS.map((t,i)=>`<div class="ti" data-do="picktender" data-i="${i}">${t}<small>Default folder</small></div>`).join('')}</div></div>`;return;}
+  if(ui.view==='folder'){const F=[['Default','3 files'],['Response schedules','2 files'],['Pricing','1 file'],['Correspondence','empty']];p.innerHTML=brand()+`<div class="pbody"><div class="k">Choose a folder · ${esc(ui.tenderName)}</div><div class="tpick">${F.map(f=>`<div class="ti" data-do="pickfolder" data-f="${f[0]}"><span class="ms" style="font-size:16px;vertical-align:-3px;margin-right:6px;color:var(--r-tx-3)">folder</span>${f[0]}<small>${f[1]}</small></div>`).join('')}<div class="ti" data-do="pickfolder" data-f="New folder" style="color:var(--r-accent)"><span class="ms" style="font-size:16px;vertical-align:-3px;margin-right:6px">create_new_folder</span>New folder…</div></div></div>`;return;}
   if(ui.view==='analysing'){p.innerHTML=brand()+`<div class="pbody"><div style="padding:40px 12px;text-align:center"><div class="spin"></div><p style="margin:12px 0 4px;font-size:12px;color:#1F2B28">Reading the document… <b>${ui.prog||0}/8 sections</b></p><p style="margin:0;font-size:10.5px;color:#6B7975">This takes a minute. Keep working — questions appear here as they're found. Nothing is copied out of the file.</p></div></div>`;return;}
   p.innerHTML = brand()+tabs()+(ui.tab==='q'?qtab():ui.tab==='ask'?asktab():ui.tab==='lib'?libtab():teamtab());
   const cur=p.querySelector('.wr.cur'); cur&&cur.scrollIntoView({block:'nearest'});
 }
 const brand=()=>{const sub=!['list','tender','review'].includes(ui.view);
-  const [t1,t2]=ui.view==='context'?[Q[ui.cur].t,ui.cur]:ui.view==='tender'?['Choose a tender','TEN3089 Returnable Schedules.docx']:[ui.tenderName||'Bundaberg Regional Council','Due 17 Oct 2026 · TEN/3089'];
-  return `<div class="ray-head">${sub?`<span class="ms hb" data-do="list" title="Back">chevron_left</span>`:`<span class="av a1 me" title="Signed in as Daniel Doan · daniel@tenderfy.org">DD</span>`}<div class="ray-title"><b>${esc(t1)}</b><small>${esc(t2)}</small></div><span class="ms hb bell" data-do="bell" title="Notifications">notifications${S.notes.filter(n=>!n.read).length?`<b>${S.notes.filter(n=>!n.read).length}</b>`:''}</span><span class="ms hb" title="More">more_horiz</span></div>`;};
+  const [t1,t2]=ui.view==='context'?[Q[ui.cur].t,ui.cur]:ui.view==='tender'?['Choose a tender','TEN3089 Returnable Schedules.docx']:ui.view==='folder'?['Choose a folder',ui.tenderName]:[ui.tenderName||'Bundaberg Regional Council','Due 17 Oct 2026 · TEN/3089'];
+  return `<div class="ray-head">${sub?`<span class="ms hb" data-do="${ui.view==='folder'?'foreign':'list'}" title="Back">chevron_left</span>`:`<span class="av a1 me" title="Signed in as Daniel Doan · daniel@tenderfy.org">DD</span>`}<div class="ray-title"><b>${esc(t1)}</b><small>${esc(t2)}</small></div><span class="ms hb bell" data-do="bell" title="Notifications">notifications${S.notes.filter(n=>!n.read).length?`<b>${S.notes.filter(n=>!n.read).length}</b>`:''}</span><span class="ms hb" title="More">more_horiz</span></div>`;};
 function tabs(){const open=live().filter(id=>stOf(id)!=='done').length;const mine=live().filter(id=>S.q[id].owner==='DD'&&stOf(id)!=='done').length;
   return `<div class="ptabs">${[['q','checklist','Q&amp;A',open],['lib','library_books','Responses'],['ask','forum','Ask Ray'],['team','group','Team']].map(([k,i,t,b])=>`<div class="ptab ${ui.tab===k?'on':''}" data-do="tab" data-tab="${k}"><span class="ms">${i}</span>${t}${b?`<b class="${k==='team'?'hot':''}">${b}</b>`:''}</div>`).join('')}</div>`;}
 const ctx=()=>`<div class="ctx"><span>Tender</span><b>${ui.foreign&&!ui.picked?'—':'Bundaberg RC · TEN/3089'}</b><span>Folder</span><b>Default</b><span>Document</span><b>TEN3089 Returnable Schedules.docx</b></div>`;
@@ -594,14 +595,15 @@ document.addEventListener('click',e=>{
     check(){toast('Criteria check: 3.2 and 3.3 carry 30% and are still open');},
     track(){S.track=!S.track;renderPage();toast(`Track Changes ${S.track?'on':'off'} for Ray's writes`);},
     foreign(){ui.picked=false;ui.view='tender';renderPane();mark('foreign');},
-    picktender(){ui.picked=true;ui.tenderName=TENDERS[t.dataset.i].split(' · ')[0];ui.view='analysing';ui.prog=0;renderPane();toast('Uploaded to '+TENDERS[t.dataset.i].split(' · ')[0]+' · Default');const tick=()=>{ui.prog++;renderPane();if(ui.prog<8)setTimeout(tick,220);else{ui.view='review';ui.foreign=false;$('#docname').innerHTML='TEN3089 Returnable Schedules.docx <small>· Saved to SharePoint</small>';renderPage();renderPane();toast('Found 9 questions and 12 fields');}};setTimeout(tick,400);},
+    picktender(){ui.tenderName=TENDERS[t.dataset.i].split(' · ')[0];ui.view='folder';renderPane();},
+    pickfolder(){ui.picked=true;ui.folder=t.dataset.f;ui.view='analysing';ui.prog=0;renderPane();toast('Uploaded to '+ui.tenderName+' · '+ui.folder);const tick=()=>{ui.prog++;renderPane();if(ui.prog<8)setTimeout(tick,220);else{ui.view='review';ui.foreign=false;$('#docname').innerHTML='TEN3089 Returnable Schedules.docx <small>· Saved to SharePoint</small>';renderPage();renderPane();toast('Found 9 questions and 12 fields');}};setTimeout(tick,400);},
     cm_assign(){ui.cur=q;A.assignmenu();},
     cm_draft(){const id=t.dataset.q;ui.tab='q';ui.view='list';ui.cur=id;draft(id);},
     cm_ask(){ui.cur=q;ui.view='list';ask(`What does ${q} · ${Q[q].t} need to cover for ${Q[q].crit.split(' · ')[0]}?`);},
     acceptq(){S.q[q].accepted=true;if(S.q[q].owner&&S.q[q].owner!=='DD')S.notes.unshift({q,t:PEOPLE[S.q[q].owner].n.split(' ')[0]+' answered '+q+' · '+Q[q].t,when:'Just now',read:false});S.changes=Math.max(0,S.changes-1);logIt('DD','accepted '+q+' in Review');renderPage();renderPane();toast(q+' accepted — answered');},
     cm_accept(){toast('Saved to the Response Library');}, cm_accept(){const id=ui.sel&&ui.sel.startsWith('q:')?ui.sel.slice(2):null;if(id){S.q[id].accepted=true;logIt('DD','accepted '+id+' in Review');}S.changes=Math.max(0,S.changes-1);renderPage();renderPane();toast('Insertion accepted — '+(id||'')+' is answered');},
   };
-  if(!ui.picked&&!['picktender','reset','demotog','foreign'].includes(d)){ui.view='tender';renderPane();toast('Choose the tender this document belongs to first');return;}
+  if(!ui.picked&&!['picktender','pickfolder','reset','demotog','foreign'].includes(d)){ui.view='tender';renderPane();toast('Choose the tender this document belongs to first');return;}
   A[d]&&A[d]();
   if(t.closest('.demo-list')&&d!=='platform')$('#demo').classList.remove('open');
 });
