@@ -307,6 +307,9 @@ td .cc.sel::before{display:none}
 .ed-body table,.cc table{border-collapse:collapse;width:100%;margin:4px 0}.ed-body td,.ed-body th{border:1px solid #D5DBD8;padding:4px 6px;min-width:40px;font-size:12px;text-align:left}.ed-body th{background:#F3F6F4;font-weight:600}.odlg .ed-body td,.odlg .ed-body th{border-color:#000;font-size:inherit;padding:4px 8px}.odlg .ed-body th{background:none;font-weight:700}
 .cc table{font-size:10.5px}.cc td,.cc th{border:1px solid #000;padding:2px 5px;text-align:left}.cc th{font-weight:700}
 .chat-ins{display:grid;grid-template-columns:1fr auto;gap:6px;margin-top:6px}.chat-ins .btn{justify-content:center}
+.modes .mode{padding:9px 8px;font-size:12px}
+.wr .t{white-space:normal}.wr .t b{display:block;font-weight:500;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.wr .t em{display:block;font-size:11px;margin-top:1px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.wr.cur{border-color:#BFE0D2}
 </style></head>
 <body>
 <div class="demo" id="demo"><div class="demo-btn" data-do="demotog"><span class="ms">smart_display</span>Demo</div><div class="demo-list">
@@ -415,7 +418,7 @@ function fresh(){
     changes:0, track:true,
     log:[{who:'MW',t:'edited 3.1 · Delivery lead times',when:'40 min ago'},{who:'TB',t:'assigned 4.1 to himself',when:'Yesterday'},{who:'DD',t:'assigned 3.4 to Mia · due Fri',when:'Yesterday'}],
   };
-  ui = {picked:false,view:'tender',libFolder:'Default Responses',libOpen:null,libQ:'',exp:null,teamOpen:{a:true,c:true},teamWho:null,tab:'q',filter:Object.values(S.q).some(x=>x.owner==='DD'&&x.st!=='done')?'mine':'open',cur:'3.2',open:{},sel:null,wide:false,dialog:false,lib:false,platform:'desktop',foreign:false,chat:[],thinkOpen:false,fillReview:false,menu:null,drafting:{}};
+  ui = {picked:false,view:'tender',libFolder:'Default Responses',libOpen:null,libQ:'',exp:null,teamOpen:{a:true,c:true},teamWho:null,tab:'q',filter:Object.values(S.q).some(x=>x.owner==='DD'&&x.st!=='done')?'mine':'all',cur:'3.2',open:{},sel:null,wide:false,dialog:false,lib:false,platform:'desktop',foreign:false,chat:[],thinkOpen:false,fillReview:false,menu:null,drafting:{}};
 }
 const $ = s=>document.querySelector(s), esc=s=>String(s).replace(/[&<>]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;'}[c]));
 const avatar=(id,cls='')=>id?`<span class="av ${PEOPLE[id].c} ${cls}" title="${PEOPLE[id].n}">${id}</span>`:'';
@@ -454,7 +457,7 @@ function renderPane(){
   const cur=p.querySelector('.wr.cur'); cur&&cur.scrollIntoView({block:'nearest'});
 }
 const brand=()=>{const sub=!['list','tender','review'].includes(ui.view);
-  const [t1,t2]=ui.view==='context'?[Q[ui.cur].t,ui.cur]:ui.view==='tender'?['Choose a tender','TEN3089 Returnable Schedules.docx']:ui.view==='folder'?['Choose a folder',ui.tenderName]:[ui.tenderName||'Bundaberg Regional Council','Due 17 Oct 2026 · TEN/3089'];
+  const [t1,t2]=ui.view==='context'?[Q[ui.cur].t,ui.cur]:ui.view==='tender'?['Choose a tender','TEN3089 Returnable Schedules.docx']:ui.view==='folder'?['Choose a folder',ui.tenderName]:[ui.tenderName||'Bundaberg Regional Council','Due 17 Oct 2026 · '+(ui.folder||'Default')+' Folder'];
   return `<div class="ray-head">${sub?`<span class="ms hb" data-do="${ui.view==='folder'?'foreign':'list'}" title="Back">chevron_left</span>`:`<span class="av a1 me" title="Signed in as Daniel Doan · daniel@tenderfy.org">DD</span>`}<div class="ray-title"><b>${esc(t1)}</b><small>${esc(t2)}</small></div><span class="ms hb bell" data-do="bell" title="Notifications">notifications${S.notes.filter(n=>!n.read).length?`<b>${S.notes.filter(n=>!n.read).length}</b>`:''}</span><span class="ms hb" title="More">more_horiz</span></div>`;};
 function tabs(){const open=live().filter(id=>stOf(id)!=='done').length;const mine=live().filter(id=>S.q[id].owner==='DD'&&stOf(id)!=='done').length;
   return `<div class="ptabs">${[['q','checklist','Q&amp;A',open],['ask','forum','Ask Ray'],['team','group','Team']].map(([k,i,t,b])=>`<div class="ptab ${ui.tab===k?'on':''}" data-do="tab" data-tab="${k}"><span class="ms">${i}</span>${t}${b?`<b class="${k==='team'?'hot':''}">${b}</b>`:''}</div>`).join('')}<div class="ptab ico ${ui.tab==='lib'?'on':''}" data-do="tab" data-tab="lib" title="Response Library"><span class="ms">library_books</span></div></div>`;}
@@ -465,25 +468,25 @@ function qtab(){
   if(ui.view==='review') return fillReview();
   const filled=FIELDS.filter(f=>S.fields[f.k].filled).length, matched=FIELDS.filter(f=>f.v).length;
   const all=live(), done=all.filter(id=>S.q[id].accepted).length, drafted=all.filter(id=>stOf(id)==='done'&&!S.q[id].accepted).length;
-  const phase=modes();
-  const filters=`<div class="filters">${[['open','Open'],['mine','Assigned'],['all','All']].map(([k,t])=>`<span class="fl ${ui.filter===k?'on':''}" data-do="filter" data-f="${k}">${t}</span>`).join('')}</div>`;
+  const phase=`<div class="modes">${[['all','All'],['mine','Assigned']].map(([k,t])=>`<div class="mode ${ui.filter===k?'on':''}" data-do="filter" data-f="${k}">${t}</div>`).join('')}</div>`;
+  const filters=`<div class="filters">${[['','Default'],['done','Inserted']].map(([k,t])=>`<span class="fl ${(ui.stf||'')===k?'on':''}" data-do="stf" data-f="${k}">${t}</span>`).join('')}</div>`;
   const skipped=Object.keys(Q).filter(id=>S.q[id].skip);const dismissed=skipped.length?`<div class="sec ${ui.open.X===true?'':'closed'}" data-do="sec" data-s="X"><i class="chev"></i>Not a Question<small>${skipped.length}</small></div><div class="wl">${skipped.map(id=>`<div class="wr" data-q="${id}"><i class="st" style="border-style:dashed"></i><span class="n">${id}</span><span class="t" style="color:var(--r-tx-3)">${esc(Q[id].t)} · <em>dismissed</em></span><span class="noav"></span><span class="ax" data-do="unskip" data-q="${id}"><span class="ms">undo</span>Restore</span></div>`).join('')}</div>`:'';
-  const list=SECTIONS.map(s=>{const rows=s.q.filter(id=>!S.q[id].skip).filter(id=>ui.filter==='all'||(ui.filter==='open'&&stOf(id)!=='done')||(ui.filter==='mine'&&S.q[id].owner==='DD'));if(!rows.length)return'';
+  const list=SECTIONS.map(s=>{const rows=s.q.filter(id=>!S.q[id].skip).filter(id=>(ui.filter==='all'||S.q[id].owner==='DD')&&(!ui.stf||stOf(id)==='done'));if(!rows.length)return'';
     const d=s.q.filter(id=>!S.q[id].skip&&S.q[id].accepted).length;
     const closed=ui.open[s.id]===undefined?d===s.q.length:ui.open[s.id]===false;return `<div class="sec ${closed?'closed':''}" data-do="sec" data-s="${s.id}"><i class="chev"></i>${s.t}<small>${d}/${s.q.length}</small></div><div class="wl">${rows.map(row).join('')}</div>`;}).join('');
   return phase+filters+`<div class="pbody">${list}${dismissed}</div>`+cta();
 }
 function row(id){const q=Q[id],x=S.q[id],st=stOf(id),cur=ui.cur===id;
-  const sub = st==='done'?(x.changed?`<em class="ch">Mia changed since Ray drafted</em>`:x.accepted?`<em>Answered${x.human?' · by you':''}</em>`:`<em>Drafted · accept in Review</em>`):st==='ready'?`<em>${x.flag?'Ready · marked by you':x.refined?'Ready · refined':'Ready · in the pane'}</em>`:x.owner&&x.owner!=='DD'?`<em>Assigned to ${PEOPLE[x.owner].n.split(' ')[0]}${x.due?' · due '+x.due:''}</em>`:`<em>Open</em>`;
+  const sub = st==='done'?(x.changed?`<em class="ch">Mia changed since Ray drafted</em>`:x.accepted?`<em>Inserted${x.human?' · by you':''}</em>`:`<em>Inserted · accept in Review</em>`):st==='ready'?`<em>Draft ready${x.refined?' · refined':''}</em>`:x.owner&&x.owner!=='DD'?`<em>Assigned to ${PEOPLE[x.owner].n.split(' ')[0]}${x.due?' · due '+x.due:''}</em>`:'';
   const ax = ['chevron_right','','cur'];
   const pv = cur&&ui.exp===id?(()=>{const [b,f]=cardBody(id);return `<div class="pv">${b}${f&&st!=='done'?`<div class="acts one">${f}</div>`:''}</div>`;})():'';
-  return `<div class="wr ${st} ${cur?'cur':''}" data-do="cur" data-q="${id}"><i class="st"></i><span class="n">${id}</span><span class="t">${esc(q.t)} · ${sub}</span>${x.owner?avatar(x.owner):'<span class="noav"></span>'}<span class="ax" data-do="open" data-q="${id}" title="Open"><span class="ms">chevron_right</span></span></div>${pv}`;}
+  return `<div class="wr ${st} ${cur?'cur':''}" data-do="cur" data-q="${id}"><i class="st"></i><span class="n">${id}</span><span class="t"><b>${esc(q.t)}</b>${sub}</span>${x.owner?avatar(x.owner):'<span class="noav"></span>'}<span class="ax" data-do="open" data-q="${id}" title="Open"><span class="ms">chevron_right</span></span></div>${pv}`;}
 function assignRow(id){const x=S.q[id];return `<div class="acts" style="margin-top:8px;align-items:center"><span style="font-size:10px;color:#6B7975">Assign ${id} to</span><span class="who">${Object.keys(PEOPLE).map(k=>avatar(k,x.owner===k?'sel':'')).map(a=>a.replace('<span','<span data-do="own" data-q="'+id+'" data-who="'+a.slice(a.indexOf('>')+1,a.indexOf('>')+3)+'"')).join('')}</span><span class="btn ghost" data-do="ownall" data-q="${id}" title="Assign every open question in this section to the same person">Section →</span></div>`;}
 function cta(){
   const ready=live().filter(id=>stOf(id)==='ready'), open=live().filter(id=>stOf(id)==='open'&&(!S.q[id].owner||S.q[id].owner==='DD')), mine=open.filter(id=>S.q[id].owner==='DD');
   const filled=FIELDS.filter(f=>S.fields[f.k].filled).length, matched=FIELDS.filter(f=>f.v).length;
   let main;const tip='title="↑↓ move · Enter acts · Ctrl+Alt+I inserts next"';
-  if(ready.length) main=`<span class="btn" data-do="insall" ${tip}><span class="ms">keyboard_double_arrow_down</span>Insert ${ready.length} ready</span>`;
+  if(ready.length) main=`<span class="btn" data-do="insall" ${tip}><span class="ms">keyboard_double_arrow_down</span>Insert all into document</span>`;
   else if(open.length) main=`<span class="btn" data-do="draftall" ${tip}><span class="ms">auto_awesome</span>Generate ${solo()?open.length+' open':'my '+open.length}</span>`;
   else main=`<span class="btn ghost" data-do="check"><span class="ms">fact_check</span>Check criteria</span>`;
   return `<div class="cta">${main}</div>`;
@@ -493,7 +496,7 @@ function modes(){const m=FIELDS.filter(f=>f.v&&!S.fields[f.k].filled).length;con
 function fillReview(){const rows=FIELDS.map(f=>`<div class="fr ${f.v?'':'gap'}"><i class="st"></i><div class="t"><b>${f.l.replace(':','')}</b><small>${f.v?esc(f.v)+' · '+f.src:'No match in the company profile — you\'ll fill this one'}</small></div><span class="ms" title="Edit">${f.v?'edit':'add'}</span></div>`).join('');
   const m=FIELDS.filter(f=>f.v).length;const todo=live().filter(id=>stOf(id)!=='done'&&(!S.q[id].owner||S.q[id].owner==='DD'));const others=live().filter(id=>stOf(id)!=='done'&&S.q[id].owner&&S.q[id].owner!=='DD');
   const arows=todo.map(id=>`<div class="fr"><i class="st"></i><div class="t"><b>${id} · ${esc(Q[id].t)}</b><small>From the Response Library · ${Q[id].refs[0]}</small></div><span class="ms" data-do="cur" data-q="${id}" title="Open this one">chevron_right</span></div>`).join('')+others.map(id=>`<div class="fr gap"><i class="st" style="background:#C9A15C"></i><div class="t"><b>${id} · ${esc(Q[id].t)}</b><small style="color:var(--r-amber-tx)">Assigned to ${PEOPLE[S.q[id].owner].n.split(' ')[0]} — left alone</small></div>${avatar(S.q[id].owner)}</div>`).join('');
-  return modes()+`<div class="pbody"><div class="k">Questions · ${todo.length} to generate</div>${arows||'<div class="note">Nothing left to generate.</div>'}</div><div class="cta"><span class="btn ${todo.length?'':'dis'}" data-do="onepress"><span class="ms">auto_fix_high</span>Autofill document</span></div>`;}
+  return `<div class="pbody"><div class="k" style="font-size:12px;letter-spacing:0;text-transform:none;font-weight:600;color:var(--r-tx);margin:10px 4px 6px">Autofill document</div><div class="k">Questions · ${todo.length} to generate</div>${arows||'<div class="note">Nothing left to generate.</div>'}</div><div class="cta"><span class="btn ${todo.length?'':'dis'}" data-do="onepress"><span class="ms">auto_fix_high</span>Autofill document</span></div>`;}
 function cardBody(id){const q=Q[id],x=S.q[id],st=stOf(id);
   const refs='';
   const crit=``;
@@ -569,14 +572,14 @@ document.addEventListener('click',e=>{
     unown(){S.q[q].owner=null;S.q[q].due=null;logIt('DD','unassigned '+q);renderPane();renderPage();toast(q+' unassigned');},
     tabq(){ui.tab='q';ui.view='list';renderPane();},
     tabteam(){ui.tab='team';ui.view='list';renderPane();mark('tabteam');}, tabask(){ui.tab='ask';ui.view='list';renderPane();}, tablib(){ui.tab='lib';ui.view='list';renderPane();},
-    filter(){ui.filter=t.dataset.f;renderPane();}, sec(){const el=t.classList.contains('closed');ui.open[t.dataset.s]=el;renderPane();},
+    filter(){ui.filter=t.dataset.f;renderPane();}, stf(){ui.stf=t.dataset.f||null;renderPane();}, sec(){const el=t.classList.contains('closed');ui.open[t.dataset.s]=el;renderPane();},
     cur(){ui.exp=ui.exp===q&&ui.view==='list'?null:q;ui.cur=q;ui.assigning=null;ui.tab='q';ui.view='list';selectCC('q:'+q);renderPane();},
     open(){ui.cur=q;ui.tab='q';ui.view='context';selectCC('q:'+q);renderPane();},
-    list(){ui.view='list';renderPane();}, phase2(){ui.filter='open';ui.view='list';renderPane();},
+    list(){ui.view='list';renderPane();}, phase2(){ui.filter='all';ui.view='list';renderPane();},
     fill(){ui.tab='q';ui.view='review';renderPane();}, fillall(){fillAll();},
     draft(){ui.cur=q;draft(q);},
     draftcard(){ui.cur=q;ui.view='context';draft(q);}, draftall(){draftAll();},
-    onepress(){ui.view='list';toast('Drafting every open question…');setTimeout(()=>draftAll(()=>setTimeout(()=>{const n=live().filter(id=>stOf(id)==='ready').length;logIt('DD','generated '+n+' drafts');ui.filter='open';ui.view='list';renderPane();toast(n+' drafts ready — read each one, then Insert');},700)),200);},
+    onepress(){ui.view='list';toast('Drafting every open question…');setTimeout(()=>draftAll(()=>setTimeout(()=>{const n=live().filter(id=>stOf(id)==='ready').length;logIt('DD','generated '+n+' drafts');ui.filter='all';ui.view='list';renderPane();toast(n+' drafts ready — read each one, then Insert');},700)),200);},
     insert(){ui.cur=q;insert(q);},
     fullscreen(){const x=S.q[q],Q_=Q[q],ed=document.getElementById('edbody');const txt=ed?ed.innerHTML:(stOf(q)!=='open'?(Q_.html||'<p>'+esc(Q_.txt)+'</p>'):'');const d=document.createElement('div');d.className='odlg';d.id='odlg';
       d.innerHTML=`<div class="odlg-win"><div class="odlg-bar"><span>Ray for Word — ${q} · ${esc(Q_.t)}</span><span class="ms" data-do="dlgclose" title="Close">close</span></div>
