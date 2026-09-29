@@ -434,6 +434,10 @@ const Q = {
   '4.1':{t:'Local employment',full:'How many local employees are estimated to be involved in the delivery of this contract?',crit:'Local benefits · 10%',txt:'Two Bundaberg-based delivery contractors and one regional account manager based in Maryborough.',refs:['Local content plan'],st:'open',owner:'TB',due:'Thu'},
   '4.2':{t:'Local sub-contractors',full:'What is the estimated spend on local sub-contractors during the term?',crit:'Local benefits · 5%',txt:'Approximately $180,000 per annum across freight, pallet recovery and depot handling in the North Burnett and Bundaberg regions.',refs:['Local content plan'],st:'open'},
 };
+// Section 1: each form field is a question; matched values arrive as drafts from the company profile
+const FID=k=>'1.'+(FIELDS.findIndex(f=>f.k===k)+1);
+FIELDS.forEach((f,i)=>{Q['1.'+(i+1)]={t:f.l.replace(':',''),full:f.l.replace(':','')+(f.h?' '+f.h:''),crit:'',txt:f.v||'',refs:f.v?[f.src]:[],st:f.v?'ready':'open',field:f.k};});
+SECTIONS.unshift({id:'S1',t:"Section 1 · Tenderer's particulars",q:FIELDS.map((f,i)=>'1.'+(i+1))});
 const LIB = [['Delivery lead times · east coast','Policy · used in 6 tenders','Policy'],['Continuity of supply statement','Won · Gladstone RC 2023','Won'],['ISO 9001 quality statement','Certificate + summary','Cert'],['Environmental management · packaging','Policy · updated May 2026','Policy'],['Warranty & defects · 24 months','Standard terms','Terms'],['Local content plan · Wide Bay','Won · Fraser Coast 2024','Won']];
 const FOLDERS = ['AI Responses','Default Responses','Gold Coast Council','Susan SME','Insurance','Consulting','Environmental','Social','Governance','AJ Pharmacy'];
 const RESP = [
@@ -456,7 +460,7 @@ const TENDERS = ['Bundaberg RC · TEN/3089 · HDPE Pipe and Fittings','North Bur
 let S, ui;
 function fresh(){
   S = {
-    fields:Object.fromEntries(FIELDS.map(f=>[f.k,{filled:false}])),
+
     q:Object.fromEntries(Object.entries(Q).map(([id,q])=>[id,{st:q.st,owner:q.owner||null,due:q.due||null,changed:!!q.changed,inserted:q.st==='done',accepted:q.st==='done',skip:false}])),
     notes:[{q:'3.3',t:'Tom assigned you 3.3 · Quality assurance',when:'2 h ago',read:false},{q:'3.1',t:'Mia answered 3.1 · Delivery lead times, which you assigned',when:'40 min ago',read:false}],
     changes:0, track:true,
@@ -475,9 +479,9 @@ function mark(g){document.querySelector(`.g[data-do="${g}"]`)?.classList.add('do
 
 /* ===== the document ===== */
 function renderPage(){
-  const fields = FIELDS.map(f=>{const st=S.fields[f.k];const v=st.filled?`<span class="trk">${esc(f.v)}</span>`:'';
-    return `<tr><td class="fk">${f.l}${f.h?`<small>${f.h}</small>`:''}</td><td><span class="cc ${v?'':'ph'} ${st.filled?'chg':''} ${ui.sel==='f:'+f.k?'sel':''}" data-title="${f.l.replace(':','')}" data-cc="f:${f.k}">${v||'Click here to enter text.'}</span></td></tr>`;}).join('');
-  const qs = SECTIONS.map(s=>`<h4>${s.id.slice(1)}&nbsp;&nbsp;${s.t.split(' · ')[1].toUpperCase()}</h4>`+s.q.map(id=>{
+  const fields = FIELDS.map(f=>{const id=FID(f.k),x=S.q[id];const v=x.inserted?(x.human?esc(Q[id].txt):`<span class="trk">${esc(Q[id].txt)}</span>`):'';
+    return `<tr><td class="fk">${f.l}${f.h?`<small>${f.h}</small>`:''}</td><td><span class="cc ${v?'':'ph'} ${x.inserted&&!x.human?'chg':''} ${ui.sel==='q:'+id?'sel':''}" data-title="${id} · ${f.l.replace(':','')}" data-cc="q:${id}">${v||'Click here to enter text.'}</span></td></tr>`;}).join('');
+  const qs = SECTIONS.filter(s=>s.id!=='S1').map(s=>`<h4>${s.id.slice(1)}&nbsp;&nbsp;${s.t.split(' · ')[1].toUpperCase()}</h4>`+s.q.map(id=>{
     const q=Q[id],x=S.q[id];const done=x.inserted;const isPh=!done;
     const body = done ? (x.human?(q.html||esc(q.txt)):x.ownerText?`<span class="trk m">${esc(x.ownerText)}</span>`:`<span class="trk">${q.html||esc(q.txt)}</span>`) : 'Click here to enter text.';
     return `<div class="q" data-q="${id}"><div class="qh"><span class="n">${id}</span><span>${esc(q.full)}</span></div><div class="cc ${isPh?'ph':''} ${done&&!x.human?'chg':''} ${ui.sel==='q:'+id?'sel':''}" data-title="${id} · ${esc(q.t)}" data-cc="q:${id}">${body}</div></div>`;
@@ -517,7 +521,6 @@ const ctx=()=>`<div class="ctx"><span>Tender</span><b>${ui.foreign&&!ui.picked?'
 
 function qtab(){
   if(ui.view==='context') return contextCard();
-  const filled=FIELDS.filter(f=>S.fields[f.k].filled).length, matched=FIELDS.filter(f=>f.v).length;
   const all=live(), done=all.filter(id=>S.q[id].accepted).length, drafted=all.filter(id=>stOf(id)==='done'&&!S.q[id].accepted).length;
   const phase=`<div class="modes"><i class="segbar"></i>${[['all','All'],['mine','Assigned']].map(([k,t])=>`<div class="mode ${ui.filter===k?'on':''}" data-do="filter" data-f="${k}">${t}</div>`).join('')}</div>`;
   const filters=`<div class="filters"><i class="chipbar"></i>${[['','Default'],['done','Inserted']].map(([k,t])=>`<span class="fl ${(ui.stf||'')===k?'on':''}" data-do="stf" data-f="${k}">${t}</span>`).join('')}</div>`;
@@ -525,13 +528,9 @@ function qtab(){
   const list=SECTIONS.map(s=>{const rows=s.q.filter(id=>!S.q[id].skip).filter(id=>(ui.filter==='all'||S.q[id].owner==='DD')&&(!ui.stf||stOf(id)==='done'));if(!rows.length&&ui.filter==='mine')return'';
     const d=s.q.filter(id=>!S.q[id].skip&&S.q[id].accepted).length;
     const closed=ui.open[s.id]===false;return `<div class="sec ${closed?'closed':''}" data-do="sec" data-s="${s.id}"><i class="chev"></i>${s.t}<small>${d}/${s.q.length}</small></div><div class="wl"><div>${rows.map(row).join('')||emptyNote()}</div></div>`;}).join('');
-  const fr=FIELDS.filter(f=>ui.filter==='all'&&(!ui.stf||S.fields[f.k].filled));const fd=FIELDS.filter(f=>S.fields[f.k].filled).length;
-  const c1=ui.open.S1===false;
-  const s1=ui.filter==='mine'?'':`<div class="sec ${c1?'closed':''}" data-do="sec" data-s="S1"><i class="chev"></i>Section 1 · Tenderer's particulars<small>${fd}/${FIELDS.length}</small></div><div class="wl"><div>${fr.map(frow).join('')||emptyNote()}</div></div>`;
-  return phase+filters+`<div class="pbody">${s1}${list}${dismissed}</div>`+cta();
+  return phase+filters+`<div class="pbody">${list}${dismissed}</div>`+cta();
 }
 const emptyNote=()=>`<div class="note">Nothing ${ui.filter==='mine'?'assigned to you':'inserted'} in this section.</div>`;
-function frow(f){const done=S.fields[f.k].filled,cur=ui.sel==='f:'+f.k;return `<div class="wr ${done?'done':'open'} ${cur?'cur':''}" data-do="gofield" data-k="${f.k}"><i class="st"></i><span class="n">1.1</span><span class="t"><b>${esc(f.l.replace(':',''))}</b><em>${done?esc(f.v):f.v?'Matched · '+esc(f.v):'No match in the company profile'}</em></span><span class="noav"></span>${!done&&f.v?`<span class="ax" data-do="fillone" data-k="${f.k}" title="Insert ${esc(f.v)} into the document"><span class="ms">keyboard_return</span></span>`:'<span class="ax"></span>'}</div>`;}
 function row(id){const q=Q[id],x=S.q[id],st=stOf(id),cur=ui.cur===id;
   const sub = st==='done'?(x.changed?`<em class="ch">Mia changed since Ray drafted</em>`:x.accepted?`<em>Inserted${x.human?' · by you':''}</em>`:`<em>Inserted · accept in Review</em>`):st==='ready'?`<em>Draft ready${x.refined?' · refined':''}</em>`:x.owner&&x.owner!=='DD'?`<em>Assigned to ${PEOPLE[x.owner].n.split(' ')[0]}${x.due?' · due '+x.due:''}</em>`:'';
   const ax = ['chevron_right','','cur'];
@@ -633,8 +632,6 @@ document.addEventListener('click',e=>{
     genupload(){ui.gensrc='upload';ui.genfile='Site methodology 2025.docx';$('#genfile').value='';t.innerHTML='<span class="ms">upload_file</span>Site methodology 2025.docx';toast('Site methodology 2025.docx attached · 1.2 MB');},
     gengo(){const typed=$('#genfile').value.trim();if(typed){ui.gensrc='tender';ui.genfile=typed;}if(!ui.genfile||(ui.gensrc==='tender'&&!typed)){toast('Type a file name or upload one first');$('#genfile').focus();return;}ui.genOpen=null;ui.cur=q;ui.view='context';draft(q);},
     insert(){ui.cur=q;insert(q);},
-    gofield(){selectCC('f:'+t.dataset.k);renderPane();},
-    fillone(){const k=t.dataset.k;S.fields[k].filled=true;S.changes++;logIt('DD','filled '+k);selectCC('f:'+k);renderPane();toast(FIELDS.find(f=>f.k===k).l.replace(':','')+' inserted as a tracked change');},
     fullscreen(){const x=S.q[q],Q_=Q[q],ed=document.getElementById('edbody');const txt=ed?ed.innerHTML:(stOf(q)!=='open'?(Q_.html||'<p>'+esc(Q_.txt)+'</p>'):'');const d=document.createElement('div');d.className='odlg';d.id='odlg';
       d.innerHTML=`<div class="odlg-win"><div class="odlg-bar"><span>Ray for Word — ${q} · ${esc(Q_.t)}</span><span class="ms" data-do="dlgclose" title="Close">close</span></div>
         <div class="odlg-body"><aside><div class="blk"><div class="k">${q} · Question</div><p>${esc(Q_.full)}</p></div><div class="blk"><div class="k">Owner</div><p>${x.owner?avatar(x.owner)+' '+PEOPLE[x.owner].n:'Unassigned'}</p></div><div class="blk"><div class="k">Status</div><p>${stOf(q)==='done'?(x.accepted?'Answered · accepted in Review':'In the document · needs accepting'):stOf(q)==='ready'?'Draft ready · not inserted yet':'Open'}</p></div></aside>
@@ -665,7 +662,7 @@ document.addEventListener('click',e=>{
     newchat(){ui.chat=[];renderPane();}, think(){ui.thinkOpen=!ui.thinkOpen;renderPane();},
     chatinsq(){const m=ui.chat[+t.dataset.i];const id=q;const d=document.createElement('div');d.innerHTML=m.ans;const text=d.innerText.trim();const x=S.q[id];m.done=true;m.ins={label:id+' · '+Q[id].t};$('.cmenu')?.remove();ui.tab='q';ui.cur=id;ui.view='context';if(stOf(id)==='done'){renderPane();const ed=$('#edbody');snap(ed);ed.innerHTML='<p>'+esc(text)+'</p>';ed.dispatchEvent(new Event('input',{bubbles:true}));toast('Ray answer is in the editor · Update in document when you are happy');}else{Q[id].txt=text;Q[id].html=null;Q[id].refs=[];x.st='ready';renderPane();toast('Ray answer is in the editor · Insert into document when you are happy');}selectCC('q:'+id);},
     chatpick(){const r=t.getBoundingClientRect(),w=$('#win').getBoundingClientRect();$('.cmenu')?.remove();const m=document.createElement('div');m.className='cmenu';m.style.left=Math.min(r.left-w.left,w.width-260)+'px';m.style.top=(r.bottom-w.top+2)+'px';m.innerHTML='<div class="dis" style="font-size:11px">Use this answer for…</div><hr>'+live().map(id=>`<div data-do="chatinsq" data-i="${t.dataset.i}" data-q="${id}"><span class="n" style="font-size:10px;color:var(--r-accent);font-weight:600;width:22px">${id}</span>${esc(Q[id].t)}<span class="sub">${stOf(id)==='done'?'answered · edits it':stOf(id)==='ready'?'draft ready · replaces':'open'}</span></div>`).join('');$('#win').appendChild(m);},
-    chatins(){const m=[...ui.chat].reverse().find(x=>x.ins&&!x.done);if(!m)return;m.done=true;S.fields[m.ins.key].filled=true;S.changes++;selectCC('f:'+m.ins.key);renderPane();toast('Inserted into 1.1 · ABN — not at the cursor');mark('askabn');},
+    chatins(){const m=[...ui.chat].reverse().find(x=>x.ins&&!x.done);if(!m)return;m.done=true;const fq=FID(m.ins.key),fx=S.q[fq];fx.inserted=true;fx.st='done';fx.accepted=false;S.changes++;selectCC('q:'+fq);renderPane();toast('Inserted into 1.1 · ABN — not at the cursor');mark('askabn');},
     skip(){S.q[q].skip=true;logIt('DD','marked '+q+' as not a question');if(ui.cur===q)ui.cur=live().find(id=>stOf(id)!=='done')||live()[0];renderPane();toast(q+' dismissed — it won\'t count or be drafted');},
     unskip(){S.q[q].skip=false;renderPane();},
     markready(){const x=S.q[q];const ed=document.getElementById('edbody');const typed=ed&&ed.innerText.trim();if(!typed){toast('Write the answer first');return;}Q[q].txt=typed;Q[q].refs=[];Q[q].html=ed.querySelector('table')?ed.innerHTML:null;x.human=true;x.inserted=true;x.st='done';x.accepted=true;logIt('DD','inserted '+q+' and marked it answered');ui.cur=q;selectCC('q:'+q);renderPane();toast(q+' inserted as final text — answered');},
