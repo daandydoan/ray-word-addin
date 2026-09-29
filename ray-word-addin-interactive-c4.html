@@ -313,7 +313,7 @@ td .cc.sel::before{display:none}
 @keyframes rayIn{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
 @keyframes raySlide{from{opacity:0;transform:translateX(18px)}to{opacity:1;transform:none}}
 @keyframes rayPop{from{opacity:0;transform:scale(.96)}to{opacity:1;transform:none}}
-.pbody,.modes,.filters{animation:rayIn .22s ease-out both}
+.pbody,.filters{animation:rayIn .22s ease-out both}
 .pbody>.card.full,.pbody>.card{animation:raySlide .24s cubic-bezier(.2,.7,.2,1) both}
 .cmenu{animation:rayPop .14s ease-out both;transform-origin:top left}
 .odlg{animation:rayIn .18s ease-out both}.odlg-win{animation:rayPop .22s cubic-bezier(.2,.7,.2,1) both}
@@ -342,6 +342,9 @@ td .cc.sel::before{display:none}
 #pinner[data-slide=r]>:not(.ray-head):not(.ptabs){animation:slideR .25s cubic-bezier(.2,.7,.2,1) both}#pinner[data-slide=l]>:not(.ray-head):not(.ptabs){animation:slideL .25s cubic-bezier(.2,.7,.2,1) both}
 #pinner{overflow-x:hidden}
 .ptab.on{font-weight:500}.ptab{text-shadow:none}.ptab.on{text-shadow:0 0 .01px currentColor,.25px 0 0 currentColor}
+.modes{position:relative}.modes .mode{position:relative;z-index:1}.modes .mode.on{background:transparent!important}
+.segbar{position:absolute;top:3px;bottom:3px;border-radius:8px;background:var(--r-teal-bg);transition:left .25s cubic-bezier(.2,.7,.2,1),width .25s cubic-bezier(.2,.7,.2,1)}
+#pinner[data-fslide=r]>.pbody,#pinner[data-fslide=r]>.filters{animation:slideR .25s cubic-bezier(.2,.7,.2,1) both}#pinner[data-fslide=l]>.pbody,#pinner[data-fslide=l]>.filters{animation:slideL .25s cubic-bezier(.2,.7,.2,1) both}
 </style></head>
 <body>
 <div class="demo" id="demo"><div class="demo-btn" data-do="demotog"><span class="ms">smart_display</span>Demo</div><div class="demo-list">
@@ -491,6 +494,9 @@ function renderPane(){
   // slide content by tab order; glide the underline from the last tab
   const ord=['q','ask','team','lib'],prev=ui._lt;ui._lt=ui.tab;p.removeAttribute('data-slide');if(prev&&prev!==ui.tab)p.dataset.slide=ord.indexOf(ui.tab)>ord.indexOf(prev)?'r':'l';
   const bar=p.querySelector('.tabbar'),on=p.querySelector('.ptab.on');if(bar&&on){const to=[on.offsetLeft,on.offsetWidth],from=ui._bar||to;bar.style.cssText='transition:none;left:'+from[0]+'px;width:'+from[1]+'px';bar.offsetWidth;bar.style.cssText='left:'+to[0]+'px;width:'+to[1]+'px';ui._bar=to;}
+  // All/Assigned: glide the pill, slide the list the way the switch moved
+  const fo=['all','mine'],pf=ui._lf;ui._lf=ui.filter;p.removeAttribute('data-fslide');if(pf&&pf!==ui.filter&&prev===ui.tab)p.dataset.fslide=fo.indexOf(ui.filter)>fo.indexOf(pf)?'r':'l';
+  const sb=p.querySelector('.segbar'),so=p.querySelector('.modes .mode.on');if(sb&&so){const to=[so.offsetLeft,so.offsetWidth],from=ui._seg||to;sb.style.cssText='transition:none;left:'+from[0]+'px;width:'+from[1]+'px';sb.offsetWidth;sb.style.cssText='left:'+to[0]+'px;width:'+to[1]+'px';ui._seg=to;}
 }
 const brand=()=>{const sub=!['list','tender','review'].includes(ui.view);
   const [t1,t2]=ui.view==='context'?[Q[ui.cur].t,ui.cur]:ui.view==='tender'?['Choose a tender','TEN3089 Returnable Schedules.docx']:ui.view==='folder'?['Choose a folder',ui.tenderName]:[ui.tenderName||'Bundaberg Regional Council','Due 17 Oct 2026 · '+(ui.folder||'Default')+' Folder'];
@@ -503,7 +509,7 @@ function qtab(){
   if(ui.view==='context') return contextCard();
   const filled=FIELDS.filter(f=>S.fields[f.k].filled).length, matched=FIELDS.filter(f=>f.v).length;
   const all=live(), done=all.filter(id=>S.q[id].accepted).length, drafted=all.filter(id=>stOf(id)==='done'&&!S.q[id].accepted).length;
-  const phase=`<div class="modes">${[['all','All'],['mine','Assigned']].map(([k,t])=>`<div class="mode ${ui.filter===k?'on':''}" data-do="filter" data-f="${k}">${t}</div>`).join('')}</div>`;
+  const phase=`<div class="modes"><i class="segbar"></i>${[['all','All'],['mine','Assigned']].map(([k,t])=>`<div class="mode ${ui.filter===k?'on':''}" data-do="filter" data-f="${k}">${t}</div>`).join('')}</div>`;
   const filters=`<div class="filters">${[['','Default'],['done','Inserted']].map(([k,t])=>`<span class="fl ${(ui.stf||'')===k?'on':''}" data-do="stf" data-f="${k}">${t}</span>`).join('')}</div>`;
   const skipped=Object.keys(Q).filter(id=>S.q[id].skip);const dismissed=skipped.length?`<div class="sec ${ui.open.X===true?'':'closed'}" data-do="sec" data-s="X"><i class="chev"></i>Not a Question<small>${skipped.length}</small></div><div class="wl">${skipped.map(id=>`<div class="wr" data-q="${id}"><i class="st" style="border-style:dashed"></i><span class="n">${id}</span><span class="t" style="color:var(--r-tx-3)">${esc(Q[id].t)} · <em>dismissed</em></span><span class="noav"></span><span class="ax" data-do="unskip" data-q="${id}"><span class="ms">undo</span>Restore</span></div>`).join('')}</div>`:'';
   const list=SECTIONS.map(s=>{const rows=s.q.filter(id=>!S.q[id].skip).filter(id=>(ui.filter==='all'||S.q[id].owner==='DD')&&(!ui.stf||stOf(id)==='done'));if(!rows.length&&ui.filter==='mine')return'';
