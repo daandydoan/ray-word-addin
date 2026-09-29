@@ -313,7 +313,7 @@ td .cc.sel::before{display:none}
 @keyframes rayIn{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
 @keyframes raySlide{from{opacity:0;transform:translateX(18px)}to{opacity:1;transform:none}}
 @keyframes rayPop{from{opacity:0;transform:scale(.96)}to{opacity:1;transform:none}}
-.pbody,.modes,.filters,.ptabs{animation:rayIn .22s ease-out both}
+.pbody,.modes,.filters{animation:rayIn .22s ease-out both}
 .pbody>.card.full,.pbody>.card{animation:raySlide .24s cubic-bezier(.2,.7,.2,1) both}
 .cmenu{animation:rayPop .14s ease-out both;transform-origin:top left}
 .odlg{animation:rayIn .18s ease-out both}.odlg-win{animation:rayPop .22s cubic-bezier(.2,.7,.2,1) both}
@@ -341,6 +341,7 @@ td .cc.sel::before{display:none}
 @keyframes slideR{from{opacity:0;transform:translateX(24px)}to{opacity:1;transform:none}}@keyframes slideL{from{opacity:0;transform:translateX(-24px)}to{opacity:1;transform:none}}
 #pinner[data-slide=r]>:not(.ray-head):not(.ptabs){animation:slideR .25s cubic-bezier(.2,.7,.2,1) both}#pinner[data-slide=l]>:not(.ray-head):not(.ptabs){animation:slideL .25s cubic-bezier(.2,.7,.2,1) both}
 #pinner{overflow-x:hidden}
+.ptab.on{font-weight:500}.ptab{text-shadow:none}.ptab.on{text-shadow:0 0 .01px currentColor,.25px 0 0 currentColor}
 </style></head>
 <body>
 <div class="demo" id="demo"><div class="demo-btn" data-do="demotog"><span class="ms">smart_display</span>Demo</div><div class="demo-list">
