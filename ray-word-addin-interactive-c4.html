@@ -275,7 +275,7 @@ td .cc.sel::before{display:none}
 .lr{border:1px solid var(--r-line);border-radius:10px;margin-bottom:6px;background:#fff}.lr.open{border-color:var(--r-line-2)}
 .lr-h{display:flex;align-items:center;gap:8px;padding:9px 10px;cursor:pointer;font-size:12px}.lr-h b{flex:1;min-width:0;font-weight:600;color:var(--r-tx);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.lr-h small{color:var(--r-tx-3);font-size:10.5px}
 .lr-h .chev{width:6px;height:6px;border-right:1.5px solid #9AA8A3;border-bottom:1.5px solid #9AA8A3;transform:rotate(45deg);margin:-3px 2px 0}.lr.open .lr-h .chev{transform:rotate(-135deg);margin-top:3px}
-.lr-b{padding:0 10px 10px;border-top:1px solid var(--r-line)}.lr-b p{margin:8px 0;font-size:12px;line-height:1.5;color:var(--r-tx)}.lr-b .acts{display:grid;grid-template-columns:1fr auto;gap:6px}.lr-b .btn{justify-content:center}
+.lr-b{padding:0 10px 10px;border-top:1px solid var(--r-line)}.lr-b p{margin:8px 0;font-size:12px;line-height:1.5;color:var(--r-tx)}.lr-b .acts{display:grid;grid-template-columns:1fr auto auto;gap:6px}.lr-b .btn{justify-content:center}
 .lib-pg{font-size:10.5px;color:var(--r-tx-3);text-align:right;padding:6px 2px 0}
 .lib-f{display:flex;gap:6px;align-items:center;padding:8px 0 6px}.lib-f .fl{flex:none;padding:6px 10px;border:1px solid var(--r-line)}.lib-f .fl b{font-weight:500;color:var(--r-tx-3);margin-left:2px}
 .lib-sel{flex:1;min-width:0;font:inherit;font-size:12px;font-weight:500;color:var(--r-tx);background:#fff;border:1px solid var(--r-line-2);border-radius:100px;padding:6px 10px;outline:none}.lib-sel.on{background:var(--r-teal-bg);color:var(--r-teal-tx);border-color:transparent;font-weight:600}
@@ -526,7 +526,7 @@ function libtab(){
   const rows=RESP.filter(r=>(!q||(r.t+' '+r.x).toLowerCase().includes(q))&&(q||r.f===ui.libFolder));
   const count=fo=>RESP.filter(r=>r.f===fo).length;
   const ai=ui.libFolder==='AI Responses'&&!q;const folders=`<div class="lib-f"><span class="fl ${ai?'on':''}" data-do="libfolder" data-f="AI Responses"><span class="ms" style="font-size:13px;vertical-align:-2px;margin-right:3px">auto_awesome</span>AI Responses <b>${count('AI Responses')}</b></span><select class="lib-sel ${!ai&&!q?'on':''}" id="libsel">${FOLDERS.filter(f=>f!=='AI Responses').map(fo=>`<option value="${fo}" ${ui.libFolder===fo?'selected':''}>${fo} (${count(fo)})</option>`).join('')}</select></div>`;
-  const list=rows.map((r,i)=>{const open=ui.libOpen===r.t;return `<div class="lr ${open?'open':''}"><div class="lr-h" data-do="libopen" data-t="${esc(r.t)}"><i class="chev"></i><b>${esc(r.t)}</b><small>${r.x.split(' ').length} words</small></div>${open?`<div class="lr-b"><p>${esc(r.x)}</p><div class="acts"><span class="btn" data-do="libtab-ins" data-t="${esc(r.t)}"><span class="ms">keyboard_return</span>Insert into ${ui.cur}</span><span class="btn ghost" data-do="libedit"><span class="ms">edit</span>Edit</span></div></div>`:''}</div>`;}).join('')||'<div class="note">No responses match.</div>';
+  const list=rows.map((r,i)=>{const open=ui.libOpen===r.t;return `<div class="lr ${open?'open':''}"><div class="lr-h" data-do="libopen" data-t="${esc(r.t)}"><i class="chev"></i><b>${esc(r.t)}</b><small>${r.x.split(' ').length} words</small></div>${open?`<div class="lr-b"><p>${esc(r.x)}</p><div class="acts"><span class="btn" data-do="libtab-ins" data-t="${esc(r.t)}" title="Puts this response in ${ui.cur}'s editor · you insert it from there"><span class="ms">edit_document</span>Use for ${ui.cur}</span><span class="btn ghost sq" data-do="libpick" data-t="${esc(r.t)}" title="Choose another question"><span class="ms">expand_more</span></span><span class="btn ghost" data-do="libedit"><span class="ms">edit</span>Edit</span></div></div>`:''}</div>`;}).join('')||'<div class="note">No responses match.</div>';
   return `<div class="pbody lib"><div class="lib-top"><div class="lib-s"><span class="ms">search</span><span class="in" contenteditable="true" data-ph="Search 74 responses…" id="libq">${esc(ui.libQ)}</span>${q?'<span class="ms x" data-do="libclear">close</span>':''}</div><span class="btn ghost sq" data-do="libadd" title="Add Response"><span class="ms">add</span></span></div>${folders}<div class="k" style="margin-top:4px">${q?'Results':esc(ui.libFolder)} · ${rows.length}</div>${list}<div class="lib-pg">1–${rows.length} of ${q?rows.length:count(ui.libFolder)}</div></div>`;}
 
 function teamtab(){
@@ -559,7 +559,7 @@ function ask(text){ui.tab='ask';ui.chat.push({you:text});const isAbn=/abn/i.test
     renderPane();},1600);}
 
 document.addEventListener('click',e=>{
-  const m=$('.cmenu');if(m&&(!m.contains(e.target)||e.target.closest('[data-do="own"],[data-do="unown"],[data-do="note"],[data-do="chatinsq"]'))){m.remove();}
+  const m=$('.cmenu');if(m&&(!m.contains(e.target)||e.target.closest('[data-do="own"],[data-do="unown"],[data-do="note"],[data-do="chatinsq"],[data-do="libtab-ins"]'))){m.remove();}
   const t=e.target.closest('[data-do]');if(!t)return;const d=t.dataset.do,q=t.dataset.q;
   const A={
     demotog(){$('#demo').classList.toggle('open');},
@@ -592,7 +592,8 @@ document.addEventListener('click',e=>{
     gennext(){const id=SECTIONS.flatMap(s=>s.q).find(id=>!S.q[id].skip&&stOf(id)==='open'&&(!S.q[id].owner||S.q[id].owner==='DD'));if(!id){toast('Nothing open that\'s yours');return;}ui.cur=id;ui.view='context';draft(id);},
     openctx(){ui.cur=q;ui.tab='q';ui.view='context';selectCC('q:'+q);renderPane();},
     
-    'libtab-ins'(){const id=ui.cur;const r=RESP.find(r=>r.t===t.dataset.t);if(stOf(id)==='done'){S.changes++;renderPage();toast(`Added to ${id} in the document as a tracked change`);}else{Q[id].txt=r.x;Q[id].refs=[r.t];S.q[id].st='ready';ui.tab='q';ui.view='context';renderPane();toast(`${r.t} set as ${id}'s answer · Insert when ready`);}},
+    'libtab-ins'(){const id=q||ui.cur;const r=RESP.find(r=>r.t===t.dataset.t);$('.cmenu')?.remove();ui.tab='q';ui.cur=id;ui.view='context';if(stOf(id)==='done'){renderPane();const ed=$('#edbody');ed.innerHTML='<p>'+esc(r.x)+'</p>';ed.dispatchEvent(new Event('input',{bubbles:true}));toast('Response is in the editor · Update in document when you are happy');}else{Q[id].txt=r.x;Q[id].html=null;Q[id].refs=[r.t];S.q[id].st='ready';renderPane();toast('Response is in the editor · Insert into document when you are happy');}selectCC('q:'+id);},
+    libpick(){const r=t.getBoundingClientRect(),w=$('#win').getBoundingClientRect();$('.cmenu')?.remove();const m=document.createElement('div');m.className='cmenu';m.style.left=Math.min(r.left-w.left,w.width-260)+'px';m.style.top=(r.bottom-w.top+2)+'px';m.innerHTML='<div class="dis" style="font-size:11px">Use this response for…</div><hr>'+live().map(id=>`<div data-do="libtab-ins" data-t="${esc(t.dataset.t)}" data-q="${id}"><span class="n" style="font-size:10px;color:var(--r-accent);font-weight:600;width:22px">${id}</span>${esc(Q[id].t)}<span class="sub">${stOf(id)==='done'?'answered · edits it':stOf(id)==='ready'?'draft ready · replaces':'open'}</span></div>`).join('');$('#win').appendChild(m);},
     assigncur(){A.assignmenu();},
     assignq(){A.assignmenu();},
     assigncard(){A.assignmenu();},
