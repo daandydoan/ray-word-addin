@@ -147,3 +147,17 @@ handler reads the selection's control. Gate every insert on "all controls
 written" after the reading step. Unmodelled and to specify: partial-batch
 rollback when an insert fails mid-run, and two assignees autofilling the same
 file at once.
+
+## Full-screen answering (29 Sep 2026)
+
+Option chosen: the Office dialog (`Office.context.ui.displayDialogAsync`),
+offered as a choice, not the default. The card editor's toolbar has an
+"Open full screen" icon. It opens a separate window sized to the screen with
+the question, sources and owner on the left and a page-width editor on the
+right. The dialog has no Word API: **Insert into document** sends the text
+back to the pane with `messageParent`, and the pane writes it into the
+question's content control as a tracked change, exactly as the card does.
+Cancel or Escape closes it and keeps the card's text. Constraints to state in
+the handover: one dialog at a time, a separate window on desktop rather than
+an overlay, and Generate with AI inside it would be a backend call from the
+dialog page, not a Word call.
