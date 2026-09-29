@@ -320,6 +320,11 @@ td .cc.sel::before{display:none}
 .wr,.fr,.lr,.btn,.fl,.mode,.ptab{transition:background-color .15s,border-color .15s,color .15s,opacity .15s}
 
 @media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+.modes{padding:8px 12px 4px}.modes .mode,.modes .mode:first-child,.modes .mode:last-child{border:0;border-radius:8px;margin:0;background:transparent}
+.modes{--seg:1}.modes>.mode{position:relative}.modes::before{content:none}
+.modes .mode.on{background:var(--r-teal-bg);color:var(--r-teal-tx);box-shadow:none}
+.modes .mode:not(.on){color:var(--r-tx-2)}
+.modes{gap:4px;background:var(--r-raise);border:1px solid var(--r-line);border-radius:12px;padding:4px;margin:8px 12px 4px}
 </style></head>
 <body>
 <div class="demo" id="demo"><div class="demo-btn" data-do="demotog"><span class="ms">smart_display</span>Demo</div><div class="demo-list">
