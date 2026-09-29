@@ -331,7 +331,7 @@ td .cc.sel::before{display:none}
 </style></head>
 <body>
 <div class="demo" id="demo"><div class="demo-btn" data-do="demotog"><span class="ms">smart_display</span>Demo</div><div class="demo-list">
-  <span class="g" data-do="fill"><i></i>Autofill · generate all drafts</span>
+  <span class="g" data-do="insall"><i></i>Apply · insert every ready draft</span>
   <span class="g" data-do="draftall"><i></i>Generate all open</span>
   <span class="g" data-do="insnext"><i></i>Insert next · Ctrl+Alt+I</span>
   <span class="g" data-do="assigncur"><i></i>Assign · or right-click the page</span>
@@ -349,8 +349,8 @@ td .cc.sel::before{display:none}
   <div class="wtabs"><span class="file">File</span><span>Home</span><span>Insert</span><span>Design</span><span>Layout</span><span>References</span><span>Mailings</span><span>Review</span><span>View</span><span>Developer</span><span class="on">Tenderfy Ray</span><span class="tell"><span class="ms">lightbulb</span>Tell me what you want to do</span><span class="share"><span class="ms">person_add</span>Share</span></div>
   <div class="ribbon">
     <div class="rg"><div class="rw">
-      <div class="rb" data-do="fill"><span class="ms">auto_fix_high</span>Autofill<br>document</div>
-      <div class="rb" data-do="tabq"><span class="ms">checklist</span>Question by<br>question</div>
+      <div class="rb" data-do="insall"><span class="ms">keyboard_double_arrow_down</span>Apply to<br>document</div>
+      <div class="rb" data-do="tabq"><span class="ms">checklist</span>Q&amp;A</div>
       <div class="rb" data-do="insnext"><span class="ms">keyboard_double_arrow_down</span>Insert<br>next</div>
     </div><div class="lbl">Q&amp;A</div></div>
     <div class="rsep"></div>
@@ -484,7 +484,6 @@ const ctx=()=>`<div class="ctx"><span>Tender</span><b>${ui.foreign&&!ui.picked?'
 
 function qtab(){
   if(ui.view==='context') return contextCard();
-  if(ui.view==='review') return fillReview();
   const filled=FIELDS.filter(f=>S.fields[f.k].filled).length, matched=FIELDS.filter(f=>f.v).length;
   const all=live(), done=all.filter(id=>S.q[id].accepted).length, drafted=all.filter(id=>stOf(id)==='done'&&!S.q[id].accepted).length;
   const phase=`<div class="modes">${[['all','All'],['mine','Assigned']].map(([k,t])=>`<div class="mode ${ui.filter===k?'on':''}" data-do="filter" data-f="${k}">${t}</div>`).join('')}</div>`;
@@ -504,14 +503,8 @@ function assignRow(id){const x=S.q[id];return `<div class="acts" style="margin-t
 function cta(){
   const ready=live().filter(id=>stOf(id)==='ready');
   const tip=ready.length?ready.length+' draft'+(ready.length>1?'s':'')+' ready · each lands as a tracked change · Ctrl+Alt+I inserts the next one':'Nothing ready yet — generate or write a draft first';
-  return `<div class="cta"><span class="btn ${ready.length?'':'dis'}" data-do="insall" title="${tip}"><span class="ms">keyboard_double_arrow_down</span>Insert all into document</span></div>`;
+  return `<div class="cta"><span class="btn ${ready.length?'':'dis'}" data-do="insall" title="${tip}"><span class="ms">keyboard_double_arrow_down</span>Apply to document</span></div>`;
 }
-function modes(){const m=FIELDS.filter(f=>f.v&&!S.fields[f.k].filled).length;const todo=live().filter(id=>stOf(id)!=='done'&&(!S.q[id].owner||S.q[id].owner==='DD')).length;const all=live(),done=all.filter(id=>S.q[id].accepted).length,drafted=all.filter(id=>stOf(id)==='done'&&!S.q[id].accepted).length;
-  return `<div class="modes"><div class="mode ${ui.view==='review'?'on':''}" data-do="fill" title="Generate ${todo} drafts to read before they land"><span class="ms">auto_fix_high</span>Autofill document</div><div class="mode ${ui.view!=='review'?'on':''}" data-do="list" title="${done}/${all.length} answered"><span class="ms">checklist</span>Question by question</div></div>`;}
-function fillReview(){const rows=FIELDS.map(f=>`<div class="fr ${f.v?'':'gap'}"><i class="st"></i><div class="t"><b>${f.l.replace(':','')}</b><small>${f.v?esc(f.v)+' · '+f.src:'No match in the company profile — you\'ll fill this one'}</small></div><span class="ms" title="Edit">${f.v?'edit':'add'}</span></div>`).join('');
-  const m=FIELDS.filter(f=>f.v).length;const todo=live().filter(id=>stOf(id)!=='done'&&(!S.q[id].owner||S.q[id].owner==='DD'));const others=live().filter(id=>stOf(id)!=='done'&&S.q[id].owner&&S.q[id].owner!=='DD');
-  const arows=todo.map(id=>`<div class="fr"><i class="st"></i><div class="t"><b>${id} · ${esc(Q[id].t)}</b><small>From the Response Library · ${Q[id].refs[0]}</small></div><span class="ms" data-do="cur" data-q="${id}" title="Open this one">chevron_right</span></div>`).join('')+others.map(id=>`<div class="fr gap"><i class="st" style="background:#C9A15C"></i><div class="t"><b>${id} · ${esc(Q[id].t)}</b><small style="color:var(--r-amber-tx)">Assigned to ${PEOPLE[S.q[id].owner].n.split(' ')[0]} — left alone</small></div>${avatar(S.q[id].owner)}</div>`).join('');
-  return `<div class="pbody"><div class="k" style="font-size:12px;letter-spacing:0;text-transform:none;font-weight:600;color:var(--r-tx);margin:10px 4px 6px">Autofill document</div><div class="k">Questions · ${todo.length} to generate</div>${arows||'<div class="note">Nothing left to generate.</div>'}</div><div class="cta"><span class="btn ${todo.length?'':'dis'}" data-do="onepress"><span class="ms">auto_fix_high</span>Autofill document</span></div>`;}
 function cardBody(id){const q=Q[id],x=S.q[id],st=stOf(id);
   const refs='';
   const crit=``;
@@ -569,7 +562,6 @@ const snap=ed=>{(ui.undo[ed.id]=ui.undo[ed.id]||[]).push(ed.innerHTML);ui.redo[e
 const edText=()=>(document.getElementById('edbody')?.innerText||'').trim();const sents=t=>t.match(/[^.!?]+[.!?]+/g)||[t];function putEd(p){const ed=document.getElementById('edbody');if(!ed)return;snap(ed);ed.innerHTML='<p>'+esc(p.join(' ').replace(/\s+/g,' ').trim())+'</p>';ed.dispatchEvent(new Event('input',{bubbles:true}));}
 function nextReady(){const all=SECTIONS.flatMap(s=>s.q).filter(id=>!S.q[id].skip);return all.find(id=>stOf(id)==='ready');}
 function insNext(){const id=nextReady();if(!id){toast('Nothing ready to insert — draft something first');return;}ui.cur=id;insert(id);mark('insnext');}
-function fillAll(){let i=0;const todo=FIELDS.filter(f=>f.v&&!S.fields[f.k].filled);ui.view='list';renderPane();const tick=()=>{if(i>=todo.length){logIt('DD','filled '+todo.length+' fields');renderPane();toast(`Schedule 1 filled — ${todo.length} fields written in place · step 2: draft the answers`);mark('fill');return;}const f=todo[i++];S.fields[f.k].filled=true;S.changes++;selectCC('f:'+f.k);setTimeout(tick,160);};tick();}
 function draftAll(cb){const ids=live().filter(id=>stOf(id)==='open'&&(!S.q[id].owner||S.q[id].owner==='DD'));if(!ids.length){toast('Nothing open that\'s yours to draft');return;}let n=0;ids.forEach((id,i)=>setTimeout(()=>draft(id,()=>{if(++n===ids.length){toast(`${ids.length} drafted · Insert ${ids.length} ready`);mark('draftall');cb&&cb();}}),i*250));}
 function ask(text){ui.tab='ask';ui.chat.push({you:text});const isAbn=/abn/i.test(text);const m={steps:[['read_open_document','Reading the open document']],live:true};ui.chat.push(m);renderPane();
   setTimeout(()=>{m.steps.push(['find_answer_from_library','Searching the Response Library']);renderPane();},700);
@@ -593,11 +585,9 @@ document.addEventListener('click',e=>{
     cur(){ui.cur=q;ui.assigning=null;ui.tab='q';ui.view='context';selectCC('q:'+q);renderPane();},
     open(){ui.cur=q;ui.tab='q';ui.view='context';selectCC('q:'+q);renderPane();},
     list(){ui.view='list';renderPane();}, phase2(){ui.filter='all';ui.view='list';renderPane();},
-    fill(){ui.tab='q';ui.view='review';renderPane();}, fillall(){fillAll();},
     draft(){ui.cur=q;draft(q);},
     draftcard(){if(ui.gensrc==='tender'&&!ui.genfile){toast('Type the file name first');$('#genfile')?.focus();return;}if(ui.gensrc==='upload'&&!ui.genfile){toast('Choose a file first');return;}ui.cur=q;ui.view='context';draft(q);},
     genupload(){ui.genfile='Site methodology 2025.docx';renderPane();toast('Site methodology 2025.docx attached · 1.2 MB');}, draftall(){draftAll();},
-    onepress(){ui.view='list';toast('Drafting every open question…');setTimeout(()=>draftAll(()=>setTimeout(()=>{const n=live().filter(id=>stOf(id)==='ready').length;logIt('DD','generated '+n+' drafts');ui.filter='all';ui.view='list';renderPane();toast(n+' drafts ready — read each one, then Insert');},700)),200);},
     insert(){ui.cur=q;insert(q);},
     fullscreen(){const x=S.q[q],Q_=Q[q],ed=document.getElementById('edbody');const txt=ed?ed.innerHTML:(stOf(q)!=='open'?(Q_.html||'<p>'+esc(Q_.txt)+'</p>'):'');const d=document.createElement('div');d.className='odlg';d.id='odlg';
       d.innerHTML=`<div class="odlg-win"><div class="odlg-bar"><span>Ray for Word — ${q} · ${esc(Q_.t)}</span><span class="ms" data-do="dlgclose" title="Close">close</span></div>
@@ -650,7 +640,7 @@ document.addEventListener('click',e=>{
     track(){S.track=!S.track;renderPage();toast(`Track Changes ${S.track?'on':'off'} for Ray's writes`);},
     foreign(){ui.picked=false;ui.view='tender';renderPane();mark('foreign');},
     picktender(){ui.tenderName=TENDERS[t.dataset.i].split(' · ')[0];ui.view='folder';renderPane();},
-    pickfolder(){ui.picked=true;ui.folder=t.dataset.f;ui.view='analysing';ui.prog=0;renderPane();toast('Uploaded to '+ui.tenderName+' · '+ui.folder);const tick=()=>{ui.prog++;renderPane();if(ui.prog<8)setTimeout(tick,220);else{ui.view='review';ui.foreign=false;$('#docname').innerHTML='TEN3089 Returnable Schedules.docx <small>· Saved to SharePoint</small>';renderPage();renderPane();toast('Found 9 questions and 12 fields');}};setTimeout(tick,400);},
+    pickfolder(){ui.picked=true;ui.folder=t.dataset.f;ui.view='analysing';ui.prog=0;renderPane();toast('Uploaded to '+ui.tenderName+' · '+ui.folder);const tick=()=>{ui.prog++;renderPane();if(ui.prog<8)setTimeout(tick,220);else{ui.view='list';ui.foreign=false;$('#docname').innerHTML='TEN3089 Returnable Schedules.docx <small>· Saved to SharePoint</small>';renderPage();renderPane();toast('Found 9 questions and 12 fields');}};setTimeout(tick,400);},
     cm_assign(){ui.cur=q;A.assignmenu();},
     cm_draft(){const id=t.dataset.q;ui.tab='q';ui.view='list';ui.cur=id;draft(id);},
     cm_ask(){ui.cur=q;ui.view='list';ask(`What does ${q} · ${Q[q].t} need to cover for ${Q[q].crit.split(' · ')[0]}?`);},
