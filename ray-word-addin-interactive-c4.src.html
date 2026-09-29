@@ -483,13 +483,9 @@ function row(id){const q=Q[id],x=S.q[id],st=stOf(id),cur=ui.cur===id;
   return `<div class="wr ${st} ${cur?'cur':''}" data-do="cur" data-q="${id}"><i class="st"></i><span class="n">${id}</span><span class="t"><b>${esc(q.t)}</b>${sub}</span>${x.owner?avatar(x.owner):'<span class="noav"></span>'}<span class="ax" data-do="open" data-q="${id}" title="Open"><span class="ms">chevron_right</span></span></div>${pv}`;}
 function assignRow(id){const x=S.q[id];return `<div class="acts" style="margin-top:8px;align-items:center"><span style="font-size:10px;color:#6B7975">Assign ${id} to</span><span class="who">${Object.keys(PEOPLE).map(k=>avatar(k,x.owner===k?'sel':'')).map(a=>a.replace('<span','<span data-do="own" data-q="'+id+'" data-who="'+a.slice(a.indexOf('>')+1,a.indexOf('>')+3)+'"')).join('')}</span><span class="btn ghost" data-do="ownall" data-q="${id}" title="Assign every open question in this section to the same person">Section →</span></div>`;}
 function cta(){
-  const ready=live().filter(id=>stOf(id)==='ready'), open=live().filter(id=>stOf(id)==='open'&&(!S.q[id].owner||S.q[id].owner==='DD')), mine=open.filter(id=>S.q[id].owner==='DD');
-  const filled=FIELDS.filter(f=>S.fields[f.k].filled).length, matched=FIELDS.filter(f=>f.v).length;
-  let main;const tip='title="↑↓ move · Enter acts · Ctrl+Alt+I inserts next"';
-  if(ready.length) main=`<span class="btn" data-do="insall" ${tip}><span class="ms">keyboard_double_arrow_down</span>Insert all into document</span>`;
-  else if(open.length) main=`<span class="btn" data-do="draftall" ${tip}><span class="ms">auto_awesome</span>Generate ${solo()?open.length+' open':'my '+open.length}</span>`;
-  else main=`<span class="btn ghost" data-do="check"><span class="ms">fact_check</span>Check criteria</span>`;
-  return `<div class="cta">${main}</div>`;
+  const ready=live().filter(id=>stOf(id)==='ready');
+  const tip=ready.length?ready.length+' draft'+(ready.length>1?'s':'')+' ready · each lands as a tracked change · Ctrl+Alt+I inserts the next one':'Nothing ready yet — generate or write a draft first';
+  return `<div class="cta"><span class="btn ${ready.length?'':'dis'}" data-do="insall" title="${tip}"><span class="ms">keyboard_double_arrow_down</span>Insert all into document</span></div>`;
 }
 function modes(){const m=FIELDS.filter(f=>f.v&&!S.fields[f.k].filled).length;const todo=live().filter(id=>stOf(id)!=='done'&&(!S.q[id].owner||S.q[id].owner==='DD')).length;const all=live(),done=all.filter(id=>S.q[id].accepted).length,drafted=all.filter(id=>stOf(id)==='done'&&!S.q[id].accepted).length;
   return `<div class="modes"><div class="mode ${ui.view==='review'?'on':''}" data-do="fill" title="Generate ${todo} drafts to read before they land"><span class="ms">auto_fix_high</span>Autofill document</div><div class="mode ${ui.view!=='review'?'on':''}" data-do="list" title="${done}/${all.length} answered"><span class="ms">checklist</span>Question by question</div></div>`;}
@@ -590,7 +586,7 @@ document.addEventListener('click',e=>{
     edtable(){const ed=$('#dlgbody')||$('#edbody');if(!ed)return;ed.insertAdjacentHTML('beforeend','<table><tr><th>Item</th><th>Detail</th></tr><tr><td>&nbsp;</td><td>&nbsp;</td></tr><tr><td>&nbsp;</td><td>&nbsp;</td></tr></table><p></p>');ed.dispatchEvent(new Event('input',{bubbles:true}));ed.querySelector('td')?.focus();},
     dlgclose(){$('#odlg')?.remove();},
     dlginsert(){const t=$('#dlgbody').innerText.trim();const dlgHtml=$('#dlgbody').innerHTML;$('#odlg').remove();if(!t){toast('Nothing to insert');return;}const ed=document.getElementById('edbody');if(ed)ed.innerHTML=dlgHtml;else{Q[q].txt=t;Q[q].html=/<table/.test(dlgHtml)?dlgHtml:null;}ui.cur=q;if(stOf(q)==='done')A.update();else insert(q);},
-    insall(){const ids=live().filter(id=>stOf(id)==='ready');ids.forEach(id=>{S.q[id].inserted=true;S.q[id].st='done';if(S.track)S.changes++;});ui.cur=ids[0];ui.view='list';selectCC('q:'+ids[ids.length-1]);renderPane();toast(`${ids.length} answers inserted as tracked changes`);mark('insnext');},
+    insall(){const ids=live().filter(id=>stOf(id)==='ready');if(!ids.length){toast('Nothing ready to insert yet');return;}ids.forEach(id=>{S.q[id].inserted=true;S.q[id].st='done';if(S.track)S.changes++;});ui.cur=ids[0];ui.view='list';selectCC('q:'+ids[ids.length-1]);renderPane();toast(`${ids.length} answers inserted as tracked changes`);mark('insnext');},
     insnext(){insNext();},
     gennext(){const id=SECTIONS.flatMap(s=>s.q).find(id=>!S.q[id].skip&&stOf(id)==='open'&&(!S.q[id].owner||S.q[id].owner==='DD'));if(!id){toast('Nothing open that\'s yours');return;}ui.cur=id;ui.view='context';draft(id);},
     openctx(){ui.cur=q;ui.tab='q';ui.view='context';selectCC('q:'+q);renderPane();},
