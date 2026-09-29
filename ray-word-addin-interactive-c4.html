@@ -479,7 +479,7 @@ function qtab(){
 function row(id){const q=Q[id],x=S.q[id],st=stOf(id),cur=ui.cur===id;
   const sub = st==='done'?(x.changed?`<em class="ch">Mia changed since Ray drafted</em>`:x.accepted?`<em>Inserted${x.human?' · by you':''}</em>`:`<em>Inserted · accept in Review</em>`):st==='ready'?`<em>Draft ready${x.refined?' · refined':''}</em>`:x.owner&&x.owner!=='DD'?`<em>Assigned to ${PEOPLE[x.owner].n.split(' ')[0]}${x.due?' · due '+x.due:''}</em>`:'';
   const ax = ['chevron_right','','cur'];
-  const pv = cur&&ui.exp===id?(()=>{const [b,f]=cardBody(id);return `<div class="pv">${b}${f&&st!=='done'?`<div class="acts one">${f}</div>`:''}</div>`;})():'';
+  const pv='';
   return `<div class="wr ${st} ${cur?'cur':''}" data-do="cur" data-q="${id}"><i class="st"></i><span class="n">${id}</span><span class="t"><b>${esc(q.t)}</b>${sub}</span>${x.owner?avatar(x.owner):'<span class="noav"></span>'}<span class="ax" data-do="open" data-q="${id}" title="Open"><span class="ms">chevron_right</span></span></div>${pv}`;}
 function assignRow(id){const x=S.q[id];return `<div class="acts" style="margin-top:8px;align-items:center"><span style="font-size:10px;color:#6B7975">Assign ${id} to</span><span class="who">${Object.keys(PEOPLE).map(k=>avatar(k,x.owner===k?'sel':'')).map(a=>a.replace('<span','<span data-do="own" data-q="'+id+'" data-who="'+a.slice(a.indexOf('>')+1,a.indexOf('>')+3)+'"')).join('')}</span><span class="btn ghost" data-do="ownall" data-q="${id}" title="Assign every open question in this section to the same person">Section →</span></div>`;}
 function cta(){
@@ -573,7 +573,7 @@ document.addEventListener('click',e=>{
     tabq(){ui.tab='q';ui.view='list';renderPane();},
     tabteam(){ui.tab='team';ui.view='list';renderPane();mark('tabteam');}, tabask(){ui.tab='ask';ui.view='list';renderPane();}, tablib(){ui.tab='lib';ui.view='list';renderPane();},
     filter(){ui.filter=t.dataset.f;renderPane();}, stf(){ui.stf=t.dataset.f||null;renderPane();}, sec(){const el=t.classList.contains('closed');ui.open[t.dataset.s]=el;renderPane();},
-    cur(){ui.exp=ui.exp===q&&ui.view==='list'?null:q;ui.cur=q;ui.assigning=null;ui.tab='q';ui.view='list';selectCC('q:'+q);renderPane();},
+    cur(){ui.cur=q;ui.assigning=null;ui.tab='q';ui.view='context';selectCC('q:'+q);renderPane();},
     open(){ui.cur=q;ui.tab='q';ui.view='context';selectCC('q:'+q);renderPane();},
     list(){ui.view='list';renderPane();}, phase2(){ui.filter='all';ui.view='list';renderPane();},
     fill(){ui.tab='q';ui.view='review';renderPane();}, fillall(){fillAll();},
