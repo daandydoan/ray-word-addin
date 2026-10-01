@@ -448,6 +448,11 @@ td .cc.sel::before{display:none}
 .pbody:not(.team) .wl>div{gap:0}.pbody:not(.team) .wr{padding:8px 6px;border-radius:0;border:0;border-bottom:1px solid var(--r-line)!important}.pbody:not(.team) .wl>div>.wr:last-child{border-bottom:0!important}
 .wr .answ .ans{cursor:text}.wr .answ .ans:hover{text-decoration:underline dotted var(--r-tx-3);text-underline-offset:3px}
 .pbody:not(.team) .wr{border-bottom-color:#F1F3F2!important}
+/* Q: stays black; the question goes green + bold on hover (it opens the card); answers show a text cursor */
+.wr .t b .qpre{color:var(--r-tx)!important;font-weight:700}
+.wr:hover .t b{-webkit-text-stroke:0;color:var(--r-tx)}
+.wr .t b{cursor:pointer}.wr .t b:hover{color:var(--r-accent);-webkit-text-stroke:.35px currentColor}
+.wr .answ .ans,.wr .qa .in{cursor:text}
 </style></head>
 <body>
 <div class="demo" id="demo"><div class="demo-btn" data-do="demotog"><span class="ms">smart_display</span>Demo</div><div class="demo-list">
