@@ -411,6 +411,8 @@ td .cc.sel::before{display:none}
 .wr .qa.filled:not(:focus-within):hover .in{text-decoration:underline dotted var(--r-tx-3);text-underline-offset:3px}
 .wr .chnote{display:flex;align-items:center;gap:6px;margin-top:6px;padding:5px 8px;border-radius:8px;background:#FBF0E4;color:#8A4B12;font-size:11px;line-height:1.4}.wr .chnote .ms{font-size:14px}
 .wr>.who:last-child{grid-column:3/-1;grid-row:1}
+.wr .qa .adv{display:none;flex:none;font-size:15px;color:var(--r-tx-3);cursor:pointer;margin-left:2px}.wr .qa .adv:hover{color:var(--r-accent)}
+.wr .qa:focus-within .adv{display:block}
 </style></head>
 <body>
 <div class="demo" id="demo"><div class="demo-btn" data-do="demotog"><span class="ms">smart_display</span>Demo</div><div class="demo-list">
@@ -620,9 +622,9 @@ function qtab(){
 const emptyNote=()=>`<div class="note">Nothing ${ui.filter==='mine'?'assigned to you':ui.stf==='open'?'open':'inserted'} in this section.</div>`;
 function row(id){const q=Q[id],x=S.q[id],st=stOf(id),cur=ui.cur===id,text=st==='ready'||st==='done'?q.txt:'';
   const sub = ui.drafting[id]?`<em class="anl"><img src="${RAY}" alt="">Ray is analysing…</em>`
-    : text?`${text.length>85?`<div class="answ"><div class="ans">${esc(text)}</div><a class="more" data-do="more">Read more</a></div>`:`<div class="qa filled" data-do="noop" title="Click to edit"><span class="in" contenteditable="true">${esc(text)}</span><span class="ms go" data-do="quick" data-q="${id}" title="${st==='done'?'Update in document':'Insert into document'}">arrow_upward</span></div>`}${x.changed?'<div class="chnote"><span class="ms">edit_note</span>Edited by Mia in Word</div>':''}`
+    : text?`${text.length>85?`<div class="answ"><div class="ans">${esc(text)}</div><a class="more" data-do="more">Read more</a></div>`:`<div class="qa filled" data-do="noop" title="Click to edit"><span class="in" contenteditable="true">${esc(text)}</span><span class="ms go" data-do="quick" data-q="${id}" title="${st==='done'?'Update in document':'Insert into document'}">arrow_upward</span><span class="ms adv" data-do="qaopen" data-q="${id}" title="Open the full editor — formatting, tables, Ray">open_in_full</span></div>`}${x.changed?'<div class="chnote"><span class="ms">edit_note</span>Edited by Mia in Word</div>':''}`
     : x.owner&&x.owner!=='DD'?''
-    : `<div class="qa" data-do="noop"><span class="in" contenteditable="true" data-ph="Click to answer"></span><span class="ms go" data-do="quick" data-q="${id}" title="Insert this answer">arrow_upward</span></div>`;
+    : `<div class="qa" data-do="noop"><span class="in" contenteditable="true" data-ph="Click to answer"></span><span class="ms go" data-do="quick" data-q="${id}" title="Insert this answer">arrow_upward</span><span class="ms adv" data-do="qaopen" data-q="${id}" title="Open the full editor — formatting, tables, Ray">open_in_full</span></div>`;
   return `<div class="wr ${st} ${cur?'cur':''}" data-do="cur" data-q="${id}"><i class="st"></i><span class="n">${id}</span><span class="t"><b title="${esc(q.t)}">${esc(q.full)}</b>${sub}</span>${x.auto?'<span class="who"><span class="atag"><span class="ms">auto_awesome</span>Ray autofilled</span></span>':''}${!text&&!ui.drafting[id]&&x.owner&&x.owner!=='DD'?`<span class="who">Assigned to ${PEOPLE[x.owner].n.split(' ')[0]}${x.due?' · due '+x.due:''}</span>`:''}${x.owner?avatar(x.owner):''}</div>`;}
 function assignRow(id){const x=S.q[id];return `<div class="acts" style="margin-top:8px;align-items:center"><span style="font-size:10px;color:#6B7975">Assign ${id} to</span><span class="who">${Object.keys(PEOPLE).map(k=>avatar(k,x.owner===k?'sel':'')).map(a=>a.replace('<span','<span data-do="own" data-q="'+id+'" data-who="'+a.slice(a.indexOf('>')+1,a.indexOf('>')+3)+'"')).join('')}</span><span class="btn ghost" data-do="ownall" data-q="${id}" title="Assign every open question in this section to the same person">Section →</span></div>`;}
 function cta(){
@@ -736,6 +738,7 @@ document.addEventListener('click',e=>{
     finishscan(){if(!ui.scan){toast('Ray isn\'t analysing anything right now');return;}[...ui.scan.ids].forEach(scanDone);},
     qprev(){const qs=queue();goQ(qs[qs.indexOf(ui.cur)-1],'up');},
     qskip(){const qs=queue();goQ(qs[qs.indexOf(ui.cur)+1],'down');},
+    qaopen(){const v=t.parentElement.querySelector('.in').innerText.trim();ui.cur=q;ui.tab='q';ui.view='context';selectCC('q:'+q);renderPane();const ed=$('#edbody');if(ed&&v&&v!==ed.innerText.trim()){ed.innerHTML='<p>'+esc(v)+'</p>';ed.dispatchEvent(new Event('input',{bubbles:true}));}ed&&ed.focus();},
     more(){const a=t.previousElementSibling.classList.toggle('open');t.textContent=a?'Show less':'Read more';},
     fullscreen(){const x=S.q[q],Q_=Q[q],ed=document.getElementById('edbody');const txt=ed?ed.innerHTML:(stOf(q)!=='open'?(Q_.html||'<p>'+esc(Q_.txt)+'</p>'):'');const d=document.createElement('div');d.className='odlg';d.id='odlg';
       d.innerHTML=`<div class="odlg-win"><div class="odlg-bar"><span>Ray for Word — ${q} · ${esc(Q_.t)}</span><span class="ms" data-do="dlgclose" title="Close">close</span></div>
@@ -807,6 +810,7 @@ document.addEventListener('contextmenu',e=>{const qEl=e.target.closest('.q, td')
 document.addEventListener('input',e=>{if(e.target.id==='edbody'||e.target.id==='dlgbody'){const n=e.target.innerText.trim().split(/\s+/).filter(Boolean).length;const w=document.getElementById(e.target.id==='dlgbody'?'dlgwc':'edwc');if(w)w.textContent=n?n+' words':'';const pb=document.getElementById('primbtn');if(pb&&e.target.id==='edbody')pb.classList.toggle('dis',!n);const ub=document.getElementById('updbtn');if(ub)ub.classList.toggle('dis',!n||(e.target.innerText.trim()===Q[ui.cur].txt&&!(e.target.querySelector('table')&&!Q[ui.cur].html)));}});
 document.addEventListener('change',e=>{if(e.target.id==='libsel'){ui.libFolder=e.target.value;ui.libQ='';ui.libOpen=null;renderPane();}});
 document.addEventListener('input',e=>{if(e.target.id==='libq'){ui.libQ=e.target.innerText;const v=ui.libQ;renderPane();const el=document.getElementById('libq');if(el){el.focus();const r=document.createRange();r.selectNodeContents(el);r.collapse(false);const sel=getSelection();sel.removeAllRanges();sel.addRange(r);}}});
+document.addEventListener('mousedown',e=>{if(e.target.closest('.qa .ms'))e.preventDefault();});
 document.addEventListener('keydown',e=>{
   if(e.ctrlKey&&e.altKey&&e.key.toLowerCase()==='i'){e.preventDefault();insNext();return;}
   if(e.key==='Enter'&&e.target.closest&&e.target.closest('.qa')){e.preventDefault();e.target.parentElement.querySelector('.go').click();return;}
