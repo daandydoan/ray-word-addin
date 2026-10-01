@@ -580,7 +580,7 @@ function row(id){const q=Q[id],x=S.q[id],st=stOf(id),cur=ui.cur===id,text=st==='
     : text?`${x.changed?'<em class="ch">Mia changed since Ray drafted</em>':''}<div class="ans">${esc(text)}</div>${text.length>170?`<a class="more" data-do="more">Read more</a>`:''}`
     : x.owner&&x.owner!=='DD'?`<em>Assigned to ${PEOPLE[x.owner].n.split(' ')[0]}${x.due?' · due '+x.due:''}</em>`
     : `<div class="qa" data-do="noop"><span class="in" contenteditable="true" data-ph="Click to answer"></span><span class="ms go" data-do="quick" data-q="${id}" title="Insert this answer">arrow_upward</span></div>`;
-  return `<div class="wr ${st} ${cur?'cur':''}" data-do="cur" data-q="${id}"><i class="st"></i><span class="n">${id}</span><span class="t"><b>${esc(q.t)}</b>${sub}</span>${x.owner?avatar(x.owner):'<span class="noav"></span>'}</div>`;}
+  return `<div class="wr ${st} ${cur?'cur':''}" data-do="cur" data-q="${id}"><i class="st"></i><span class="n">${id}</span><span class="t"><b title="${esc(q.t)}">${esc(q.full)}</b>${sub}</span>${x.owner?avatar(x.owner):'<span class="noav"></span>'}</div>`;}
 function assignRow(id){const x=S.q[id];return `<div class="acts" style="margin-top:8px;align-items:center"><span style="font-size:10px;color:#6B7975">Assign ${id} to</span><span class="who">${Object.keys(PEOPLE).map(k=>avatar(k,x.owner===k?'sel':'')).map(a=>a.replace('<span','<span data-do="own" data-q="'+id+'" data-who="'+a.slice(a.indexOf('>')+1,a.indexOf('>')+3)+'"')).join('')}</span><span class="btn ghost" data-do="ownall" data-q="${id}" title="Assign every open question in this section to the same person">Section →</span></div>`;}
 function cta(){
   const ready=live().filter(id=>stOf(id)==='ready');
