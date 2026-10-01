@@ -359,6 +359,9 @@ td .cc.sel::before{display:none}
 .wr .more{display:inline-block;margin-top:2px;font-size:11px;color:var(--r-accent);cursor:pointer;font-weight:500}.wr .more:hover{text-decoration:underline}
 .wr .t em.anl{display:flex;align-items:center;gap:6px;color:var(--r-accent);font-weight:500}.wr .anl i{width:8px;height:8px;border-radius:50%;background:var(--r-accent);animation:anl 1s ease-in-out infinite}@keyframes anl{50%{opacity:.25;transform:scale(.7)}}
 #pinner[data-same]>*,#pinner[data-same] .card{animation:none!important}
+.wr .qa{display:flex;align-items:center;gap:4px;margin-top:5px;border:1px solid var(--r-line-2);border-radius:8px;padding:3px 3px 3px 8px;background:#fff;cursor:text}.wr .qa:focus-within{border-color:var(--r-accent)}
+.wr .qa .in{flex:1;min-width:0;outline:none;font-size:11.5px;line-height:1.4;color:var(--r-tx);white-space:normal}.wr .qa .in:empty::before{content:attr(data-ph);color:var(--r-tx-3)}
+.wr .qa .go{flex:none;font-size:14px;width:22px;height:22px;border-radius:6px;display:grid;place-items:center;background:var(--r-accent);color:#fff;cursor:pointer}
 </style></head>
 <body>
 <div class="demo" id="demo"><div class="demo-btn" data-do="demotog"><span class="ms">smart_display</span>Demo</div><div class="demo-list">
@@ -507,8 +510,9 @@ function renderPane(){
   if(ui.view==='tender'){p.innerHTML=brand()+`<div class="pbody"><div class="k">Choose a tender</div><div class="tpick"><div class="lib-s"><span class="ms">search</span>Search tenders…</div>${TENDERS.map((t,i)=>`<div class="ti" data-do="picktender" data-i="${i}">${t}<small>Default folder</small></div>`).join('')}</div></div>`;return;}
   if(ui.view==='folder'){const F=[['Default','3 files'],['Response schedules','2 files'],['Pricing','1 file'],['Correspondence','empty']];p.innerHTML=brand()+`<div class="pbody"><div class="k">Choose a folder · ${esc(ui.tenderName)}</div><div class="tpick">${F.map(f=>`<div class="ti" data-do="pickfolder" data-f="${f[0]}"><span class="ms" style="font-size:16px;vertical-align:-3px;margin-right:6px;color:var(--r-tx-3)">folder</span>${f[0]}<small>${f[1]}</small></div>`).join('')}<div class="ti" data-do="pickfolder" data-f="New folder" style="color:var(--r-accent)"><span class="ms" style="font-size:16px;vertical-align:-3px;margin-right:6px">create_new_folder</span>New folder…</div></div></div>`;return;}
   if(ui.view==='analysing'){p.innerHTML=brand()+`<div class="pbody"><div style="padding:40px 12px;text-align:center"><div class="spin"></div><p style="margin:12px 0 4px;font-size:12px;color:#1F2B28">Reading the document… <b>${ui.prog||0}/8 sections</b></p><p style="margin:0;font-size:10.5px;color:#6B7975">This takes a minute. Keep working — questions appear here as they're found. Nothing is copied out of the file.</p></div></div>`;return;}
+  const keep=[ui.tab,ui.view,ui.filter,ui.stf,ui.view==='context'?ui.cur:''].join('|')===ui._key,top=p.querySelector('.pbody')?.scrollTop;
   p.innerHTML = brand()+(ui.view==='context'&&ui.tab==='q'?'':tabs())+(ui.tab==='q'?qtab():ui.tab==='ask'?asktab():ui.tab==='lib'?libtab():teamtab());
-  const cur=p.querySelector('.wr.cur'); cur&&cur.scrollIntoView({block:'nearest'});
+  const pb=p.querySelector('.pbody'),cur=p.querySelector('.wr.cur');if(keep&&pb&&top!=null)pb.scrollTop=top;else cur&&cur.scrollIntoView({block:'nearest'});
   // slide content by tab order; glide the underline from the last tab
   const key=[ui.tab,ui.view,ui.filter,ui.stf,ui.view==='context'?ui.cur:''].join('|');if(key===ui._key)p.dataset.same='';else p.removeAttribute('data-same');ui._key=key;
   const ord=['q','ask','team','lib'],prev=ui._lt;ui._lt=ui.tab;p.removeAttribute('data-slide');if(prev&&prev!==ui.tab)p.dataset.slide=ord.indexOf(ui.tab)>ord.indexOf(prev)?'r':'l';
@@ -541,7 +545,8 @@ const emptyNote=()=>`<div class="note">Nothing ${ui.filter==='mine'?'assigned to
 function row(id){const q=Q[id],x=S.q[id],st=stOf(id),cur=ui.cur===id,text=st==='ready'||st==='done'?q.txt:'';
   const sub = ui.drafting[id]?`<em class="anl"><i></i>Ray is analysing…</em>`
     : text?`${x.changed?'<em class="ch">Mia changed since Ray drafted</em>':''}<div class="ans">${esc(text)}</div>${text.length>170?`<a class="more" data-do="more">Read more</a>`:''}`
-    : x.owner&&x.owner!=='DD'?`<em>Assigned to ${PEOPLE[x.owner].n.split(' ')[0]}${x.due?' · due '+x.due:''}</em>`:'';
+    : x.owner&&x.owner!=='DD'?`<em>Assigned to ${PEOPLE[x.owner].n.split(' ')[0]}${x.due?' · due '+x.due:''}</em>`
+    : `<div class="qa" data-do="noop"><span class="in" contenteditable="true" data-ph="Quick answer…"></span><span class="ms go" data-do="quick" data-q="${id}" title="Insert this answer">arrow_upward</span></div>`;
   return `<div class="wr ${st} ${cur?'cur':''}" data-do="cur" data-q="${id}"><i class="st"></i><span class="n">${id}</span><span class="t"><b>${esc(q.t)}</b>${sub}</span>${x.owner?avatar(x.owner):'<span class="noav"></span>'}</div>`;}
 function assignRow(id){const x=S.q[id];return `<div class="acts" style="margin-top:8px;align-items:center"><span style="font-size:10px;color:#6B7975">Assign ${id} to</span><span class="who">${Object.keys(PEOPLE).map(k=>avatar(k,x.owner===k?'sel':'')).map(a=>a.replace('<span','<span data-do="own" data-q="'+id+'" data-who="'+a.slice(a.indexOf('>')+1,a.indexOf('>')+3)+'"')).join('')}</span><span class="btn ghost" data-do="ownall" data-q="${id}" title="Assign every open question in this section to the same person">Section →</span></div>`;}
 function cta(){
@@ -642,6 +647,7 @@ document.addEventListener('click',e=>{
     genupload(){ui.gensrc='upload';ui.genfile='Site methodology 2025.docx';$('#genfile').value='';t.innerHTML='<span class="ms">upload_file</span>Site methodology 2025.docx';toast('Site methodology 2025.docx attached · 1.2 MB');},
     gengo(){const typed=$('#genfile').value.trim();if(typed){ui.gensrc='tender';ui.genfile=typed;}if(!ui.genfile||(ui.gensrc==='tender'&&!typed)){toast('Type a file name or upload one first');$('#genfile').focus();return;}ui.genOpen=null;ui.cur=q;ui.view='context';draft(q);},
     insert(){ui.cur=q;insert(q);},
+    quick(){const v=t.parentElement.querySelector('.in').innerText.trim();if(!v){toast('Type the answer first');return;}const x=S.q[q];Q[q].txt=v;Q[q].refs=[];Q[q].html=null;x.human=true;x.inserted=true;x.st='done';x.accepted=true;logIt('DD','inserted '+q+' (quick answer)');selectCC('q:'+q);renderPane();toast(q+' inserted into the document');},
     more(){const a=t.previousElementSibling.classList.toggle('open');t.textContent=a?'Show less':'Read more';},
     fullscreen(){const x=S.q[q],Q_=Q[q],ed=document.getElementById('edbody');const txt=ed?ed.innerHTML:(stOf(q)!=='open'?(Q_.html||'<p>'+esc(Q_.txt)+'</p>'):'');const d=document.createElement('div');d.className='odlg';d.id='odlg';
       d.innerHTML=`<div class="odlg-win"><div class="odlg-bar"><span>Ray for Word — ${q} · ${esc(Q_.t)}</span><span class="ms" data-do="dlgclose" title="Close">close</span></div>
@@ -714,6 +720,7 @@ document.addEventListener('change',e=>{if(e.target.id==='libsel'){ui.libFolder=e
 document.addEventListener('input',e=>{if(e.target.id==='libq'){ui.libQ=e.target.innerText;const v=ui.libQ;renderPane();const el=document.getElementById('libq');if(el){el.focus();const r=document.createRange();r.selectNodeContents(el);r.collapse(false);const sel=getSelection();sel.removeAllRanges();sel.addRange(r);}}});
 document.addEventListener('keydown',e=>{
   if(e.ctrlKey&&e.altKey&&e.key.toLowerCase()==='i'){e.preventDefault();insNext();return;}
+  if(e.key==='Enter'&&e.target.closest&&e.target.closest('.qa')){e.preventDefault();e.target.parentElement.querySelector('.go').click();return;}
   if(e.target.isContentEditable)return;const ids=SECTIONS.flatMap(s=>s.q);const i=ids.indexOf(ui.cur);
   if(e.key==='ArrowDown'&&i<ids.length-1){ui.cur=ids[i+1];ui.view='list';renderPane();e.preventDefault();}
   if(e.key==='ArrowUp'&&i>0){ui.cur=ids[i-1];ui.view='list';renderPane();e.preventDefault();}
