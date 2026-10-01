@@ -573,7 +573,7 @@ function renderPane(){
   // All/Assigned: glide the pill, slide the list the way the switch moved
   const fo=['all','mine'],pf=ui._lf;ui._lf=ui.filter;p.removeAttribute('data-fslide');if(pf&&pf!==ui.filter&&prev===ui.tab)p.dataset.fslide=fo.indexOf(ui.filter)>fo.indexOf(pf)?'r':'l';
   const sb=p.querySelector('.segbar'),so=p.querySelector('.modes .mode.on');if(sb&&so){const to=[so.offsetLeft,so.offsetWidth],from=ui._seg||to;sb.style.cssText='transition:none;left:'+from[0]+'px;width:'+from[1]+'px';sb.offsetWidth;sb.style.cssText='left:'+to[0]+'px;width:'+to[1]+'px';ui._seg=to;}
-  const ps=ui._ls,cs=ui.stf||'';ui._ls=cs;if(ps!==undefined&&ps!==cs&&pf===ui.filter&&prev===ui.tab)p.dataset.fslide=cs?'r':'l';
+  const ps=ui._ls,cs=ui.stf||'';ui._ls=cs;if(ps!==undefined&&ps!==cs&&pf===ui.filter&&prev===ui.tab)p.dataset.fslide=['','done','open'].indexOf(cs)>['','done','open'].indexOf(ps)?'r':'l';
   const cb=p.querySelector('.chipbar'),co=p.querySelector('.filters .fl.on');if(cb&&co){const to=[co.offsetLeft,co.offsetWidth,co.offsetTop,co.offsetHeight],from=ui._chip||to;cb.style.cssText='transition:none;left:'+from[0]+'px;width:'+from[1]+'px;top:'+to[2]+'px;height:'+to[3]+'px';cb.offsetWidth;cb.style.cssText='left:'+to[0]+'px;width:'+to[1]+'px;top:'+to[2]+'px;height:'+to[3]+'px';ui._chip=to;}
 }
 const brand=()=>{const sub=!['list','tender','review'].includes(ui.view);
@@ -587,14 +587,14 @@ function qtab(){
   if(ui.view==='context') return contextCard();
   const all=live(), done=all.filter(id=>S.q[id].accepted).length, drafted=all.filter(id=>stOf(id)==='done'&&!S.q[id].accepted).length;
   const phase=`<div class="modes"><i class="segbar"></i>${[['all','All'],['mine','Assigned']].map(([k,t])=>`<div class="mode ${ui.filter===k?'on':''}" data-do="filter" data-f="${k}">${t}</div>`).join('')}</div>`;
-  const filters=`<div class="filters"><i class="chipbar"></i>${[['','Default'],['done','Inserted']].map(([k,t])=>`<span class="fl ${(ui.stf||'')===k?'on':''}" data-do="stf" data-f="${k}">${t}</span>`).join('')}</div>`;
+  const filters=`<div class="filters"><i class="chipbar"></i>${[['','Default'],['done','Inserted'],['open','Open']].map(([k,t])=>`<span class="fl ${(ui.stf||'')===k?'on':''}" data-do="stf" data-f="${k}">${t}</span>`).join('')}</div>`;
   const skipped=Object.keys(Q).filter(id=>S.q[id].skip);const dismissed=skipped.length?`<div class="sec ${ui.open.X===true?'':'closed'}" data-do="sec" data-s="X"><i class="chev"></i>Not a Question<small>${skipped.length}</small></div><div class="wl"><div>${skipped.map(id=>`<div class="wr" data-q="${id}"><i class="st" style="border-style:dashed"></i><span class="n">${id}</span><span class="t" style="color:var(--r-tx-3)">${esc(Q[id].t)} · <em>dismissed</em></span><span class="noav"></span><span class="ax" data-do="unskip" data-q="${id}"><span class="ms">undo</span>Restore</span></div>`).join('')}</div></div>`:'';
-  const list=SECTIONS.map(s=>{const rows=s.q.filter(id=>!S.q[id].skip).filter(id=>(ui.filter==='all'||S.q[id].owner==='DD')&&(!ui.stf||stOf(id)==='done'));if(!rows.length&&ui.filter==='mine')return'';
+  const list=SECTIONS.map(s=>{const rows=s.q.filter(id=>!S.q[id].skip).filter(id=>(ui.filter==='all'||S.q[id].owner==='DD')&&(!ui.stf||stOf(id)===ui.stf));if(!rows.length&&ui.filter==='mine')return'';
     const d=s.q.filter(id=>!S.q[id].skip&&S.q[id].accepted).length;
     const closed=ui.open[s.id]===false;return `<div class="sec ${closed?'closed':''}" data-do="sec" data-s="${s.id}"><i class="chev"></i>${s.t}<small>${d}/${s.q.length}</small></div><div class="wl"><div>${rows.map(row).join('')||emptyNote()}</div></div>`;}).join('');
   return phase+filters+`<div class="pbody">${list}${dismissed}</div>`+cta();
 }
-const emptyNote=()=>`<div class="note">Nothing ${ui.filter==='mine'?'assigned to you':'inserted'} in this section.</div>`;
+const emptyNote=()=>`<div class="note">Nothing ${ui.filter==='mine'?'assigned to you':ui.stf==='open'?'open':'inserted'} in this section.</div>`;
 function row(id){const q=Q[id],x=S.q[id],st=stOf(id),cur=ui.cur===id,text=st==='ready'||st==='done'?q.txt:'';
   const sub = ui.drafting[id]?`<em class="anl"><i></i>Ray is analysing…</em>`
     : text?`${x.changed?'<em class="ch">Mia changed since Ray drafted</em>':''}<div class="answ"><div class="ans">${esc(text)}</div>${text.length>85?`<a class="more" data-do="more">Read more</a>`:''}</div>`
