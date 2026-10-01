@@ -353,8 +353,8 @@ td .cc.sel::before{display:none}
 .ray-ctx{flex-wrap:nowrap;overflow-x:auto;scrollbar-width:none;-webkit-mask-image:linear-gradient(90deg,#000 88%,transparent)}.ray-ctx::-webkit-scrollbar{display:none}.ray-ctxchip{flex:none;max-width:none;white-space:nowrap}
 .pbody>.card{border:0;border-radius:0;padding:0;margin:0;background:none;box-shadow:none}
 .ray-title small{display:flex;align-items:center}.ray-title small .av{width:15px;height:15px;font-size:6.5px;border:0;margin:0 4px 0 5px}
-.wr{grid-template-columns:14px auto minmax(0,1fr) 20px;align-items:start;cursor:default}.wr>.st,.wr>.n,.wr>.av,.wr>.noav{margin-top:2px}
-.wr .t b{cursor:pointer}.wr .t b:hover{color:var(--r-accent);text-decoration:underline}
+.wr{grid-template-columns:14px auto minmax(0,1fr) 20px;align-items:start;cursor:pointer}.wr>.st,.wr>.n,.wr>.av,.wr>.noav{margin-top:2px}
+.wr:hover .t b{color:var(--r-accent)}
 .wr .ans{white-space:normal;font-size:11.5px;line-height:1.45;color:var(--r-tx-2);margin-top:3px;display:-webkit-box;-webkit-line-clamp:4;-webkit-box-orient:vertical;overflow:hidden}.wr .ans.open{display:block}
 .wr .more{display:inline-block;margin-top:2px;font-size:11px;color:var(--r-accent);cursor:pointer;font-weight:500}.wr .more:hover{text-decoration:underline}
 .wr .t em.anl{display:flex;align-items:center;gap:6px;color:var(--r-accent);font-weight:500}.wr .anl i{width:8px;height:8px;border-radius:50%;background:var(--r-accent);animation:anl 1s ease-in-out infinite}@keyframes anl{50%{opacity:.25;transform:scale(.7)}}
@@ -542,7 +542,7 @@ function row(id){const q=Q[id],x=S.q[id],st=stOf(id),cur=ui.cur===id,text=st==='
   const sub = ui.drafting[id]?`<em class="anl"><i></i>Ray is analysing…</em>`
     : text?`${x.changed?'<em class="ch">Mia changed since Ray drafted</em>':''}<div class="ans">${esc(text)}</div>${text.length>170?`<a class="more" data-do="more">Read more</a>`:''}`
     : x.owner&&x.owner!=='DD'?`<em>Assigned to ${PEOPLE[x.owner].n.split(' ')[0]}${x.due?' · due '+x.due:''}</em>`:'';
-  return `<div class="wr ${st} ${cur?'cur':''}" data-q="${id}"><i class="st"></i><span class="n">${id}</span><span class="t"><b data-do="cur" data-q="${id}" title="Open ${id}">${esc(q.t)}</b>${sub}</span>${x.owner?avatar(x.owner):'<span class="noav"></span>'}</div>`;}
+  return `<div class="wr ${st} ${cur?'cur':''}" data-do="cur" data-q="${id}"><i class="st"></i><span class="n">${id}</span><span class="t"><b>${esc(q.t)}</b>${sub}</span>${x.owner?avatar(x.owner):'<span class="noav"></span>'}</div>`;}
 function assignRow(id){const x=S.q[id];return `<div class="acts" style="margin-top:8px;align-items:center"><span style="font-size:10px;color:#6B7975">Assign ${id} to</span><span class="who">${Object.keys(PEOPLE).map(k=>avatar(k,x.owner===k?'sel':'')).map(a=>a.replace('<span','<span data-do="own" data-q="'+id+'" data-who="'+a.slice(a.indexOf('>')+1,a.indexOf('>')+3)+'"')).join('')}</span><span class="btn ghost" data-do="ownall" data-q="${id}" title="Assign every open question in this section to the same person">Section →</span></div>`;}
 function cta(){
   const ready=live().filter(id=>stOf(id)==='ready');
