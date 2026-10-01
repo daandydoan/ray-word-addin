@@ -353,6 +353,12 @@ td .cc.sel::before{display:none}
 .ray-ctx{flex-wrap:nowrap;overflow-x:auto;scrollbar-width:none;-webkit-mask-image:linear-gradient(90deg,#000 88%,transparent)}.ray-ctx::-webkit-scrollbar{display:none}.ray-ctxchip{flex:none;max-width:none;white-space:nowrap}
 .pbody>.card{border:0;border-radius:0;padding:0;margin:0;background:none;box-shadow:none}
 .ray-title small{display:flex;align-items:center}.ray-title small .av{width:15px;height:15px;font-size:6.5px;border:0;margin:0 4px 0 5px}
+.wr{grid-template-columns:14px auto minmax(0,1fr) 20px;align-items:start;cursor:default}.wr>.st,.wr>.n,.wr>.av,.wr>.noav{margin-top:2px}
+.wr .t b{cursor:pointer}.wr .t b:hover{color:var(--r-accent);text-decoration:underline}
+.wr .ans{white-space:normal;font-size:11.5px;line-height:1.45;color:var(--r-tx-2);margin-top:3px;display:-webkit-box;-webkit-line-clamp:4;-webkit-box-orient:vertical;overflow:hidden}.wr .ans.open{display:block}
+.wr .more{display:inline-block;margin-top:2px;font-size:11px;color:var(--r-accent);cursor:pointer;font-weight:500}.wr .more:hover{text-decoration:underline}
+.wr .t em.anl{display:flex;align-items:center;gap:6px;color:var(--r-accent);font-weight:500}.wr .anl i{width:8px;height:8px;border-radius:50%;background:var(--r-accent);animation:anl 1s ease-in-out infinite}@keyframes anl{50%{opacity:.25;transform:scale(.7)}}
+#pinner[data-same]>*,#pinner[data-same] .card{animation:none!important}
 </style></head>
 <body>
 <div class="demo" id="demo"><div class="demo-btn" data-do="demotog"><span class="ms">smart_display</span>Demo</div><div class="demo-list">
@@ -436,7 +442,7 @@ const Q = {
 };
 // Section 1: each form field is a question; matched values arrive as drafts from the company profile
 const FID=k=>'1.'+(FIELDS.findIndex(f=>f.k===k)+1);
-FIELDS.forEach((f,i)=>{Q['1.'+(i+1)]={t:f.l.replace(':',''),full:f.l.replace(':','')+(f.h?' '+f.h:''),crit:'',txt:f.v||'',refs:f.v?[f.src]:[],st:f.v?'ready':'open',field:f.k};});
+FIELDS.forEach((f,i)=>{Q['1.'+(i+1)]={t:f.l.replace(':',''),full:f.l.replace(':','')+(f.h?' '+f.h:''),crit:'',txt:f.v||'',refs:f.v?[f.src]:[],st:'open',field:f.k};});
 SECTIONS.unshift({id:'S1',t:"Section 1 · Tenderer's particulars",q:FIELDS.map((f,i)=>'1.'+(i+1))});
 const LIB = [['Delivery lead times · east coast','Policy · used in 6 tenders','Policy'],['Continuity of supply statement','Won · Gladstone RC 2023','Won'],['ISO 9001 quality statement','Certificate + summary','Cert'],['Environmental management · packaging','Policy · updated May 2026','Policy'],['Warranty & defects · 24 months','Standard terms','Terms'],['Local content plan · Wide Bay','Won · Fraser Coast 2024','Won']];
 const FOLDERS = ['AI Responses','Default Responses','Gold Coast Council','Susan SME','Insurance','Consulting','Environmental','Social','Governance','AJ Pharmacy'];
@@ -504,6 +510,7 @@ function renderPane(){
   p.innerHTML = brand()+(ui.view==='context'&&ui.tab==='q'?'':tabs())+(ui.tab==='q'?qtab():ui.tab==='ask'?asktab():ui.tab==='lib'?libtab():teamtab());
   const cur=p.querySelector('.wr.cur'); cur&&cur.scrollIntoView({block:'nearest'});
   // slide content by tab order; glide the underline from the last tab
+  const key=[ui.tab,ui.view,ui.filter,ui.stf,ui.view==='context'?ui.cur:''].join('|');if(key===ui._key)p.dataset.same='';else p.removeAttribute('data-same');ui._key=key;
   const ord=['q','ask','team','lib'],prev=ui._lt;ui._lt=ui.tab;p.removeAttribute('data-slide');if(prev&&prev!==ui.tab)p.dataset.slide=ord.indexOf(ui.tab)>ord.indexOf(prev)?'r':'l';
   const bar=p.querySelector('.tabbar'),on=p.querySelector('.ptab.on');if(bar&&on){const to=[on.offsetLeft,on.offsetWidth],from=ui._bar||to;bar.style.cssText='transition:none;left:'+from[0]+'px;width:'+from[1]+'px';bar.offsetWidth;bar.style.cssText='left:'+to[0]+'px;width:'+to[1]+'px';ui._bar=to;}
   // All/Assigned: glide the pill, slide the list the way the switch moved
@@ -531,11 +538,11 @@ function qtab(){
   return phase+filters+`<div class="pbody">${list}${dismissed}</div>`+cta();
 }
 const emptyNote=()=>`<div class="note">Nothing ${ui.filter==='mine'?'assigned to you':'inserted'} in this section.</div>`;
-function row(id){const q=Q[id],x=S.q[id],st=stOf(id),cur=ui.cur===id;
-  const sub = st==='done'?(x.changed?`<em class="ch">Mia changed since Ray drafted</em>`:x.accepted?`<em>Inserted${x.human?' · by you':''}</em>`:`<em>Inserted · accept in Review</em>`):st==='ready'?`<em>Draft ready${x.refined?' · refined':''}</em>`:x.owner&&x.owner!=='DD'?`<em>Assigned to ${PEOPLE[x.owner].n.split(' ')[0]}${x.due?' · due '+x.due:''}</em>`:'';
-  const ax = ['chevron_right','','cur'];
-  const pv='';
-  return `<div class="wr ${st} ${cur?'cur':''}" data-do="cur" data-q="${id}"><i class="st"></i><span class="n">${id}</span><span class="t"><b>${esc(q.t)}</b>${sub}</span>${x.owner?avatar(x.owner):'<span class="noav"></span>'}<span class="ax" data-do="open" data-q="${id}" title="Open"><span class="ms">chevron_right</span></span></div>${pv}`;}
+function row(id){const q=Q[id],x=S.q[id],st=stOf(id),cur=ui.cur===id,text=st==='ready'||st==='done'?q.txt:'';
+  const sub = ui.drafting[id]?`<em class="anl"><i></i>Ray is analysing…</em>`
+    : text?`${x.changed?'<em class="ch">Mia changed since Ray drafted</em>':''}<div class="ans">${esc(text)}</div>${text.length>170?`<a class="more" data-do="more">Read more</a>`:''}`
+    : x.owner&&x.owner!=='DD'?`<em>Assigned to ${PEOPLE[x.owner].n.split(' ')[0]}${x.due?' · due '+x.due:''}</em>`:'';
+  return `<div class="wr ${st} ${cur?'cur':''}" data-q="${id}"><i class="st"></i><span class="n">${id}</span><span class="t"><b data-do="cur" data-q="${id}" title="Open ${id}">${esc(q.t)}</b>${sub}</span>${x.owner?avatar(x.owner):'<span class="noav"></span>'}</div>`;}
 function assignRow(id){const x=S.q[id];return `<div class="acts" style="margin-top:8px;align-items:center"><span style="font-size:10px;color:#6B7975">Assign ${id} to</span><span class="who">${Object.keys(PEOPLE).map(k=>avatar(k,x.owner===k?'sel':'')).map(a=>a.replace('<span','<span data-do="own" data-q="'+id+'" data-who="'+a.slice(a.indexOf('>')+1,a.indexOf('>')+3)+'"')).join('')}</span><span class="btn ghost" data-do="ownall" data-q="${id}" title="Assign every open question in this section to the same person">Section →</span></div>`;}
 function cta(){
   const ready=live().filter(id=>stOf(id)==='ready');
@@ -597,6 +604,9 @@ function teamtab(){
 /* ===== actions ===== */
 function selectCC(key){ui.sel=key;renderPage();const el=document.querySelector(`[data-cc="${key}"]`);el&&el.scrollIntoView({block:'center',behavior:'smooth'});}
 function insert(id){const x=S.q[id];const ed=document.getElementById('edbody');const typed=ed&&ed.innerText.trim();const html=ed&&ed.querySelector('table')?ed.innerHTML:null;if(typed){Q[id].txt=typed;Q[id].html=html;if(stOf(id)==='open'){Q[id].refs=[];x.human=true;}}else if(stOf(id)==='open'){toast('Nothing to insert yet — write the answer or Generate with AI');return;}x.inserted=true;x.st='done';x.accepted=false;logIt('DD','inserted '+id+' · '+Q[id].t);if(S.track)S.changes++;ui.cur=id;ui.view='context';selectCC('q:'+id);renderPane();toast(`${id} inserted as a tracked change · editing in Word`);}
+function autoFill(){const scan=live().filter(id=>stOf(id)==='open'&&(!S.q[id].owner||S.q[id].owner==='DD')),hit=scan.filter(id=>Q[id].refs.length);if(!scan.length)return;
+  toast(`Ray is autofilling · analysing ${scan.length} questions against the Response Library…`);scan.forEach(id=>ui.drafting[id]=true);renderPane();let n=0;
+  scan.forEach((id,i)=>setTimeout(()=>{delete ui.drafting[id];if(Q[id].refs.length)S.q[id].st='ready';renderPane();if(++n===scan.length){logIt('DD','Ray auto-drafted '+hit.length+' answers');toast(`Analysed ${scan.length} · auto-drafted ${hit.length} · read them, then Apply to document`);}},800+i*220));}
 function draft(id,cb){if(ui.drafting[id])return;ui.drafting[id]=true;renderPane();setTimeout(()=>{delete ui.drafting[id];S.q[id].st='ready';renderPane();cb&&cb();},900+Math.random()*500);}
 const urSync=()=>document.querySelectorAll('[data-do="edundo"],[data-do="edredo"]').forEach(b=>b.classList.toggle('dis',!(((b.dataset.do==='edundo'?ui.undo:ui.redo)[ui.cur])||[]).length));
 const snap=ed=>{(ui.undo[ui.cur]=ui.undo[ui.cur]||[]).push(ed.innerHTML);ui.redo[ui.cur]=[];setTimeout(urSync);};
@@ -632,6 +642,7 @@ document.addEventListener('click',e=>{
     genupload(){ui.gensrc='upload';ui.genfile='Site methodology 2025.docx';$('#genfile').value='';t.innerHTML='<span class="ms">upload_file</span>Site methodology 2025.docx';toast('Site methodology 2025.docx attached · 1.2 MB');},
     gengo(){const typed=$('#genfile').value.trim();if(typed){ui.gensrc='tender';ui.genfile=typed;}if(!ui.genfile||(ui.gensrc==='tender'&&!typed)){toast('Type a file name or upload one first');$('#genfile').focus();return;}ui.genOpen=null;ui.cur=q;ui.view='context';draft(q);},
     insert(){ui.cur=q;insert(q);},
+    more(){const a=t.previousElementSibling.classList.toggle('open');t.textContent=a?'Show less':'Read more';},
     fullscreen(){const x=S.q[q],Q_=Q[q],ed=document.getElementById('edbody');const txt=ed?ed.innerHTML:(stOf(q)!=='open'?(Q_.html||'<p>'+esc(Q_.txt)+'</p>'):'');const d=document.createElement('div');d.className='odlg';d.id='odlg';
       d.innerHTML=`<div class="odlg-win"><div class="odlg-bar"><span>Ray for Word — ${q} · ${esc(Q_.t)}</span><span class="ms" data-do="dlgclose" title="Close">close</span></div>
         <div class="odlg-body"><aside><div class="blk"><div class="k">${q} · Question</div><p>${esc(Q_.full)}</p></div><div class="blk"><div class="k">Owner</div><p>${x.owner?avatar(x.owner)+' '+PEOPLE[x.owner].n:'Unassigned'}</p></div><div class="blk"><div class="k">Status</div><p>${stOf(q)==='done'?(x.accepted?'Answered · accepted in Review':'In the document · needs accepting'):stOf(q)==='ready'?'Draft ready · not inserted yet':'Open'}</p></div></aside>
@@ -681,7 +692,7 @@ document.addEventListener('click',e=>{
     track(){S.track=!S.track;renderPage();toast(`Track Changes ${S.track?'on':'off'} for Ray's writes`);},
     foreign(){ui.picked=false;ui.view='tender';renderPane();mark('foreign');},
     picktender(){ui.tenderName=TENDERS[t.dataset.i].split(' · ')[0];ui.view='folder';renderPane();},
-    pickfolder(){ui.picked=true;ui.folder=t.dataset.f;ui.view='analysing';ui.prog=0;renderPane();toast('Uploaded to '+ui.tenderName+' · '+ui.folder);const tick=()=>{ui.prog++;renderPane();if(ui.prog<8)setTimeout(tick,220);else{ui.view='list';ui.foreign=false;$('#docname').innerHTML='TEN3089 Returnable Schedules.docx <small>· Saved to SharePoint</small>';renderPage();renderPane();toast('Found 9 questions and 12 fields');}};setTimeout(tick,400);},
+    pickfolder(){ui.picked=true;ui.folder=t.dataset.f;ui.view='analysing';ui.prog=0;renderPane();toast('Uploaded to '+ui.tenderName+' · '+ui.folder);const tick=()=>{ui.prog++;renderPane();if(ui.prog<8)setTimeout(tick,220);else{ui.view='list';ui.foreign=false;$('#docname').innerHTML='TEN3089 Returnable Schedules.docx <small>· Saved to SharePoint</small>';renderPage();renderPane();toast('Found 9 questions and 12 fields');setTimeout(autoFill,900);}};setTimeout(tick,400);},
     cm_assign(){ui.cur=q;A.assignmenu();},
     cm_draft(){const id=t.dataset.q;ui.tab='q';ui.view='list';ui.cur=id;draft(id);},
     cm_ask(){ui.cur=q;ui.view='list';ask(`What does ${q} · ${Q[q].t} need to cover for ${Q[q].crit.split(' · ')[0]}?`);},
