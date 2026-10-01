@@ -117,7 +117,7 @@ td .cc.sel::before{display:none}
 .ax .ms{font-size:15px}.ax:hover{background:#E6ECEA;color:#1F2B28}.ax.pri{background:var(--acc);color:#fff}.ax.pri:hover{background:var(--acc-deep)}.ax.live .ms{animation:spin 1s linear infinite}
 @keyframes spin{to{transform:rotate(360deg)}}
 .pv{margin:0 0 4px;padding:8px 10px 8px 24px;border-left:2px solid #BFE0D2;font-size:11px;line-height:1.45;color:#33423E;animation:fade .2s ease both}
-.pv p{margin:0 0 6px;display:-webkit-box;-webkit-line-clamp:4;-webkit-box-orient:vertical;overflow:hidden}
+.pv p{margin:0 0 6px;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
 .pv .meta{font-size:9.5px;color:#6B7975;margin-bottom:5px}
 @keyframes fade{from{opacity:0;transform:translateY(-3px)}}
 .srcs{display:flex;flex-wrap:wrap;gap:5px;margin:0 0 7px}.srcs b{font-weight:500;font-size:9px;color:#33423E;background:#EEF2F0;border-radius:999px;padding:2px 7px;white-space:nowrap}.srcs b::before{content:'';display:inline-block;width:6px;height:6px;border-radius:50%;background:var(--acc);margin-right:5px;vertical-align:1px}
@@ -355,7 +355,7 @@ td .cc.sel::before{display:none}
 .ray-title small{display:flex;align-items:center}.ray-title small .av{width:15px;height:15px;font-size:6.5px;border:0;margin:0 4px 0 5px}
 .wr{grid-template-columns:14px auto minmax(0,1fr) 20px;align-items:start;cursor:pointer}.wr>.st,.wr>.n,.wr>.av,.wr>.noav{margin-top:2px}
 .wr:hover .t b{color:var(--r-accent)}
-.wr .ans{white-space:normal;font-size:11.5px;line-height:1.45;color:var(--r-tx-2);margin-top:3px;display:-webkit-box;-webkit-line-clamp:4;-webkit-box-orient:vertical;overflow:hidden}.wr .ans.open{display:block}
+.wr .ans{white-space:normal;font-size:11.5px;line-height:1.45;color:var(--r-tx-2);margin-top:3px;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}.wr .ans.open{display:block}
 .wr .more{display:inline-block;margin-top:2px;font-size:11px;color:var(--r-accent);cursor:pointer;font-weight:500}.wr .more:hover{text-decoration:underline}
 .wr .t em.anl{display:flex;align-items:center;gap:6px;color:var(--r-accent);font-weight:500}.wr .anl i{width:8px;height:8px;border-radius:50%;background:var(--r-accent);animation:anl 1s ease-in-out infinite}@keyframes anl{50%{opacity:.25;transform:scale(.7)}}
 #pinner[data-same]>*,#pinner[data-same] .card{animation:none!important}
@@ -577,7 +577,7 @@ function qtab(){
 const emptyNote=()=>`<div class="note">Nothing ${ui.filter==='mine'?'assigned to you':'inserted'} in this section.</div>`;
 function row(id){const q=Q[id],x=S.q[id],st=stOf(id),cur=ui.cur===id,text=st==='ready'||st==='done'?q.txt:'';
   const sub = ui.drafting[id]?`<em class="anl"><i></i>Ray is analysing…</em>`
-    : text?`${x.changed?'<em class="ch">Mia changed since Ray drafted</em>':''}<div class="ans">${esc(text)}</div>${text.length>170?`<a class="more" data-do="more">Read more</a>`:''}`
+    : text?`${x.changed?'<em class="ch">Mia changed since Ray drafted</em>':''}<div class="ans">${esc(text)}</div>${text.length>85?`<a class="more" data-do="more">Read more</a>`:''}`
     : x.owner&&x.owner!=='DD'?`<em>Assigned to ${PEOPLE[x.owner].n.split(' ')[0]}${x.due?' · due '+x.due:''}</em>`
     : `<div class="qa" data-do="noop"><span class="in" contenteditable="true" data-ph="Click to answer"></span><span class="ms go" data-do="quick" data-q="${id}" title="Insert this answer">arrow_upward</span></div>`;
   return `<div class="wr ${st} ${cur?'cur':''}" data-do="cur" data-q="${id}"><i class="st"></i><span class="n">${id}</span><span class="t"><b title="${esc(q.t)}">${esc(q.full)}</b>${sub}</span>${x.owner?avatar(x.owner):'<span class="noav"></span>'}</div>`;}
