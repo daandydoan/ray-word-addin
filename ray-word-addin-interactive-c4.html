@@ -406,6 +406,9 @@ td .cc.sel::before{display:none}
 .ctarow{display:flex;gap:8px}.ctarow>.btn{flex:1;justify-content:center}.ctarow>.btn.ghost{flex:0 0 auto;padding-left:14px;padding-right:10px}.ctarow>.btn.ghost .ms{font-size:16px}
 @keyframes qUp{from{opacity:0;transform:translateY(-28px)}to{opacity:1;transform:none}}@keyframes qDown{from{opacity:0;transform:translateY(28px)}to{opacity:1;transform:none}}
 #pinner[data-qslide=up] .pbody>.card{animation:qUp .28s cubic-bezier(.2,.7,.2,1) both!important}#pinner[data-qslide=down] .pbody>.card{animation:qDown .28s cubic-bezier(.2,.7,.2,1) both!important}
+.wr .qa.filled .in{color:var(--r-tx-2);line-height:1.6;cursor:text}
+.wr .qa.filled:not(:focus-within){border-bottom-color:transparent!important;padding:0!important;margin-top:3px!important}.wr .qa.filled:not(:focus-within) .go{display:none!important}
+.wr .qa.filled:not(:focus-within):hover .in{text-decoration:underline dotted var(--r-tx-3);text-underline-offset:3px}
 </style></head>
 <body>
 <div class="demo" id="demo"><div class="demo-btn" data-do="demotog"><span class="ms">smart_display</span>Demo</div><div class="demo-list">
@@ -615,7 +618,7 @@ function qtab(){
 const emptyNote=()=>`<div class="note">Nothing ${ui.filter==='mine'?'assigned to you':ui.stf==='open'?'open':'inserted'} in this section.</div>`;
 function row(id){const q=Q[id],x=S.q[id],st=stOf(id),cur=ui.cur===id,text=st==='ready'||st==='done'?q.txt:'';
   const sub = ui.drafting[id]?`<em class="anl"><img src="${RAY}" alt="">Ray is analysing…</em>`
-    : text?`${x.changed?'<em class="ch">Mia changed since Ray drafted</em>':''}<div class="answ"><div class="ans">${esc(text)}</div>${text.length>85?`<a class="more" data-do="more">Read more</a>`:''}</div>`
+    : text?`${x.changed?'<em class="ch">Mia changed since Ray drafted</em>':''}${text.length>85?`<div class="answ"><div class="ans">${esc(text)}</div><a class="more" data-do="more">Read more</a></div>`:`<div class="qa filled" data-do="noop" title="Click to edit"><span class="in" contenteditable="true">${esc(text)}</span><span class="ms go" data-do="quick" data-q="${id}" title="${st==='done'?'Update in document':'Insert into document'}">arrow_upward</span></div>`}`
     : x.owner&&x.owner!=='DD'?''
     : `<div class="qa" data-do="noop"><span class="in" contenteditable="true" data-ph="Click to answer"></span><span class="ms go" data-do="quick" data-q="${id}" title="Insert this answer">arrow_upward</span></div>`;
   return `<div class="wr ${st} ${cur?'cur':''}" data-do="cur" data-q="${id}"><i class="st"></i><span class="n">${id}</span><span class="t"><b title="${esc(q.t)}">${esc(q.full)}</b>${sub}</span>${x.auto?'<span class="who"><span class="atag"><span class="ms">auto_awesome</span>Ray autofilled</span></span>':''}${!text&&!ui.drafting[id]&&x.owner&&x.owner!=='DD'?`<span class="who">Assigned to ${PEOPLE[x.owner].n.split(' ')[0]}${x.due?' · due '+x.due:''}</span>`:''}${x.owner?avatar(x.owner):'<span class="noav"></span>'}</div>`;}
@@ -725,7 +728,9 @@ document.addEventListener('click',e=>{
     genupload(){ui.gensrc='upload';ui.genfile='Site methodology 2025.docx';$('#genfile').value='';t.innerHTML='<span class="ms">upload_file</span>Site methodology 2025.docx';toast('Site methodology 2025.docx attached · 1.2 MB');},
     gengo(){const typed=$('#genfile').value.trim();if(typed){ui.gensrc='tender';ui.genfile=typed;}if(!ui.genfile||(ui.gensrc==='tender'&&!typed)){toast('Type a file name or upload one first');$('#genfile').focus();return;}ui.genOpen=null;ui.cur=q;ui.view='context';draft(q);},
     insert(){ui.cur=q;insert(q);},
-    quick(){const v=t.parentElement.querySelector('.in').innerText.trim();if(!v){toast('Type the answer first');return;}const x=S.q[q];Q[q].txt=v;Q[q].refs=[];Q[q].html=null;x.human=true;x.auto=false;x.inserted=true;x.st='done';x.accepted=true;logIt('DD','inserted '+q+' (quick answer)');selectCC('q:'+q);renderPane();toast(q+' inserted into the document');},
+    quick(){const v=t.parentElement.querySelector('.in').innerText.trim();if(!v){toast('Type the answer first');return;}const x=S.q[q],st=stOf(q);
+      if(st!=='open'){if(st==='done'&&v===Q[q].txt){toast('Nothing changed');return;}if(v!==Q[q].txt){Q[q].txt=v;Q[q].html=null;x.auto=false;}x.inserted=true;x.st='done';x.accepted=false;S.changes++;logIt('DD',(st==='done'?'updated ':'inserted ')+q);selectCC('q:'+q);renderPane();toast(q+(st==='done'?' updated':' inserted')+' as a tracked change');return;}
+      Q[q].txt=v;Q[q].refs=[];Q[q].html=null;x.human=true;x.auto=false;x.inserted=true;x.st='done';x.accepted=true;logIt('DD','inserted '+q+' (quick answer)');selectCC('q:'+q);renderPane();toast(q+' inserted into the document');},
     finishscan(){if(!ui.scan){toast('Ray isn\'t analysing anything right now');return;}[...ui.scan.ids].forEach(scanDone);},
     qprev(){const qs=queue();goQ(qs[qs.indexOf(ui.cur)-1],'up');},
     qskip(){const qs=queue();goQ(qs[qs.indexOf(ui.cur)+1],'down');},
