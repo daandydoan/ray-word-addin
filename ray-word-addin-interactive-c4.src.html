@@ -375,6 +375,9 @@ td .cc.sel::before{display:none}
 .wr .answ{position:relative}.wr .answ .more{position:absolute;right:0;bottom:0;margin:0;padding-left:22px;line-height:1.45;font-size:11.5px;background:linear-gradient(90deg,transparent,var(--rowbg) 18px)}
 .wr .answ .ans.open+.more{position:static;padding-left:0;background:none;margin-top:2px}
 .wr .ans,.wr .answ .more{line-height:1.6}.wr .t b{line-height:1.45}
+/* status + number on top, question full width underneath */
+.wr{grid-template-columns:14px auto minmax(0,1fr) 20px;grid-template-areas:'st n . av' 't t t t';row-gap:4px;align-items:center}
+.wr>.st{grid-area:st;margin:0}.wr>.n{grid-area:n;margin:0}.wr>.t{grid-area:t}.wr>.av,.wr>.noav{grid-area:av;margin:0}
 </style></head>
 <body>
 <div class="demo" id="demo"><div class="demo-btn" data-do="demotog"><span class="ms">smart_display</span>Demo</div><div class="demo-list">
