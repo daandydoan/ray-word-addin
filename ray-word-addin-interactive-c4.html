@@ -398,6 +398,9 @@ td .cc.sel::before{display:none}
 .scanbar i.ind{position:relative;overflow:hidden;background:#DDE3E1}.scanbar i.ind::after{content:"";position:absolute;inset:0;width:35%;background:var(--r-accent);border-radius:2px;animation:gprog 1.2s ease-in-out infinite}
 .scanbar{background:#E8F5EF;color:#2F6B57}.scanbar b{color:#1F5A47}.scanbar i.ind{background:#CDE9DD}
 .atag{display:inline-flex;align-items:center;gap:3px;padding:1px 7px 1px 5px;border-radius:999px;background:#E8F5EF;color:#1F5A47;font-size:10px;font-weight:500;white-space:nowrap}.atag .ms{font-size:11px}
+.qnav{display:flex;align-items:center;justify-content:space-between;margin:0 0 6px;font-size:11.5px}
+.qnav>span{display:inline-flex;align-items:center;gap:2px;color:var(--r-accent);font-weight:500;cursor:pointer;padding:3px 6px;border-radius:8px}.qnav>span:hover{background:var(--r-raise)}.qnav>span.dis{color:var(--r-tx-3);opacity:.5;pointer-events:none}
+.qnav .ms{font-size:16px}.qnav small{color:var(--r-tx-3);font-size:11px}
 </style></head>
 <body>
 <div class="demo" id="demo"><div class="demo-btn" data-do="demotog"><span class="ms">smart_display</span>Demo</div><div class="demo-list">
@@ -630,6 +633,8 @@ function cardBody(id){const q=Q[id],x=S.q[id],st=stOf(id);
   else if(st==='ready'){body=`${question}${crit}<div class="meta" style="font-size:10px;color:var(--r-tx-3)">${q.txt.split(' ').length} words · ${x.flag?'marked ready by you':x.refined?'refined':'from the Response Library'}</div><p>${esc(q.txt)}</p>${refs}<div class="acts"><span class="btn ghost" data-do="assigncard" data-q="${id}"><span class="ms">person_add</span>Assign User</span></div><div class="refine"><span class="ms">auto_awesome</span><span class="in" contenteditable="true" data-ph="Refine with Ray — shorter, add the depot, match criterion wording…" id="refine-${id}"></span><span class="ms go" data-do="refine" data-q="${id}">arrow_upward</span></div>`;foot=`<span class="btn" data-do="insert" data-q="${id}"><span class="ms">keyboard_return</span>Insert into document</span>`;}
   else {body=`<p style="color:var(--r-tx-3);font-size:11px">${x.human?'Inserted by you as final text. Ray leaves it alone.':x.accepted?'Accepted in Review. Editing it in Word keeps it answered.':'Drafted as a tracked change · you\'re editing it in the page. Accept or reject from Word\'s Review tab.'}</p>${crit}${refs}${x.changed?`<div class="note warn">Mia edited this since Ray drafted it. Re-draft keeps her text as the base.</div>`:''}<div class="acts">${!x.accepted&&!x.human?`<span class="btn ghost" data-do="acceptq" data-q="${id}"><span class="ms">check</span>Accept in Review</span>`:''}<span class="btn ghost" data-do="redraft" title="Ray re-drafts on top of the current text"><span class="ms">auto_awesome</span>Re-draft with Ray</span><span class="btn ghost" data-do="shorten" title="Ray shortens the current text"><span class="ms">auto_awesome</span>Shorten with Ray</span><span class="btn ghost" data-do="askthis"><span class="ms">forum</span>Ask Ray about this</span></div>`;foot=nextReady()?`<span class="btn" data-do="insnext"><span class="ms">keyboard_double_arrow_down</span>Insert next</span>`:`<span class="btn" data-do="gennext"><span class="ms">auto_awesome</span>Generate next</span>`;}
   return [body,foot];}
+const queue=()=>SECTIONS.flatMap(s=>s.q).filter(id=>!S.q[id].skip&&(ui.filter==='all'||S.q[id].owner==='DD'));
+const goQ=id=>{if(!id)return;ui.cur=id;ui.view='context';selectCC('q:'+id);renderPane();};
 function contextCard(){const id=ui.cur,q=Q[id],x=S.q[id],st=stOf(id);
   if(ui.drafting[id]){const [body,foot]=cardBody(id);return `<div class="pbody"><div class="card">${body}</div></div><div class="cta">${foot}</div>`;}
   const ready=st==='ready',done=st==='done';
@@ -639,9 +644,9 @@ function contextCard(){const id=ui.cur,q=Q[id],x=S.q[id],st=stOf(id);
     : ready
     ? refineBox
     : refineBox;
-  const foot=done?`<span class="btn dis" id="updbtn" data-do="update" data-q="${id}" title="Writes your edit into the document as a tracked change"><span class="ms">published_with_changes</span>Update in document</span>`:ready?`<span class="btn" data-do="insert" data-q="${id}"><span class="ms">keyboard_return</span>Insert into document</span>`
-    :`<span class="btn dis" id="primbtn" data-do="markready" data-q="${id}" title="Write or generate an answer first"><span class="ms">keyboard_return</span>Insert into document</span>`;
-  return `<div class="pbody"><div class="card full"><p class="qfull">${esc(q.full)}</p>${x.auto?'<div><span class="atag"><span class="ms">auto_awesome</span>Ray autofilled</span></div>':''}${done&&x.changed?'<div class="note warn"><b>Mia changed this in Word</b> after Ray drafted it. This is her version.</div>':''}
+  const foot=done?`<span class="btn dis" id="updbtn" data-do="update" data-q="${id}" title="Writes your edit into the document as a tracked change"><span class="ms">published_with_changes</span>Update in document</span>`:ready?`<span class="btn" data-do="insert" data-q="${id}" data-next="1"><span class="ms">keyboard_return</span>Insert &amp; next</span>`
+    :`<span class="btn dis" id="primbtn" data-do="markready" data-q="${id}" data-next="1" title="Write or generate an answer first"><span class="ms">keyboard_return</span>Insert &amp; next</span>`;
+  return `<div class="pbody"><div class="card full">${(()=>{const qs=queue(),i=qs.indexOf(id);return `<div class="qnav"><span class="${i>0?'':'dis'}" data-do="qprev"><span class="ms">chevron_left</span>Previous</span><small>${i+1} of ${qs.length}</small><span class="${i<qs.length-1?'':'dis'}" data-do="qskip">Skip<span class="ms">chevron_right</span></span></div>`;})()}<p class="qfull">${esc(q.full)}</p>${x.auto?'<div><span class="atag"><span class="ms">auto_awesome</span>Ray autofilled</span></div>':''}${done&&x.changed?'<div class="note warn"><b>Mia changed this in Word</b> after Ray drafted it. This is her version.</div>':''}
     <div class="ed"><div class="ed-tools"><span class="ms">format_bold</span><span class="ms">format_italic</span><span class="ms">format_underlined</span><span class="ms">format_list_bulleted</span><span class="ms">format_list_numbered</span><span class="ms">link</span><span class="ms" data-do="edtable" title="Insert table">table</span><span class="sp"></span><small id="edwc">${ready||done?q.txt.split(' ').length+' words':''}</small><span class="ms" data-do="fullscreen" data-q="${id}" title="Open full screen (Office dialog)">open_in_full</span></div><div class="ed-body" contenteditable="true" id="edbody" data-ph="Write the answer here, or Generate with AI">${ready||done?(q.html||'<p>'+esc(q.txt)+'</p>'):''}</div></div>
     ${acts}<div class="acts"><span class="btn ghost" data-do="assigncard" data-q="${id}"><span class="ms">person_add</span>Assign User</span><span class="btn ghost" data-do="skip" data-q="${id}"><span class="ms">block</span>Not a Question</span><span class="btn ghost" data-do="genfile" data-q="${id}"><span class="ms">auto_awesome</span>Generate from a file</span><span class="btn ghost" data-do="askthis" data-q="${id}"><span class="ms">forum</span>Ask Ray about this</span></div>${ui.genOpen===id?genPanel(id):''}</div></div><div class="cta">${foot}</div>`;}
 function asktab(){
@@ -716,6 +721,8 @@ document.addEventListener('click',e=>{
     insert(){ui.cur=q;insert(q);},
     quick(){const v=t.parentElement.querySelector('.in').innerText.trim();if(!v){toast('Type the answer first');return;}const x=S.q[q];Q[q].txt=v;Q[q].refs=[];Q[q].html=null;x.human=true;x.auto=false;x.inserted=true;x.st='done';x.accepted=true;logIt('DD','inserted '+q+' (quick answer)');selectCC('q:'+q);renderPane();toast(q+' inserted into the document');},
     finishscan(){if(!ui.scan){toast('Ray isn\'t analysing anything right now');return;}[...ui.scan.ids].forEach(scanDone);},
+    qprev(){const qs=queue();goQ(qs[qs.indexOf(ui.cur)-1]);},
+    qskip(){const qs=queue();goQ(qs[qs.indexOf(ui.cur)+1]);},
     more(){const a=t.previousElementSibling.classList.toggle('open');t.textContent=a?'Show less':'Read more';},
     fullscreen(){const x=S.q[q],Q_=Q[q],ed=document.getElementById('edbody');const txt=ed?ed.innerHTML:(stOf(q)!=='open'?(Q_.html||'<p>'+esc(Q_.txt)+'</p>'):'');const d=document.createElement('div');d.className='odlg';d.id='odlg';
       d.innerHTML=`<div class="odlg-win"><div class="odlg-bar"><span>Ray for Word — ${q} · ${esc(Q_.t)}</span><span class="ms" data-do="dlgclose" title="Close">close</span></div>
@@ -775,6 +782,7 @@ document.addEventListener('click',e=>{
   };
   if(!ui.picked&&!['picktender','pickfolder','reset','demotog','foreign','finishscan'].includes(d)){ui.view='tender';renderPane();toast('Choose the tender this document belongs to first');return;}
   A[d]&&A[d]();
+  if(t.dataset.next&&q&&stOf(q)==='done'){const qs=queue();goQ(qs[qs.indexOf(q)+1]);}
   if(t.closest('.demo-list')&&d!=='platform')$('#demo').classList.remove('open');
 });
 document.addEventListener('contextmenu',e=>{const qEl=e.target.closest('.q, td');if(!qEl||!$('#page').contains(qEl))return;e.preventDefault();$('.cmenu')?.remove();
