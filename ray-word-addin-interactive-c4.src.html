@@ -744,8 +744,8 @@ function autoFill(){const scan=live().filter(id=>stOf(id)==='open'&&(!S.q[id].ow
   toast(`Ray is autofilling · analysing ${scan.length} questions against the Response Library…`);scan.forEach(id=>ui.drafting[id]=true);renderPane();
   // demo: the scan runs until "Finish Ray analysis" in the status bar is pressed
 }
-function scanDone(id){const sc=ui.scan;if(!sc||!sc.ids.has(id))return;sc.ids.delete(id);delete ui.drafting[id];if(Q[id].refs.length&&stOf(id)==='open'){S.q[id].st='ready';S.q[id].auto=true;if(Q[id].field){S.q[id].inserted=true;S.q[id].st='done';S.q[id].accepted=false;S.changes++;sc.filled=(sc.filled||0)+1;}}
-  if(!sc.ids.size){ui.scan=null;logIt('DD','Ray auto-drafted '+sc.hit+' answers');toast(`Analysed ${sc.total} · filled ${sc.filled||0} form fields · drafted ${sc.hit-(sc.filled||0)} answers · ${sc.total-sc.hit} still open`);}renderPage();renderPane();}
+function scanDone(id){const sc=ui.scan;if(!sc||!sc.ids.has(id))return;sc.ids.delete(id);delete ui.drafting[id];if(Q[id].refs.length&&stOf(id)==='open'){const x=S.q[id];x.auto=true;x.inserted=true;x.st='done';x.accepted=false;S.changes++;sc.filled=(sc.filled||0)+1;}
+  if(!sc.ids.size){ui.scan=null;logIt('DD','Ray auto-drafted '+sc.hit+' answers');toast(`Analysed ${sc.total} · autofilled ${sc.filled||0} into the document · ${sc.total-(sc.filled||0)} still open`);}renderPage();renderPane();}
 function draft(id,cb){if(ui.drafting[id])return;ui.drafting[id]=true;renderPane();setTimeout(()=>{delete ui.drafting[id];S.q[id].st='ready';renderPane();cb&&cb();},900+Math.random()*500);}
 const urSync=()=>document.querySelectorAll('[data-do="edundo"],[data-do="edredo"]').forEach(b=>b.classList.toggle('dis',!(((b.dataset.do==='edundo'?ui.undo:ui.redo)[ui.cur])||[]).length));
 const snap=ed=>{(ui.undo[ui.cur]=ui.undo[ui.cur]||[]).push(ed.innerHTML);ui.redo[ui.cur]=[];setTimeout(urSync);};
@@ -861,6 +861,7 @@ document.addEventListener('input',e=>{const qa=e.target.closest&&e.target.closes
 document.addEventListener('change',e=>{if(e.target.id==='stfsel'){ui.stf=e.target.value||null;renderPane();}if(e.target.id==='whosel'){ui.who=e.target.value||null;renderPane();}if(e.target.id==='libsel'){ui.libFolder=e.target.value;ui.libQ='';ui.libOpen=null;renderPane();}});
 document.addEventListener('input',e=>{if(e.target.id==='libq'){ui.libQ=e.target.innerText;const v=ui.libQ;renderPane();const el=document.getElementById('libq');if(el){el.focus();const r=document.createRange();r.selectNodeContents(el);r.collapse(false);const sel=getSelection();sel.removeAllRanges();sel.addRange(r);}}});
 document.addEventListener('mousedown',e=>{if(e.target.closest('.qa .ms'))e.preventDefault();});
+document.addEventListener('focusout',e=>{const qa=e.target.closest&&e.target.closest('.wr .qa:not(.filled)');if(!qa)return;const id=qa.closest('.wr').dataset.q,v=e.target.innerText.trim();if(!v||stOf(id)!=='open')return;const x=S.q[id];Q[id].txt=v;Q[id].refs=[];Q[id].html=null;x.st='ready';x.human=true;x.auto=false;setTimeout(renderPane);});
 document.addEventListener('keydown',e=>{
   if(e.ctrlKey&&e.altKey&&e.key.toLowerCase()==='i'){e.preventDefault();insNext();return;}
   if(e.key==='Enter'&&e.target.closest&&e.target.closest('.qa')){e.preventDefault();e.target.parentElement.querySelector('.go').click();return;}
