@@ -431,9 +431,13 @@ const FIELDS = [
   {k:'accounts',l:'Contact Name for Accounts Enquiries:',v:null},
 ];
 const SECTIONS = [
-  {id:'S2',t:'Section 2 · Experience',q:['2.1','2.2']},
-  {id:'S3',t:'Section 3 · Methodology',q:['3.1','3.2','3.3','3.4','3.5']},
-  {id:'S4',t:'Section 4 · Local benefits',q:['4.1','4.2']},
+  {id:'S2',t:'Section 2 · Experience',q:['2.1','2.2','2.3','2.4']},
+  {id:'S3',t:'Section 3 · Methodology',q:['3.1','3.2','3.3','3.4','3.5','3.6','3.7']},
+  {id:'S4',t:'Section 4 · Local benefits',q:['4.1','4.2','4.3']},
+  {id:'S5',t:'Section 5 · Work health and safety',q:['5.1','5.2','5.3','5.4','5.5']},
+  {id:'S6',t:'Section 6 · Pricing and commercial',q:['6.1','6.2','6.3','6.4']},
+  {id:'S7',t:'Section 7 · Insurance',q:['7.1','7.2','7.3','7.4']},
+  {id:'S8',t:'Section 8 · Referees and declarations',q:['8.1','8.2','8.3','8.4']},
 ];
 const Q = {
   '2.1':{t:'Relevant experience',full:'Describe your relevant experience supplying HDPE pipe and fittings to local government.',crit:'Criterion 2(a) · 15% · relevant supply history',txt:'Environmental Industries has supplied HDPE pipe and fittings to 14 Queensland and WA councils since 2015, including Gladstone Regional Council (2023–26 panel, $2.1M) and Fraser Coast Regional Council (2024, $640K).',refs:['Gladstone RC · panel 2023','Fraser Coast · 2024'],st:'done',owner:'DD'},
@@ -445,6 +449,28 @@ const Q = {
   '3.5':{t:'Warranty & defects',full:'State the warranty offered and your process for handling defective product.',crit:'Criterion 3(e) · 5%',txt:'Pipe and fittings are warranted for 24 months from delivery against manufacturing defects. Defects are logged through our portal, acknowledged within one business day, and replaced within five business days at our cost.',refs:['Warranty terms 2026'],st:'done',owner:'DD'},
   '4.1':{t:'Local employment',full:'How many local employees are estimated to be involved in the delivery of this contract?',crit:'Local benefits · 10%',txt:'Two Bundaberg-based delivery contractors and one regional account manager based in Maryborough.',refs:['Local content plan'],st:'open',owner:'TB',due:'Thu'},
   '4.2':{t:'Local sub-contractors',full:'What is the estimated spend on local sub-contractors during the term?',crit:'Local benefits · 5%',txt:'Approximately $180,000 per annum across freight, pallet recovery and depot handling in the North Burnett and Bundaberg regions.',refs:['Local content plan'],st:'open'},
+  '2.3':{t:'Similar contracts',full:'List up to three contracts of similar scope delivered in the last five years, with client contacts.',crit:'Criterion 2(c) · 10%',txt:'Fraser Coast RC HDPE supply panel (2023–26, $640K); Gladstone RC water mains renewal supply (2022–25, $2.1M); Toowoomba RC trunk main fittings (2021–24, $910K). Client contacts are listed in Schedule 8.',refs:['Contract register 2026'],st:'open'},
+  '2.4':{t:'Capacity to deliver',full:'Demonstrate your capacity to service this contract alongside existing commitments.',crit:'Criterion 2(d) · 5%',txt:'Current commitments use 62% of warehouse throughput at Canning Vale and Brisbane. This contract adds an estimated 6%, within the 85% planning ceiling, with no new hires required.',refs:['Capacity model FY27'],st:'open'},
+  '3.6':{t:'Emergency supply',full:'Describe how you will respond to emergency or after-hours supply requests.',crit:'Criterion 3(f) · 5%',txt:'A 24/7 on-call line is staffed by the Brisbane depot. Emergency orders confirmed by 4pm dispatch the same day by dedicated courier; after-hours callouts are charged at the Schedule of Rates.',refs:['Emergency response procedure'],st:'open',owner:'SK'},
+  '3.7':{t:'Product substitution',full:'Describe your process if a specified product becomes unavailable during the term.',crit:'Criterion 3(g) · 5%',txt:'',refs:[],st:'open'},
+  '4.3':{t:'Indigenous participation',full:'Describe any Aboriginal and Torres Strait Islander business or employment participation in this contract.',crit:'Local benefits · 5%',txt:'We will engage Supply Nation-certified freight partner Mura Logistics for regional deliveries, representing roughly 8% of contract value.',refs:['Indigenous procurement plan'],st:'open',owner:'TB'},
+  '5.1':{t:'WHS management system',full:'Provide details of your work health and safety management system and its certification.',crit:'WHS · pass/fail',txt:'Our WHS management system is certified to ISO 45001:2018 (cert. 2025-0442), audited annually by SAI Global.',refs:['ISO 45001 certificate'],st:'open'},
+  '5.2':{t:'Safe work method statements',full:'Attach or describe the SWMS that will apply to deliveries and site handling.',crit:'WHS · pass/fail',txt:'SWMS-07 (mechanical unloading of pipe bundles) and SWMS-11 (manual handling of fittings) apply. Both are reviewed annually and briefed to drivers before first delivery.',refs:['SWMS register'],st:'open'},
+  '5.3':{t:'Incident history',full:'List any notifiable incidents in the last three years and the corrective actions taken.',crit:'WHS · pass/fail',txt:'One notifiable incident (2024): a forklift tip at the Canning Vale yard with no injury. Corrective actions: load-chart retraining and new rated attachments.',refs:['Incident register 2023–26'],st:'open'},
+  '5.4':{t:'Driver competency',full:'Describe licensing and induction for drivers delivering to council sites.',crit:'WHS · 5%',txt:'All drivers hold HR licences, Chain of Responsibility training and a council site induction before their first delivery.',refs:['Driver competency matrix'],st:'open',owner:'MW'},
+  '5.5':{t:'Chain of Responsibility',full:'Outline your Chain of Responsibility (HVNL) compliance controls.',crit:'WHS · pass/fail',txt:'',refs:[],st:'open'},
+  '6.1':{t:'Pricing basis',full:'Confirm the pricing basis and any exclusions from the Schedule of Rates.',crit:'Price · 40%',txt:'Prices are fixed for 12 months, then adjusted annually by the ABS PPI for plastic products. Delivery to the Bundaberg depot is included; site drops are priced per Schedule 6B.',refs:['Pricing policy 2026'],st:'open',owner:'TB'},
+  '6.2':{t:'Rise and fall',full:'State your proposed rise and fall mechanism.',crit:'Price · included',txt:'Annual adjustment on each contract anniversary by the ABS PPI (index 2511), capped at 6% per year.',refs:['Pricing policy 2026'],st:'open',owner:'TB'},
+  '6.3':{t:'Payment terms',full:'Confirm acceptance of council payment terms or state departures.',crit:'Commercial · pass/fail',txt:'We accept 30-day end-of-month payment terms with no departures.',refs:['Standard commercial terms'],st:'open'},
+  '6.4':{t:'Departures from contract',full:'List any departures from the Conditions of Contract.',crit:'Commercial · pass/fail',txt:'',refs:[],st:'open'},
+  '7.1':{t:'Public liability',full:'Provide public liability insurance details.',crit:'Insurance · pass/fail',txt:'$20M public and products liability with QBE Insurance, policy PL-88213, expiring 30 June 2027.',refs:['Certificate of currency 2026'],st:'open'},
+  '7.2':{t:'Workers compensation',full:'Provide workers compensation insurance details for each state of operation.',crit:'Insurance · pass/fail',txt:'WorkCover Queensland policy WC-4471209 and icare NSW policy 120884, both current to 30 June 2027.',refs:['Certificate of currency 2026'],st:'open'},
+  '7.3':{t:'Motor vehicle',full:'Provide comprehensive motor vehicle insurance details.',crit:'Insurance · pass/fail',txt:'Fleet comprehensive cover with Allianz, policy MV-30551, $30M third-party property damage.',refs:['Certificate of currency 2026'],st:'open'},
+  '7.4':{t:'Professional indemnity',full:'Provide professional indemnity insurance details, if applicable.',crit:'Insurance · if applicable',txt:'',refs:[],st:'open'},
+  '8.1':{t:'Referee 1',full:'Provide the name, organisation and contact details of your first referee.',crit:'Referees',txt:'Karen Moloney, Water Services Manager, Fraser Coast Regional Council · 07 4190 5000.',refs:['Referee list 2026'],st:'open'},
+  '8.2':{t:'Referee 2',full:'Provide the name, organisation and contact details of your second referee.',crit:'Referees',txt:'Greg Tully, Procurement Lead, Gladstone Regional Council · 07 4970 0700.',refs:['Referee list 2026'],st:'open'},
+  '8.3':{t:'Conflict of interest',full:'Declare any actual or perceived conflict of interest.',crit:'Declarations · pass/fail',txt:'',refs:[],st:'open',owner:'DD'},
+  '8.4':{t:'Modern slavery statement',full:'Describe how you assess modern slavery risk in your supply chain.',crit:'Declarations · pass/fail',txt:'We publish an annual Modern Slavery Statement and audit tier-1 resin suppliers every two years against the RBA code.',refs:['Modern slavery statement 2025'],st:'open'},
 };
 // Section 1: each form field is a question; matched values arrive as drafts from the company profile
 const FID=k=>'1.'+(FIELDS.findIndex(f=>f.k===k)+1);
@@ -614,7 +640,7 @@ function selectCC(key){ui.sel=key;renderPage();const el=document.querySelector(`
 function insert(id){const x=S.q[id];const ed=document.getElementById('edbody');const typed=ed&&ed.innerText.trim();const html=ed&&ed.querySelector('table')?ed.innerHTML:null;if(typed){Q[id].txt=typed;Q[id].html=html;if(stOf(id)==='open'){Q[id].refs=[];x.human=true;}}else if(stOf(id)==='open'){toast('Nothing to insert yet — write the answer or Generate with AI');return;}x.inserted=true;x.st='done';x.accepted=false;logIt('DD','inserted '+id+' · '+Q[id].t);if(S.track)S.changes++;ui.cur=id;ui.view='context';selectCC('q:'+id);renderPane();toast(`${id} inserted as a tracked change · editing in Word`);}
 function autoFill(){const scan=live().filter(id=>stOf(id)==='open'&&(!S.q[id].owner||S.q[id].owner==='DD')),hit=scan.filter(id=>Q[id].refs.length);if(!scan.length)return;
   toast(`Ray is autofilling · analysing ${scan.length} questions against the Response Library…`);scan.forEach(id=>ui.drafting[id]=true);renderPane();let n=0;
-  scan.forEach((id,i)=>setTimeout(()=>{delete ui.drafting[id];if(Q[id].refs.length)S.q[id].st='ready';renderPane();if(++n===scan.length){logIt('DD','Ray auto-drafted '+hit.length+' answers');toast(`Analysed ${scan.length} · auto-drafted ${hit.length} · read them, then Apply to document`);}},800+i*220));}
+  scan.forEach((id,i)=>setTimeout(()=>{delete ui.drafting[id];if(Q[id].refs.length)S.q[id].st='ready';renderPane();if(++n===scan.length){logIt('DD','Ray auto-drafted '+hit.length+' answers');toast(`Analysed ${scan.length} · auto-drafted ${hit.length} · read them, then Apply to document`);}},800+i*Math.min(220,5000/scan.length)));}
 function draft(id,cb){if(ui.drafting[id])return;ui.drafting[id]=true;renderPane();setTimeout(()=>{delete ui.drafting[id];S.q[id].st='ready';renderPane();cb&&cb();},900+Math.random()*500);}
 const urSync=()=>document.querySelectorAll('[data-do="edundo"],[data-do="edredo"]').forEach(b=>b.classList.toggle('dis',!(((b.dataset.do==='edundo'?ui.undo:ui.redo)[ui.cur])||[]).length));
 const snap=ed=>{(ui.undo[ui.cur]=ui.undo[ui.cur]||[]).push(ed.innerHTML);ui.redo[ui.cur]=[];setTimeout(urSync);};
@@ -701,7 +727,7 @@ document.addEventListener('click',e=>{
     track(){S.track=!S.track;renderPage();toast(`Track Changes ${S.track?'on':'off'} for Ray's writes`);},
     foreign(){ui.picked=false;ui.view='tender';renderPane();mark('foreign');},
     picktender(){ui.tenderName=TENDERS[t.dataset.i].split(' · ')[0];ui.view='folder';renderPane();},
-    pickfolder(){ui.picked=true;ui.folder=t.dataset.f;ui.view='analysing';ui.prog=0;renderPane();toast('Uploaded to '+ui.tenderName+' · '+ui.folder);const tick=()=>{ui.prog++;renderPane();if(ui.prog<8)setTimeout(tick,220);else{ui.view='list';ui.foreign=false;$('#docname').innerHTML='TEN3089 Returnable Schedules.docx <small>· Saved to SharePoint</small>';renderPage();renderPane();toast('Found 9 questions and 12 fields');setTimeout(autoFill,900);}};setTimeout(tick,400);},
+    pickfolder(){ui.picked=true;ui.folder=t.dataset.f;ui.view='analysing';ui.prog=0;renderPane();toast('Uploaded to '+ui.tenderName+' · '+ui.folder);const tick=()=>{ui.prog++;renderPane();if(ui.prog<8)setTimeout(tick,220);else{ui.view='list';ui.foreign=false;$('#docname').innerHTML='TEN3089 Returnable Schedules.docx <small>· Saved to SharePoint</small>';renderPage();renderPane();toast(`Found ${Object.keys(Q).length-FIELDS.length} questions and ${FIELDS.length} fields`);setTimeout(autoFill,900);}};setTimeout(tick,400);},
     cm_assign(){ui.cur=q;A.assignmenu();},
     cm_draft(){const id=t.dataset.q;ui.tab='q';ui.view='list';ui.cur=id;draft(id);},
     cm_ask(){ui.cur=q;ui.view='list';ask(`What does ${q} · ${Q[q].t} need to cover for ${Q[q].crit.split(' · ')[0]}?`);},
