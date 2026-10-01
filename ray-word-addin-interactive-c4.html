@@ -576,7 +576,7 @@ let S, ui;
 function fresh(){
   S = {
 
-    q:Object.fromEntries(Object.entries(Q).map(([id,q])=>[id,{st:q.st,owner:q.owner||null,due:q.due||(q.owner==='DD'?'Thu':null),changed:!!q.changed,inserted:q.st==='done',accepted:q.st==='done',skip:false}])),
+    q:Object.fromEntries(Object.entries(Q).map(([id,q])=>[id,{st:q.st,owner:q.owner||null,due:q.due||(q.owner?{DD:'Thu',MW:'Fri',TB:'Wed',SK:'Mon'}[q.owner]:null),changed:!!q.changed,inserted:q.st==='done',accepted:q.st==='done',skip:false}])),
     notes:[{q:'3.3',t:'Tom assigned you 3.3 · Quality assurance',when:'2 h ago',read:false},{q:'3.1',t:'Mia answered 3.1 · Delivery lead times, which you assigned',when:'40 min ago',read:false}],
     changes:0, track:true,
     log:[{who:'MW',t:'edited 3.1 · Delivery lead times',when:'40 min ago'},{who:'TB',t:'assigned 4.1 to himself',when:'Yesterday'},{who:'DD',t:'assigned 3.4 to Mia · due Fri',when:'Yesterday'}],
