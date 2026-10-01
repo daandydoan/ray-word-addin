@@ -384,6 +384,10 @@ td .cc.sel::before{display:none}
 .wr:hover{--rowbg:#E4F3EE;border-color:#BFE0D2}.wr:hover .t b{-webkit-text-stroke:.35px currentColor;color:var(--r-tx)}
 .wr.cur{background:var(--rowbg)}.wr.cur:hover{--rowbg:#E4F3EE;border-color:#BFE0D2}
 .wr,.wr:hover,.wr.cur,.wr.cur:hover{--rowbg:#fff;background:#fff;border-color:transparent}
+/* fade the text under Read more with a mask, so no background patch shows on any row colour */
+.wr .answ .more{background:none!important}
+.wr .answ .ans:not(.open):has(+.more){-webkit-mask:linear-gradient(#000,#000) top/100% calc(100% - 1.6em) no-repeat,linear-gradient(90deg,#000 calc(100% - 7.5em),transparent calc(100% - 5.6em)) bottom/100% 1.6em no-repeat;mask:linear-gradient(#000,#000) top/100% calc(100% - 1.6em) no-repeat,linear-gradient(90deg,#000 calc(100% - 7.5em),transparent calc(100% - 5.6em)) bottom/100% 1.6em no-repeat}
+.wr:hover,.wr.cur:hover{background:#F3F4F6}
 </style></head>
 <body>
 <div class="demo" id="demo"><div class="demo-btn" data-do="demotog"><span class="ms">smart_display</span>Demo</div><div class="demo-list">
