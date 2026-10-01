@@ -379,6 +379,11 @@ td .cc.sel::before{display:none}
 .wr{grid-template-columns:14px auto minmax(0,1fr) 20px;grid-template-areas:'st n . av' 't t t t';row-gap:4px;align-items:center}
 .wr>.st{grid-area:st;margin:0}.wr>.n{grid-area:n;margin:0}.wr>.t{grid-area:t}.wr>.av,.wr>.noav{grid-area:av;margin:0}
 .wr .t b{font-weight:400;color:var(--r-tx)}.wr.cur .t b{font-weight:600}
+/* active look follows the pointer, not the last click */
+.wr.cur{--rowbg:#fff;border-color:transparent}.wr.cur .t b{font-weight:400}
+.wr:hover{--rowbg:#E4F3EE;border-color:#BFE0D2}.wr:hover .t b{-webkit-text-stroke:.35px currentColor;color:var(--r-tx)}
+.wr.cur{background:var(--rowbg)}.wr.cur:hover{--rowbg:#E4F3EE;border-color:#BFE0D2}
+.wr,.wr:hover,.wr.cur,.wr.cur:hover{--rowbg:#fff;background:#fff;border-color:transparent}
 </style></head>
 <body>
 <div class="demo" id="demo"><div class="demo-btn" data-do="demotog"><span class="ms">smart_display</span>Demo</div><div class="demo-list">
