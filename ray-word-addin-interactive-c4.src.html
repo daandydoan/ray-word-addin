@@ -409,6 +409,7 @@ td .cc.sel::before{display:none}
 .wr .qa.filled .in{color:var(--r-tx-2);line-height:1.6;cursor:text}
 .wr .qa.filled:not(:focus-within){border-bottom-color:transparent!important;padding:0!important;margin-top:3px!important}.wr .qa.filled:not(:focus-within) .go{display:none!important}
 .wr .qa.filled:not(:focus-within):hover .in{text-decoration:underline dotted var(--r-tx-3);text-underline-offset:3px}
+.wr .chnote{display:flex;align-items:center;gap:6px;margin-top:6px;padding:5px 8px;border-radius:8px;background:#FBF0E4;color:#8A4B12;font-size:11px;line-height:1.4}.wr .chnote .ms{font-size:14px}
 </style></head>
 <body>
 <div class="demo" id="demo"><div class="demo-btn" data-do="demotog"><span class="ms">smart_display</span>Demo</div><div class="demo-list">
@@ -618,7 +619,7 @@ function qtab(){
 const emptyNote=()=>`<div class="note">Nothing ${ui.filter==='mine'?'assigned to you':ui.stf==='open'?'open':'inserted'} in this section.</div>`;
 function row(id){const q=Q[id],x=S.q[id],st=stOf(id),cur=ui.cur===id,text=st==='ready'||st==='done'?q.txt:'';
   const sub = ui.drafting[id]?`<em class="anl"><img src="${RAY}" alt="">Ray is analysing…</em>`
-    : text?`${x.changed?'<em class="ch">Mia changed since Ray drafted</em>':''}${text.length>85?`<div class="answ"><div class="ans">${esc(text)}</div><a class="more" data-do="more">Read more</a></div>`:`<div class="qa filled" data-do="noop" title="Click to edit"><span class="in" contenteditable="true">${esc(text)}</span><span class="ms go" data-do="quick" data-q="${id}" title="${st==='done'?'Update in document':'Insert into document'}">arrow_upward</span></div>`}`
+    : text?`${text.length>85?`<div class="answ"><div class="ans">${esc(text)}</div><a class="more" data-do="more">Read more</a></div>`:`<div class="qa filled" data-do="noop" title="Click to edit"><span class="in" contenteditable="true">${esc(text)}</span><span class="ms go" data-do="quick" data-q="${id}" title="${st==='done'?'Update in document':'Insert into document'}">arrow_upward</span></div>`}${x.changed?'<div class="chnote"><span class="ms">edit_note</span>Mia changed this in Word after Ray drafted it</div>':''}`
     : x.owner&&x.owner!=='DD'?''
     : `<div class="qa" data-do="noop"><span class="in" contenteditable="true" data-ph="Click to answer"></span><span class="ms go" data-do="quick" data-q="${id}" title="Insert this answer">arrow_upward</span></div>`;
   return `<div class="wr ${st} ${cur?'cur':''}" data-do="cur" data-q="${id}"><i class="st"></i><span class="n">${id}</span><span class="t"><b title="${esc(q.t)}">${esc(q.full)}</b>${sub}</span>${x.auto?'<span class="who"><span class="atag"><span class="ms">auto_awesome</span>Ray autofilled</span></span>':''}${!text&&!ui.drafting[id]&&x.owner&&x.owner!=='DD'?`<span class="who">Assigned to ${PEOPLE[x.owner].n.split(' ')[0]}${x.due?' · due '+x.due:''}</span>`:''}${x.owner?avatar(x.owner):''}</div>`;}
