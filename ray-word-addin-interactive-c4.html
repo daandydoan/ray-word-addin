@@ -370,6 +370,10 @@ td .cc.sel::before{display:none}
 .wr .qa .in{font-size:11.5px!important}
 .wr .t b{white-space:normal;overflow:visible;text-overflow:clip}
 .wr .ans,.wr .qa .in{font-weight:400}
+/* Read more sits at the end of the 2nd line, on a solid patch of the row colour */
+.wr{--rowbg:#fff;background:var(--rowbg)}.wr:hover{--rowbg:#F3F4F6}.wr.cur{--rowbg:#E4F3EE}
+.wr .answ{position:relative}.wr .answ .more{position:absolute;right:0;bottom:0;margin:0;padding-left:22px;line-height:1.45;font-size:11.5px;background:linear-gradient(90deg,transparent,var(--rowbg) 18px)}
+.wr .answ .ans.open+.more{position:static;padding-left:0;background:none;margin-top:2px}
 </style></head>
 <body>
 <div class="demo" id="demo"><div class="demo-btn" data-do="demotog"><span class="ms">smart_display</span>Demo</div><div class="demo-list">
@@ -578,7 +582,7 @@ function qtab(){
 const emptyNote=()=>`<div class="note">Nothing ${ui.filter==='mine'?'assigned to you':'inserted'} in this section.</div>`;
 function row(id){const q=Q[id],x=S.q[id],st=stOf(id),cur=ui.cur===id,text=st==='ready'||st==='done'?q.txt:'';
   const sub = ui.drafting[id]?`<em class="anl"><i></i>Ray is analysing…</em>`
-    : text?`${x.changed?'<em class="ch">Mia changed since Ray drafted</em>':''}<div class="ans">${esc(text)}</div>${text.length>85?`<a class="more" data-do="more">Read more</a>`:''}`
+    : text?`${x.changed?'<em class="ch">Mia changed since Ray drafted</em>':''}<div class="answ"><div class="ans">${esc(text)}</div>${text.length>85?`<a class="more" data-do="more">Read more</a>`:''}</div>`
     : x.owner&&x.owner!=='DD'?`<em>Assigned to ${PEOPLE[x.owner].n.split(' ')[0]}${x.due?' · due '+x.due:''}</em>`
     : `<div class="qa" data-do="noop"><span class="in" contenteditable="true" data-ph="Click to answer"></span><span class="ms go" data-do="quick" data-q="${id}" title="Insert this answer">arrow_upward</span></div>`;
   return `<div class="wr ${st} ${cur?'cur':''}" data-do="cur" data-q="${id}"><i class="st"></i><span class="n">${id}</span><span class="t"><b title="${esc(q.t)}">${esc(q.full)}</b>${sub}</span>${x.owner?avatar(x.owner):'<span class="noav"></span>'}</div>`;}
