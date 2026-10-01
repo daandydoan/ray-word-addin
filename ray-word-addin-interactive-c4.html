@@ -702,8 +702,8 @@ function autoFill(){const scan=live().filter(id=>stOf(id)==='open'&&(!S.q[id].ow
   toast(`Ray is autofilling · analysing ${scan.length} questions against the Response Library…`);scan.forEach(id=>ui.drafting[id]=true);renderPane();
   // demo: the scan runs until "Finish Ray analysis" in the status bar is pressed
 }
-function scanDone(id){const sc=ui.scan;if(!sc||!sc.ids.has(id))return;sc.ids.delete(id);delete ui.drafting[id];if(Q[id].refs.length){S.q[id].st='ready';S.q[id].auto=true;}
-  if(!sc.ids.size){ui.scan=null;logIt('DD','Ray auto-drafted '+sc.hit+' answers');toast(`Analysed ${sc.total} · auto-drafted ${sc.hit} · ${sc.total-sc.hit} still open for you to answer`);}renderPane();}
+function scanDone(id){const sc=ui.scan;if(!sc||!sc.ids.has(id))return;sc.ids.delete(id);delete ui.drafting[id];if(Q[id].refs.length){S.q[id].st='ready';S.q[id].auto=true;if(Q[id].field){S.q[id].inserted=true;S.q[id].st='done';S.q[id].accepted=false;S.changes++;sc.filled=(sc.filled||0)+1;}}
+  if(!sc.ids.size){ui.scan=null;logIt('DD','Ray auto-drafted '+sc.hit+' answers');toast(`Analysed ${sc.total} · filled ${sc.filled||0} form fields · drafted ${sc.hit-(sc.filled||0)} answers · ${sc.total-sc.hit} still open`);}renderPage();renderPane();}
 function draft(id,cb){if(ui.drafting[id])return;ui.drafting[id]=true;renderPane();setTimeout(()=>{delete ui.drafting[id];S.q[id].st='ready';renderPane();cb&&cb();},900+Math.random()*500);}
 const urSync=()=>document.querySelectorAll('[data-do="edundo"],[data-do="edredo"]').forEach(b=>b.classList.toggle('dis',!(((b.dataset.do==='edundo'?ui.undo:ui.redo)[ui.cur])||[]).length));
 const snap=ed=>{(ui.undo[ui.cur]=ui.undo[ui.cur]||[]).push(ed.innerHTML);ui.redo[ui.cur]=[];setTimeout(urSync);};
