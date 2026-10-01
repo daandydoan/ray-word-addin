@@ -415,6 +415,7 @@ td .cc.sel::before{display:none}
 .wr .qa:focus-within .adv{display:block}
 .atag.anl{background:#F3F4F6;color:var(--r-accent)}.atag.anl img{width:13px;height:13px;border-radius:50%;animation:anl 1.2s ease-in-out infinite}
 .hasg{display:inline-flex;align-items:center;gap:3px;cursor:pointer;border-radius:6px;padding:0 2px 0 3px;color:var(--r-tx-2)}.hasg:hover{background:var(--r-raise);color:var(--r-accent)}.hasg .ms{font-size:14px}.hasg .av{margin:0 1px!important}
+.cta .btn .cnt{margin-left:6px;padding:1px 7px;border-radius:999px;background:rgba(255,255,255,.22);font-size:11px;font-weight:600}
 </style></head>
 <body>
 <div class="demo" id="demo"><div class="demo-btn" data-do="demotog"><span class="ms">smart_display</span>Demo</div><div class="demo-list">
@@ -633,7 +634,7 @@ function cta(){
   const ready=live().filter(id=>stOf(id)==='ready');
   const tip=ready.length?ready.length+' draft'+(ready.length>1?'s':'')+' ready · each lands as a tracked change · Ctrl+Alt+I inserts the next one':'Nothing ready yet — generate or write a draft first';
   const sc=ui.scan,done=sc?sc.total-sc.ids.size:0;
-  return `<div class="cta">${sc?`<div class="scanbar"><img src="${RAY}" alt=""><span>Ray is scanning <b>${sc.total}</b> questions…</span><i class="ind"></i></div>`:''}<span class="btn ${ready.length?'':'dis'}" data-do="insall" title="${tip}"><span class="ms">keyboard_double_arrow_down</span>Apply to document</span></div>`;
+  return `<div class="cta">${sc?`<div class="scanbar"><img src="${RAY}" alt=""><span>Ray is scanning <b>${sc.total}</b> questions…</span><i class="ind"></i></div>`:''}<span class="btn ${ready.length?'':'dis'}" data-do="insall" title="${tip}"><span class="ms">keyboard_double_arrow_down</span>Apply to document<span class="cnt" title="Questions in the document">${live().filter(id=>stOf(id)==='done').length}/${live().length}</span></span></div>`;
 }
 function genPanel(id){return `<div class="gdlg"><label>Tender file on Tenderfy</label><input id="genfile" list="tfiles" placeholder="Type a file name…" value="${esc(ui.gensrc==='tender'?ui.genfile:'')}" autocomplete="off"><datalist id="tfiles">${TFILES.map(x=>`<option value="${x}">`).join('')}</datalist>
   <div class="or"><i></i>or<i></i></div><span class="btn ghost" data-do="genupload"><span class="ms">upload_file</span>${ui.gensrc==='upload'&&ui.genfile?esc(ui.genfile):'Upload a file from this computer'}</span>
