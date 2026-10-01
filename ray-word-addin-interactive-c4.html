@@ -404,6 +404,8 @@ td .cc.sel::before{display:none}
 .qtop{display:flex;align-items:center;justify-content:space-between;min-height:22px}
 .qprev{display:inline-flex;align-items:center;gap:1px;font-size:11.5px;font-weight:500;color:var(--r-accent);cursor:pointer;padding:2px 6px 2px 2px;border-radius:8px}.qprev:hover{background:var(--r-raise)}.qprev .ms{font-size:16px}.qprev.dis{opacity:.4;pointer-events:none}
 .ctarow{display:flex;gap:8px}.ctarow>.btn{flex:1;justify-content:center}.ctarow>.btn.ghost{flex:0 0 auto;padding-left:14px;padding-right:10px}.ctarow>.btn.ghost .ms{font-size:16px}
+@keyframes qUp{from{opacity:0;transform:translateY(-28px)}to{opacity:1;transform:none}}@keyframes qDown{from{opacity:0;transform:translateY(28px)}to{opacity:1;transform:none}}
+#pinner[data-qslide=up] .pbody>.card{animation:qUp .28s cubic-bezier(.2,.7,.2,1) both!important}#pinner[data-qslide=down] .pbody>.card{animation:qDown .28s cubic-bezier(.2,.7,.2,1) both!important}
 </style></head>
 <body>
 <div class="demo" id="demo"><div class="demo-btn" data-do="demotog"><span class="ms">smart_display</span>Demo</div><div class="demo-list">
@@ -583,6 +585,7 @@ function renderPane(){
   const pb=p.querySelector('.pbody'),cur=p.querySelector('.wr.cur');if(keep&&pb&&top!=null)pb.scrollTop=top;else cur&&cur.scrollIntoView({block:'nearest'});
   // slide content by tab order; glide the underline from the last tab
   const key=[ui.tab,ui.view,ui.filter,ui.stf,ui.view==='context'?ui.cur:''].join('|');if(key===ui._key)p.dataset.same='';else p.removeAttribute('data-same');ui._key=key;
+  if(ui.qdir){p.dataset.qslide=ui.qdir;ui.qdir=null;}else p.removeAttribute('data-qslide');
   const ord=['q','ask','team','lib'],prev=ui._lt;ui._lt=ui.tab;p.removeAttribute('data-slide');if(prev&&prev!==ui.tab)p.dataset.slide=ord.indexOf(ui.tab)>ord.indexOf(prev)?'r':'l';
   const bar=p.querySelector('.tabbar'),on=p.querySelector('.ptab.on');if(bar&&on){const to=[on.offsetLeft,on.offsetWidth],from=ui._bar||to;bar.style.cssText='transition:none;left:'+from[0]+'px;width:'+from[1]+'px';bar.offsetWidth;bar.style.cssText='left:'+to[0]+'px;width:'+to[1]+'px';ui._bar=to;}
   // All/Assigned: glide the pill, slide the list the way the switch moved
@@ -637,7 +640,7 @@ function cardBody(id){const q=Q[id],x=S.q[id],st=stOf(id);
   else {body=`<p style="color:var(--r-tx-3);font-size:11px">${x.human?'Inserted by you as final text. Ray leaves it alone.':x.accepted?'Accepted in Review. Editing it in Word keeps it answered.':'Drafted as a tracked change · you\'re editing it in the page. Accept or reject from Word\'s Review tab.'}</p>${crit}${refs}${x.changed?`<div class="note warn">Mia edited this since Ray drafted it. Re-draft keeps her text as the base.</div>`:''}<div class="acts">${!x.accepted&&!x.human?`<span class="btn ghost" data-do="acceptq" data-q="${id}"><span class="ms">check</span>Accept in Review</span>`:''}<span class="btn ghost" data-do="redraft" title="Ray re-drafts on top of the current text"><span class="ms">auto_awesome</span>Re-draft with Ray</span><span class="btn ghost" data-do="shorten" title="Ray shortens the current text"><span class="ms">auto_awesome</span>Shorten with Ray</span><span class="btn ghost" data-do="askthis"><span class="ms">forum</span>Ask Ray about this</span></div>`;foot=nextReady()?`<span class="btn" data-do="insnext"><span class="ms">keyboard_double_arrow_down</span>Insert next</span>`:`<span class="btn" data-do="gennext"><span class="ms">auto_awesome</span>Generate next</span>`;}
   return [body,foot];}
 const queue=()=>SECTIONS.flatMap(s=>s.q).filter(id=>!S.q[id].skip&&(ui.filter==='all'||S.q[id].owner==='DD'));
-const goQ=id=>{if(!id)return;ui.cur=id;ui.view='context';selectCC('q:'+id);renderPane();};
+const goQ=(id,dir)=>{if(!id)return;ui.qdir=dir;ui.cur=id;ui.view='context';selectCC('q:'+id);renderPane();};
 function contextCard(){const id=ui.cur,q=Q[id],x=S.q[id],st=stOf(id);
   if(ui.drafting[id]){const [body,foot]=cardBody(id);return `<div class="pbody"><div class="card">${body}</div></div><div class="cta">${foot}</div>`;}
   const ready=st==='ready',done=st==='done';
@@ -647,9 +650,9 @@ function contextCard(){const id=ui.cur,q=Q[id],x=S.q[id],st=stOf(id);
     : ready
     ? refineBox
     : refineBox;
-  const foot=done?`<span class="btn dis" id="updbtn" data-do="update" data-q="${id}" title="Writes your edit into the document as a tracked change"><span class="ms">published_with_changes</span>Update in document</span>`:ready?`<span class="btn" data-do="insert" data-q="${id}" data-next="1"><span class="ms">keyboard_return</span>Insert &amp; next</span>`
-    :`<span class="btn dis" id="primbtn" data-do="markready" data-q="${id}" data-next="1" title="Write or generate an answer first"><span class="ms">keyboard_return</span>Insert &amp; next</span>`;
-  return `<div class="pbody"><div class="card full"><p class="qfull">${esc(q.full)}</p><div class="qtop">${x.auto?'<span class="atag"><span class="ms">auto_awesome</span>Ray autofilled</span>':'<span></span>'}<span class="qprev ${queue().indexOf(id)>0?'':'dis'}" data-do="qprev"><span class="ms">chevron_left</span>Previous</span></div>${done&&x.changed?'<div class="note warn"><b>Mia changed this in Word</b> after Ray drafted it. This is her version.</div>':''}
+  const foot=done?`<span class="btn dis" id="updbtn" data-do="update" data-q="${id}" title="Writes your edit into the document as a tracked change"><span class="ms">published_with_changes</span>Update in document</span>`:ready?`<span class="btn" data-do="insert" data-q="${id}" data-next="1"><span class="ms">keyboard_arrow_down</span>Insert &amp; next</span>`
+    :`<span class="btn dis" id="primbtn" data-do="markready" data-q="${id}" data-next="1" title="Write or generate an answer first"><span class="ms">keyboard_arrow_down</span>Insert &amp; next</span>`;
+  return `<div class="pbody"><div class="card full"><p class="qfull">${esc(q.full)}</p><div class="qtop">${x.auto?'<span class="atag"><span class="ms">auto_awesome</span>Ray autofilled</span>':'<span></span>'}<span class="qprev ${queue().indexOf(id)>0?'':'dis'}" data-do="qprev"><span class="ms">keyboard_arrow_up</span>Previous</span></div>${done&&x.changed?'<div class="note warn"><b>Mia changed this in Word</b> after Ray drafted it. This is her version.</div>':''}
     <div class="ed"><div class="ed-tools"><span class="ms">format_bold</span><span class="ms">format_italic</span><span class="ms">format_underlined</span><span class="ms">format_list_bulleted</span><span class="ms">format_list_numbered</span><span class="ms">link</span><span class="ms" data-do="edtable" title="Insert table">table</span><span class="sp"></span><small id="edwc">${ready||done?q.txt.split(' ').length+' words':''}</small><span class="ms" data-do="fullscreen" data-q="${id}" title="Open full screen (Office dialog)">open_in_full</span></div><div class="ed-body" contenteditable="true" id="edbody" data-ph="Write the answer here, or Generate with AI">${ready||done?(q.html||'<p>'+esc(q.txt)+'</p>'):''}</div></div>
     ${acts}<div class="acts"><span class="btn ghost" data-do="assigncard" data-q="${id}"><span class="ms">person_add</span>Assign User</span><span class="btn ghost" data-do="skip" data-q="${id}"><span class="ms">block</span>Not a Question</span><span class="btn ghost" data-do="genfile" data-q="${id}"><span class="ms">auto_awesome</span>Generate from a file</span><span class="btn ghost" data-do="askthis" data-q="${id}"><span class="ms">forum</span>Ask Ray about this</span></div>${ui.genOpen===id?genPanel(id):''}</div></div><div class="cta"><div class="ctarow"><span class="btn ghost ${queue().indexOf(id)<queue().length-1?'':'dis'}" data-do="qskip">Skip<span class="ms">chevron_right</span></span>${foot}</div></div>`;}
 function asktab(){
@@ -724,8 +727,8 @@ document.addEventListener('click',e=>{
     insert(){ui.cur=q;insert(q);},
     quick(){const v=t.parentElement.querySelector('.in').innerText.trim();if(!v){toast('Type the answer first');return;}const x=S.q[q];Q[q].txt=v;Q[q].refs=[];Q[q].html=null;x.human=true;x.auto=false;x.inserted=true;x.st='done';x.accepted=true;logIt('DD','inserted '+q+' (quick answer)');selectCC('q:'+q);renderPane();toast(q+' inserted into the document');},
     finishscan(){if(!ui.scan){toast('Ray isn\'t analysing anything right now');return;}[...ui.scan.ids].forEach(scanDone);},
-    qprev(){const qs=queue();goQ(qs[qs.indexOf(ui.cur)-1]);},
-    qskip(){const qs=queue();goQ(qs[qs.indexOf(ui.cur)+1]);},
+    qprev(){const qs=queue();goQ(qs[qs.indexOf(ui.cur)-1],'up');},
+    qskip(){const qs=queue();goQ(qs[qs.indexOf(ui.cur)+1],'down');},
     more(){const a=t.previousElementSibling.classList.toggle('open');t.textContent=a?'Show less':'Read more';},
     fullscreen(){const x=S.q[q],Q_=Q[q],ed=document.getElementById('edbody');const txt=ed?ed.innerHTML:(stOf(q)!=='open'?(Q_.html||'<p>'+esc(Q_.txt)+'</p>'):'');const d=document.createElement('div');d.className='odlg';d.id='odlg';
       d.innerHTML=`<div class="odlg-win"><div class="odlg-bar"><span>Ray for Word — ${q} · ${esc(Q_.t)}</span><span class="ms" data-do="dlgclose" title="Close">close</span></div>
@@ -785,7 +788,7 @@ document.addEventListener('click',e=>{
   };
   if(!ui.picked&&!['picktender','pickfolder','reset','demotog','foreign','finishscan'].includes(d)){ui.view='tender';renderPane();toast('Choose the tender this document belongs to first');return;}
   A[d]&&A[d]();
-  if(t.dataset.next&&q&&stOf(q)==='done'){const qs=queue();goQ(qs[qs.indexOf(q)+1]);}
+  if(t.dataset.next&&q&&stOf(q)==='done'){const qs=queue();goQ(qs[qs.indexOf(q)+1],'down');}
   if(t.closest('.demo-list')&&d!=='platform')$('#demo').classList.remove('open');
 });
 document.addEventListener('contextmenu',e=>{const qEl=e.target.closest('.q, td');if(!qEl||!$('#page').contains(qEl))return;e.preventDefault();$('.cmenu')?.remove();
