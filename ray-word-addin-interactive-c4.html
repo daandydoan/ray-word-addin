@@ -388,7 +388,6 @@ td .cc.sel::before{display:none}
 .wr .answ .more{background:none!important}
 .wr .answ .ans:not(.open):has(+.more){-webkit-mask:linear-gradient(#000,#000) top/100% calc(100% - 1.6em) no-repeat,linear-gradient(90deg,#000 calc(100% - 7.5em),transparent calc(100% - 5.6em)) bottom/100% 1.6em no-repeat;mask:linear-gradient(#000,#000) top/100% calc(100% - 1.6em) no-repeat,linear-gradient(90deg,#000 calc(100% - 7.5em),transparent calc(100% - 5.6em)) bottom/100% 1.6em no-repeat}
 .wr:hover,.wr.cur:hover{background:#F3F4F6}
-.wr .t em.nomatch{color:#B26A00}
 </style></head>
 <body>
 <div class="demo" id="demo"><div class="demo-btn" data-do="demotog"><span class="ms">smart_display</span>Demo</div><div class="demo-list">
@@ -599,7 +598,7 @@ function row(id){const q=Q[id],x=S.q[id],st=stOf(id),cur=ui.cur===id,text=st==='
   const sub = ui.drafting[id]?`<em class="anl"><i></i>Ray is analysing…</em>`
     : text?`${x.changed?'<em class="ch">Mia changed since Ray drafted</em>':''}<div class="answ"><div class="ans">${esc(text)}</div>${text.length>85?`<a class="more" data-do="more">Read more</a>`:''}</div>`
     : x.owner&&x.owner!=='DD'?`<em>Assigned to ${PEOPLE[x.owner].n.split(' ')[0]}${x.due?' · due '+x.due:''}</em>`
-    : `${S.q[id].scanned?'<em class="nomatch">No match in the Response Library</em>':''}<div class="qa" data-do="noop"><span class="in" contenteditable="true" data-ph="Click to answer"></span><span class="ms go" data-do="quick" data-q="${id}" title="Insert this answer">arrow_upward</span></div>`;
+    : `<div class="qa" data-do="noop"><span class="in" contenteditable="true" data-ph="Click to answer"></span><span class="ms go" data-do="quick" data-q="${id}" title="Insert this answer">arrow_upward</span></div>`;
   return `<div class="wr ${st} ${cur?'cur':''}" data-do="cur" data-q="${id}"><i class="st"></i><span class="n">${id}</span><span class="t"><b title="${esc(q.t)}">${esc(q.full)}</b>${sub}</span>${x.owner?avatar(x.owner):'<span class="noav"></span>'}</div>`;}
 function assignRow(id){const x=S.q[id];return `<div class="acts" style="margin-top:8px;align-items:center"><span style="font-size:10px;color:#6B7975">Assign ${id} to</span><span class="who">${Object.keys(PEOPLE).map(k=>avatar(k,x.owner===k?'sel':'')).map(a=>a.replace('<span','<span data-do="own" data-q="'+id+'" data-who="'+a.slice(a.indexOf('>')+1,a.indexOf('>')+3)+'"')).join('')}</span><span class="btn ghost" data-do="ownall" data-q="${id}" title="Assign every open question in this section to the same person">Section →</span></div>`;}
 function cta(){
@@ -664,7 +663,7 @@ function selectCC(key){ui.sel=key;renderPage();const el=document.querySelector(`
 function insert(id){const x=S.q[id];const ed=document.getElementById('edbody');const typed=ed&&ed.innerText.trim();const html=ed&&ed.querySelector('table')?ed.innerHTML:null;if(typed){Q[id].txt=typed;Q[id].html=html;if(stOf(id)==='open'){Q[id].refs=[];x.human=true;}}else if(stOf(id)==='open'){toast('Nothing to insert yet — write the answer or Generate with AI');return;}x.inserted=true;x.st='done';x.accepted=false;logIt('DD','inserted '+id+' · '+Q[id].t);if(S.track)S.changes++;ui.cur=id;ui.view='context';selectCC('q:'+id);renderPane();toast(`${id} inserted as a tracked change · editing in Word`);}
 function autoFill(){const scan=live().filter(id=>stOf(id)==='open'&&(!S.q[id].owner||S.q[id].owner==='DD')),hit=scan.filter(id=>Q[id].refs.length);if(!scan.length)return;
   toast(`Ray is autofilling · analysing ${scan.length} questions against the Response Library…`);scan.forEach(id=>ui.drafting[id]=true);renderPane();let n=0;
-  scan.forEach((id,i)=>setTimeout(()=>{delete ui.drafting[id];if(Q[id].refs.length)S.q[id].st='ready';else S.q[id].scanned=true;renderPane();if(++n===scan.length){logIt('DD','Ray auto-drafted '+hit.length+' answers');toast(`Analysed ${scan.length} · auto-drafted ${hit.length} · ${scan.length-hit.length} still open for you to answer`);}},800+i*Math.min(220,5000/scan.length)));}
+  scan.forEach((id,i)=>setTimeout(()=>{delete ui.drafting[id];if(Q[id].refs.length)S.q[id].st='ready';renderPane();if(++n===scan.length){logIt('DD','Ray auto-drafted '+hit.length+' answers');toast(`Analysed ${scan.length} · auto-drafted ${hit.length} · ${scan.length-hit.length} still open for you to answer`);}},800+i*Math.min(220,5000/scan.length)));}
 function draft(id,cb){if(ui.drafting[id])return;ui.drafting[id]=true;renderPane();setTimeout(()=>{delete ui.drafting[id];S.q[id].st='ready';renderPane();cb&&cb();},900+Math.random()*500);}
 const urSync=()=>document.querySelectorAll('[data-do="edundo"],[data-do="edredo"]').forEach(b=>b.classList.toggle('dis',!(((b.dataset.do==='edundo'?ui.undo:ui.redo)[ui.cur])||[]).length));
 const snap=ed=>{(ui.undo[ui.cur]=ui.undo[ui.cur]||[]).push(ed.innerHTML);ui.redo[ui.cur]=[];setTimeout(urSync);};
