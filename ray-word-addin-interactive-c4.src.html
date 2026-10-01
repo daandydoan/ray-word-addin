@@ -390,6 +390,11 @@ td .cc.sel::before{display:none}
 .wr:hover,.wr.cur:hover{background:#F3F4F6}
 .wr>.who{grid-area:who;justify-self:end;font-size:11px;color:var(--r-tx-3);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;min-width:0;margin-right:2px}
 .wr .anl img{width:15px;height:15px;border-radius:50%;animation:anl 1.2s ease-in-out infinite}
+.cta{flex-direction:column;align-items:stretch}.cta>.btn{width:100%}
+.scanbar{display:grid;grid-template-columns:18px 1fr;align-items:center;gap:4px 8px;padding:8px 10px;border-radius:10px;background:var(--r-raise);font-size:11.5px;color:var(--r-tx-2);margin-bottom:8px}
+.scanbar img{width:18px;height:18px;border-radius:50%;animation:anl 1.2s ease-in-out infinite}.scanbar b{color:var(--r-tx);font-weight:600}
+.scanbar i{grid-column:1/-1;height:3px;border-radius:2px;background:linear-gradient(90deg,var(--r-accent) var(--p),#DDE3E1 var(--p));transition:background .3s}
+.demoscan{display:inline-flex;align-items:center;gap:4px;padding:1px 8px;border:1px dashed rgba(255,255,255,.7);border-radius:999px;cursor:pointer;font-size:10.5px}.demoscan:hover{background:rgba(255,255,255,.15)}.demoscan .ms{font-size:13px}
 </style></head>
 <body>
 <div class="demo" id="demo"><div class="demo-btn" data-do="demotog"><span class="ms">smart_display</span>Demo</div><div class="demo-list">
@@ -434,7 +439,7 @@ td .cc.sel::before{display:none}
       <div id="pinner"></div>
     </div>
   </div>
-  <div class="status"><span id="stpage">Page 3 of 13</span><span>2,200 words</span><span class="ms" style="font-size:13px">spellcheck</span><span>English (Australia)</span><span class="tc" id="sttrack"><i></i>Track Changes: On · <b id="stchg">0</b> changes</span><span class="sp"></span><span class="ms" style="font-size:13px">view_agenda</span><span class="zoom">− <b></b> + 100%</span></div>
+  <div class="status"><span id="stpage">Page 3 of 13</span><span>2,200 words</span><span class="demoscan" data-do="finishscan" title="Demo control: finish Ray's analysis now"><span class="ms">fast_forward</span>Finish Ray analysis</span><span class="ms" style="font-size:13px">spellcheck</span><span>English (Australia)</span><span class="tc" id="sttrack"><i></i>Track Changes: On · <b id="stchg">0</b> changes</span><span class="sp"></span><span class="ms" style="font-size:13px">view_agenda</span><span class="zoom">− <b></b> + 100%</span></div>
 </div></section>
 <div class="toast" id="toast"></div>
 
@@ -606,7 +611,8 @@ function assignRow(id){const x=S.q[id];return `<div class="acts" style="margin-t
 function cta(){
   const ready=live().filter(id=>stOf(id)==='ready');
   const tip=ready.length?ready.length+' draft'+(ready.length>1?'s':'')+' ready · each lands as a tracked change · Ctrl+Alt+I inserts the next one':'Nothing ready yet — generate or write a draft first';
-  return `<div class="cta"><span class="btn ${ready.length?'':'dis'}" data-do="insall" title="${tip}"><span class="ms">keyboard_double_arrow_down</span>Apply to document</span></div>`;
+  const sc=ui.scan,done=sc?sc.total-sc.ids.size:0;
+  return `<div class="cta">${sc?`<div class="scanbar"><img src="${RAY}" alt=""><span>Ray is scanning <b>${done}/${sc.total}</b> questions</span><i style="--p:${Math.round(done/sc.total*100)}%"></i></div>`:''}<span class="btn ${ready.length?'':'dis'}" data-do="insall" title="${tip}"><span class="ms">keyboard_double_arrow_down</span>Apply to document</span></div>`;
 }
 function genPanel(id){return `<div class="gdlg"><label>Tender file on Tenderfy</label><input id="genfile" list="tfiles" placeholder="Type a file name…" value="${esc(ui.gensrc==='tender'?ui.genfile:'')}" autocomplete="off"><datalist id="tfiles">${TFILES.map(x=>`<option value="${x}">`).join('')}</datalist>
   <div class="or"><i></i>or<i></i></div><span class="btn ghost" data-do="genupload"><span class="ms">upload_file</span>${ui.gensrc==='upload'&&ui.genfile?esc(ui.genfile):'Upload a file from this computer'}</span>
@@ -663,9 +669,12 @@ function teamtab(){
 /* ===== actions ===== */
 function selectCC(key){ui.sel=key;renderPage();const el=document.querySelector(`[data-cc="${key}"]`);el&&el.scrollIntoView({block:'center',behavior:'smooth'});}
 function insert(id){const x=S.q[id];const ed=document.getElementById('edbody');const typed=ed&&ed.innerText.trim();const html=ed&&ed.querySelector('table')?ed.innerHTML:null;if(typed){Q[id].txt=typed;Q[id].html=html;if(stOf(id)==='open'){Q[id].refs=[];x.human=true;}}else if(stOf(id)==='open'){toast('Nothing to insert yet — write the answer or Generate with AI');return;}x.inserted=true;x.st='done';x.accepted=false;logIt('DD','inserted '+id+' · '+Q[id].t);if(S.track)S.changes++;ui.cur=id;ui.view='context';selectCC('q:'+id);renderPane();toast(`${id} inserted as a tracked change · editing in Word`);}
-function autoFill(){const scan=live().filter(id=>stOf(id)==='open'&&(!S.q[id].owner||S.q[id].owner==='DD')),hit=scan.filter(id=>Q[id].refs.length);if(!scan.length)return;
-  toast(`Ray is autofilling · analysing ${scan.length} questions against the Response Library…`);scan.forEach(id=>ui.drafting[id]=true);renderPane();let n=0;
-  scan.forEach((id,i)=>setTimeout(()=>{delete ui.drafting[id];if(Q[id].refs.length)S.q[id].st='ready';renderPane();if(++n===scan.length){logIt('DD','Ray auto-drafted '+hit.length+' answers');toast(`Analysed ${scan.length} · auto-drafted ${hit.length} · ${scan.length-hit.length} still open for you to answer`);}},2600+i*Math.min(320,9000/scan.length)));}
+function autoFill(){const scan=live().filter(id=>stOf(id)==='open'&&(!S.q[id].owner||S.q[id].owner==='DD'));if(!scan.length)return;
+  ui.scan={ids:new Set(scan),total:scan.length,hit:scan.filter(id=>Q[id].refs.length).length};
+  toast(`Ray is autofilling · analysing ${scan.length} questions against the Response Library…`);scan.forEach(id=>ui.drafting[id]=true);renderPane();
+  scan.forEach((id,i)=>setTimeout(()=>scanDone(id),2600+i*Math.min(320,9000/scan.length)));}
+function scanDone(id){const sc=ui.scan;if(!sc||!sc.ids.has(id))return;sc.ids.delete(id);delete ui.drafting[id];if(Q[id].refs.length)S.q[id].st='ready';
+  if(!sc.ids.size){ui.scan=null;logIt('DD','Ray auto-drafted '+sc.hit+' answers');toast(`Analysed ${sc.total} · auto-drafted ${sc.hit} · ${sc.total-sc.hit} still open for you to answer`);}renderPane();}
 function draft(id,cb){if(ui.drafting[id])return;ui.drafting[id]=true;renderPane();setTimeout(()=>{delete ui.drafting[id];S.q[id].st='ready';renderPane();cb&&cb();},900+Math.random()*500);}
 const urSync=()=>document.querySelectorAll('[data-do="edundo"],[data-do="edredo"]').forEach(b=>b.classList.toggle('dis',!(((b.dataset.do==='edundo'?ui.undo:ui.redo)[ui.cur])||[]).length));
 const snap=ed=>{(ui.undo[ui.cur]=ui.undo[ui.cur]||[]).push(ed.innerHTML);ui.redo[ui.cur]=[];setTimeout(urSync);};
@@ -702,6 +711,7 @@ document.addEventListener('click',e=>{
     gengo(){const typed=$('#genfile').value.trim();if(typed){ui.gensrc='tender';ui.genfile=typed;}if(!ui.genfile||(ui.gensrc==='tender'&&!typed)){toast('Type a file name or upload one first');$('#genfile').focus();return;}ui.genOpen=null;ui.cur=q;ui.view='context';draft(q);},
     insert(){ui.cur=q;insert(q);},
     quick(){const v=t.parentElement.querySelector('.in').innerText.trim();if(!v){toast('Type the answer first');return;}const x=S.q[q];Q[q].txt=v;Q[q].refs=[];Q[q].html=null;x.human=true;x.inserted=true;x.st='done';x.accepted=true;logIt('DD','inserted '+q+' (quick answer)');selectCC('q:'+q);renderPane();toast(q+' inserted into the document');},
+    finishscan(){if(!ui.scan){toast('Ray isn\'t analysing anything right now');return;}[...ui.scan.ids].forEach(scanDone);},
     more(){const a=t.previousElementSibling.classList.toggle('open');t.textContent=a?'Show less':'Read more';},
     fullscreen(){const x=S.q[q],Q_=Q[q],ed=document.getElementById('edbody');const txt=ed?ed.innerHTML:(stOf(q)!=='open'?(Q_.html||'<p>'+esc(Q_.txt)+'</p>'):'');const d=document.createElement('div');d.className='odlg';d.id='odlg';
       d.innerHTML=`<div class="odlg-win"><div class="odlg-bar"><span>Ray for Word — ${q} · ${esc(Q_.t)}</span><span class="ms" data-do="dlgclose" title="Close">close</span></div>
@@ -759,7 +769,7 @@ document.addEventListener('click',e=>{
     acceptq(){S.q[q].accepted=true;if(S.q[q].owner&&S.q[q].owner!=='DD')S.notes.unshift({q,t:PEOPLE[S.q[q].owner].n.split(' ')[0]+' answered '+q+' · '+Q[q].t,when:'Just now',read:false});S.changes=Math.max(0,S.changes-1);logIt('DD','accepted '+q+' in Review');renderPage();renderPane();toast(q+' accepted — answered');},
     cm_accept(){toast('Saved to the Response Library');}, cm_accept(){const id=ui.sel&&ui.sel.startsWith('q:')?ui.sel.slice(2):null;if(id){S.q[id].accepted=true;logIt('DD','accepted '+id+' in Review');}S.changes=Math.max(0,S.changes-1);renderPage();renderPane();toast('Insertion accepted — '+(id||'')+' is answered');},
   };
-  if(!ui.picked&&!['picktender','pickfolder','reset','demotog','foreign'].includes(d)){ui.view='tender';renderPane();toast('Choose the tender this document belongs to first');return;}
+  if(!ui.picked&&!['picktender','pickfolder','reset','demotog','foreign','finishscan'].includes(d)){ui.view='tender';renderPane();toast('Choose the tender this document belongs to first');return;}
   A[d]&&A[d]();
   if(t.closest('.demo-list')&&d!=='platform')$('#demo').classList.remove('open');
 });
