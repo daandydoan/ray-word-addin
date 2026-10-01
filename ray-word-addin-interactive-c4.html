@@ -442,6 +442,7 @@ td .cc.sel::before{display:none}
 .wr.ready .st{background:none!important;border-color:#C9A15C!important}
 .wr .t b .qpre{font-weight:700;color:var(--r-accent)}
 .wr .longnote{cursor:pointer}.wr .longnote:hover{text-decoration:underline}
+.stfsel{padding:3px 4px 3px 8px;gap:0}.stfsel select{padding:0 2px 0 0}
 </style></head>
 <body>
 <div class="demo" id="demo"><div class="demo-btn" data-do="demotog"><span class="ms">smart_display</span>Demo</div><div class="demo-list">
@@ -641,12 +642,12 @@ function qtab(){
   if(ui.view==='context') return contextCard();
   const all=live(), done=all.filter(id=>S.q[id].accepted).length, drafted=all.filter(id=>stOf(id)==='done'&&!S.q[id].accepted).length;
   const phase=`<div class="modes"><i class="segbar"></i>${[['all','All'],['mine','Assigned']].map(([k,t])=>`<div class="mode ${ui.filter===k?'on':''}" data-do="filter" data-f="${k}">${t}</div>`).join('')}</div>`;
-  const filters=`<label class="stfsel"><span class="ms">filter_list</span><select id="stfsel">${[['','Default'],['done','Inserted'],['open','Open']].map(([k,t])=>`<option value="${k}" ${(ui.stf||'')===k?'selected':''}>${t}</option>`).join('')}</select></label>`;
+  const filters=`<label class="stfsel"><select id="stfsel">${[['','Default'],['done','Inserted'],['open','Open']].map(([k,t])=>`<option value="${k}" ${(ui.stf||'')===k?'selected':''}>${t}</option>`).join('')}</select></label>`;
   const skipped=Object.keys(Q).filter(id=>S.q[id].skip);const dismissed=skipped.length?`<div class="sec ${ui.open.X===true?'':'closed'}" data-do="sec" data-s="X"><i class="chev"></i>Not a Question<small>${skipped.length}</small></div><div class="wl"><div>${skipped.map(id=>`<div class="wr" data-q="${id}"><i class="st" style="border-style:dashed"></i><span class="n">${id}</span><span class="t" style="color:var(--r-tx-3)">${esc(Q[id].t)} · <em>dismissed</em></span><span class="noav"></span><span class="ax" data-do="unskip" data-q="${id}"><span class="ms">undo</span>Restore</span></div>`).join('')}</div></div>`:'';
   const list=SECTIONS.map(s=>{const rows=s.q.filter(id=>!S.q[id].skip).filter(id=>(ui.filter==='all'||S.q[id].owner==='DD')&&(!ui.stf||stOf(id)===ui.stf)&&(ui.filter!=='all'||!ui.who||(ui.who==='none'?!S.q[id].owner:S.q[id].owner===ui.who)));if(!rows.length&&(ui.filter==='mine'||ui.who))return'';
     const d=s.q.filter(id=>!S.q[id].skip&&S.q[id].accepted).length;
     const closed=ui.open[s.id]===false;return `<div class="sec ${closed?'closed':''}" data-do="sec" data-s="${s.id}"><i class="chev"></i>${s.t}<small>${d}/${s.q.length}</small></div><div class="wl"><div>${rows.map(row).join('')||emptyNote()}</div></div>`;}).join('');
-  return `<div class="qbar">${phase}<div class="qf">${ui.filter==='all'?`<label class="stfsel"><span class="ms">person</span><select id="whosel"><option value="">Anyone</option><option value="none" ${ui.who==='none'?'selected':''}>Unassigned</option>${Object.keys(PEOPLE).map(k=>`<option value="${k}" ${ui.who===k?'selected':''}>${PEOPLE[k].n.split(' ')[0]}${PEOPLE[k].me?' (you)':''}</option>`).join('')}</select></label>`:''}${filters}</div></div>`+`<div class="pbody">${list}${dismissed}</div>`+cta();
+  return `<div class="qbar">${phase}<div class="qf">${ui.filter==='all'?`<label class="stfsel"><select id="whosel"><option value="">Anyone</option><option value="none" ${ui.who==='none'?'selected':''}>Unassigned</option>${Object.keys(PEOPLE).map(k=>`<option value="${k}" ${ui.who===k?'selected':''}>${PEOPLE[k].n.split(' ')[0]}${PEOPLE[k].me?' (you)':''}</option>`).join('')}</select></label>`:''}${filters}</div></div>`+`<div class="pbody">${list}${dismissed}</div>`+cta();
 }
 const emptyNote=()=>`<div class="note">Nothing ${ui.filter==='mine'?'assigned to you':ui.stf==='open'?'open':'inserted'} in this section.</div>`;
 function row(id){const q=Q[id],x=S.q[id],st=stOf(id),cur=ui.cur===id,text=st==='ready'||st==='done'?q.txt:'';
