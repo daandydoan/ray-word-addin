@@ -378,6 +378,7 @@ td .cc.sel::before{display:none}
 /* status + number on top, question full width underneath */
 .wr{grid-template-columns:14px auto minmax(0,1fr) 20px;grid-template-areas:'st n . av' 't t t t';row-gap:4px;align-items:center}
 .wr>.st{grid-area:st;margin:0}.wr>.n{grid-area:n;margin:0}.wr>.t{grid-area:t}.wr>.av,.wr>.noav{grid-area:av;margin:0}
+.wr .t b{font-weight:400;color:var(--r-tx)}.wr.cur .t b{font-weight:600}
 </style></head>
 <body>
 <div class="demo" id="demo"><div class="demo-btn" data-do="demotog"><span class="ms">smart_display</span>Demo</div><div class="demo-list">
