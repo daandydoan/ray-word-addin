@@ -161,3 +161,13 @@ Cancel or Escape closes it and keeps the card's text. Constraints to state in
 the handover: one dialog at a time, a separate window on desktop rather than
 an overlay, and Generate with AI inside it would be a backend call from the
 dialog page, not a Word call.
+
+## Full screen, revised (2 Oct 2026)
+
+The Office dialog is dropped. "Full screen" now means the editor takes over the
+task pane: the pane header, section, question, tags and Ray box hide, leaving
+the rich-text editor and the footer (Put in document & next, Previous / Next
+Question). The toolbar icon toggles it (open_in_full / close_fullscreen); Esc
+exits. The mode carries across Put in document & next so a writer can work
+through questions without leaving it. No dialog, no messageParent, no second
+window: everything stays in the pane, which is the only surface the add-in has.
