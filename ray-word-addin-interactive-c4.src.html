@@ -798,6 +798,12 @@ function teamtab(){
   return `<div class="pbody team">${sec('a','Assignments',assigned.length+' assigned · '+unassigned.length+' unassigned',chips+arows+(who?'':'<div class="k">Unassigned · open</div>'+urows))}${sec('c','Changelog',S.log.length,lrows)}</div>`;}
 
 /* ===== actions ===== */
+// after an inline answer goes in: move to the next row in the list that's still open or a draft, cursor ready
+function jumpNext(id){const ids=[...document.querySelectorAll('.pbody .wr[data-q]')].map(w=>w.dataset.q).filter(k=>!S.q[k].skip);
+  const nx=ids.slice(ids.indexOf(id)+1).find(k=>stOf(k)!=='done');if(!nx){toast('Nothing left to answer below');return;}
+  ui.cur=nx;document.querySelectorAll('.wr.cur').forEach(w=>w.classList.remove('cur'));const row=document.querySelector('.wr[data-q="'+nx+'"]');row.classList.add('cur');
+  row.scrollIntoView({block:'center',behavior:'smooth'});selectCC('q:'+nx);
+  const inp=row.querySelector('.qa .in');if(inp){inp.focus();const r=document.createRange();r.selectNodeContents(inp);r.collapse(false);const sel=getSelection();sel.removeAllRanges();sel.addRange(r);}}
 function putIn(id,next,text,html){const x=S.q[id],st=stOf(id),ed=document.getElementById('edbody');
   if(text==null){text=ed?ed.innerText.trim():Q[id].txt;html=ed&&ed.querySelector('table')?ed.innerHTML:null;}
   if(!text){toast('Write the answer first, or Generate with Ray');return;}
@@ -889,7 +895,7 @@ document.addEventListener('click',e=>{
     genupload(){ui.gensrc='upload';ui.genfile='Site methodology 2025.docx';$('#genfile').value='';t.innerHTML='<span class="ms">upload_file</span>Site methodology 2025.docx';toast('Site methodology 2025.docx attached · 1.2 MB');},
     gengo(){const typed=$('#genfile').value.trim();if(typed){ui.gensrc='tender';ui.genfile=typed;}if(!ui.genfile||(ui.gensrc==='tender'&&!typed)){toast('Type a file name or upload one first');$('#genfile').focus();return;}ui.genOpen=null;$('.gdlg')?.remove();rayAsk(q,'Draft '+q+' from '+ui.genfile);},
     insert(){ui.cur=q;insert(q);},
-    quick(){const v=t.parentElement.querySelector('.in').innerText.trim();if(!v){toast('Type the answer first');return;}putIn(q,false,v,stOf(q)==='done'&&v===Q[q].txt?Q[q].html:null);return;delete ui.drafting[q];const x=S.q[q],st=stOf(q);
+    quick(){const v=t.parentElement.querySelector('.in').innerText.trim();if(!v){toast('Type the answer first');return;}putIn(q,false,v,stOf(q)==='done'&&v===Q[q].txt?Q[q].html:null);if(stOf(q)==='done')jumpNext(q);return;delete ui.drafting[q];const x=S.q[q],st=stOf(q);
       if(st!=='open'){if(st==='done'&&v===Q[q].txt){toast('Nothing changed');return;}if(v!==Q[q].txt){Q[q].txt=v;Q[q].html=null;x.auto=false;}x.inserted=true;x.st='done';x.accepted=false;S.changes++;logIt('DD',(st==='done'?'updated ':'inserted ')+q);selectCC('q:'+q);renderPane();toast(q+(st==='done'?' updated':' inserted')+' as a tracked change');return;}
       Q[q].txt=v;Q[q].refs=[];Q[q].html=null;x.human=true;x.auto=false;x.inserted=true;x.st='done';x.accepted=true;logIt('DD','inserted '+q+' (quick answer)');selectCC('q:'+q);renderPane();toast(q+' inserted into the document');},
     finishscan(){if(!ui.scan){toast('Ray isn\'t analysing anything right now');return;}[...ui.scan.ids].forEach(scanDone);},
