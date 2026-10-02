@@ -473,6 +473,10 @@ td .cc.sel::before{display:none}
 .pane.edfocus .ray-head,.pane.edfocus .card.full>:not(.ed){display:none}
 .pane.edfocus .pbody{padding:0}.pane.edfocus .card.full{gap:0;padding:0;margin:0;border:0;border-radius:0;background:none;box-shadow:none}.pane.edfocus .ed{border:0;border-radius:0;min-height:0}
 .card.full .ed-body{font-size:14px}
+.card.full .ed{view-transition-name:ed}.pbody+.cta{view-transition-name:cta}.ray-head{view-transition-name:rayhead}
+::view-transition-group(*){animation-duration:.28s;animation-timing-function:cubic-bezier(.2,.7,.2,1)}
+::view-transition-old(rayhead),::view-transition-new(rayhead){animation-duration:.18s}
+@media (prefers-reduced-motion:reduce){::view-transition-group(*),::view-transition-old(*),::view-transition-new(*){animation:none}}
 </style></head>
 <body>
 <div class="demo" id="demo"><div class="demo-btn" data-do="demotog"><span class="ms">smart_display</span>Demo</div><div class="demo-list">
@@ -824,7 +828,7 @@ document.addEventListener('click',e=>{
     reviewok(){S.q[q].reviewed=true;renderPane();toast(q+' checked');},
     dlgok(){$('#odlg')?.remove();const go=ui.onOk;ui.onOk=null;go&&go();},
     more(){const a=t.previousElementSibling.classList.toggle('open');t.textContent=a?'Show less':'Show more';},
-    fullscreen(){ui.focus=!ui.focus;$('#pane').classList.toggle('edfocus',ui.focus);t.textContent=ui.focus?'close_fullscreen':'open_in_full';t.title=ui.focus?'Exit full screen (Esc)':'Full screen · editor only';$('#edbody')?.focus();},
+    fullscreen(){const go=()=>{ui.focus=!ui.focus;$('#pane').classList.toggle('edfocus',ui.focus);t.textContent=ui.focus?'close_fullscreen':'open_in_full';t.title=ui.focus?'Exit full screen (Esc)':'Full screen · editor only';};document.startViewTransition?document.startViewTransition(go):go();$('#edbody')?.focus();},
     edtable(){const ed=$('#dlgbody')||$('#edbody');if(!ed)return;ed.insertAdjacentHTML('beforeend','<table><tr><th>Item</th><th>Detail</th></tr><tr><td>&nbsp;</td><td>&nbsp;</td></tr><tr><td>&nbsp;</td><td>&nbsp;</td></tr></table><p></p>');ed.dispatchEvent(new Event('input',{bubbles:true}));ed.querySelector('td')?.focus();},
     edundo(){const ed=$('#dlgbody')||$('#edbody'),st=ui.undo[ui.cur]||[];if(!ed||!st.length)return;(ui.redo[ui.cur]=ui.redo[ui.cur]||[]).push(ed.innerHTML);ed.innerHTML=st.pop();ed.dispatchEvent(new Event('input',{bubbles:true}));urSync();},
     edredo(){const ed=$('#dlgbody')||$('#edbody'),st=ui.redo[ui.cur]||[];if(!ed||!st.length)return;(ui.undo[ui.cur]=ui.undo[ui.cur]||[]).push(ed.innerHTML);ed.innerHTML=st.pop();ed.dispatchEvent(new Event('input',{bubbles:true}));urSync();},
@@ -898,7 +902,7 @@ document.addEventListener('keydown',e=>{
   if(qa&&e.key==='Enter'&&e.shiftKey){e.preventDefault();qa.querySelector('.adv').click();return;}
   if(qa&&e.key==='Enter'){e.preventDefault();qa.querySelector('.go').click();return;}
   if(qa&&e.key==='Tab'){const all=[...document.querySelectorAll('.wr .qa:not(.filled) .in')],i=all.indexOf(e.target),nx=all[i+(e.shiftKey?-1:1)];if(nx){e.preventDefault();ui.refocus=e.target.innerText.trim()?nx.closest('.wr').dataset.q:null;nx.focus();}return;}
-  if(e.key==='Escape'&&ui.focus&&ui.view==='context'&&!$('#odlg')){ui.focus=false;renderPane();return;}
+  if(e.key==='Escape'&&ui.focus&&ui.view==='context'&&!$('#odlg')){$('[data-do=fullscreen]')?.click();return;}
   if(e.target.isContentEditable)return;const ids=SECTIONS.flatMap(s=>s.q);const i=ids.indexOf(ui.cur);
   if(e.key==='ArrowDown'&&i<ids.length-1){ui.cur=ids[i+1];ui.view='list';renderPane();e.preventDefault();}
   if(e.key==='ArrowUp'&&i>0){ui.cur=ids[i-1];ui.view='list';renderPane();e.preventDefault();}
