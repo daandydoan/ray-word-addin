@@ -603,8 +603,6 @@ const RESP = [
 const TFILES=['TEN3089 Returnable Schedules.docx','TEN3089 Specification.pdf','TEN3089 Conditions of Contract.pdf','Bilby Capability Statement 2026.pdf','ISO 9001 Certificate.pdf'];
 const TENDERS = ['Bundaberg RC · TEN/3089 · HDPE Pipe and Fittings','North Burnett RC · 2911_2026-27 · Winning, Crushing, Screening','Footpath and Kerbline Spraying','Grounds Maintenance at The Springs','Landscape Maintenance Joondalup'];
 
-// ponytail: demo word limits written into the question text; the add-in reads them from the document
-[['2.1',150],['3.1',40],['3.2',120],['3.7',80],['4.1',100]].forEach(([id,n])=>Q[id].full+=` (max ${n} words)`);
 let S, ui;
 function fresh(){
   S = {
