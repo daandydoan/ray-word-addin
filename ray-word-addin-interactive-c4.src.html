@@ -566,9 +566,10 @@ td .cc.sel::before{display:none}
 .refcard .rch{display:flex;gap:10px;align-items:center}.refcard .rch>.ms,.fmh .fmi{width:32px;height:32px;border-radius:9px;background:var(--r-teal-bg);color:var(--r-teal-tx);display:grid;place-items:center;font-size:18px;flex:none}
 .refcard .rch b,.fmh b{display:block;font-size:12.5px;color:var(--r-tx)}.refcard .rch small,.fmh small{font-size:11px;color:var(--r-tx-3)}
 .refcard .rcb{display:grid;grid-template-columns:1fr 1fr;gap:6px}.refcard .rcb .btn{justify-content:center}
-.fmsheet{position:absolute;inset:0;z-index:30;background:#fff;display:flex;flex-direction:column;animation:fmup .18s ease-out}
+.fmback{position:absolute;inset:0;z-index:29;background:rgba(20,30,28,.45);cursor:pointer;animation:fmfade .18s ease-out}@keyframes fmfade{from{opacity:0}}
+.fmsheet{position:absolute;inset:44px 6px 6px;z-index:30;background:#fff;display:flex;flex-direction:column;border-radius:14px;box-shadow:0 14px 36px rgba(0,0,0,.28);overflow:hidden;animation:fmup .2s ease-out}
 @keyframes fmup{from{transform:translateY(14px);opacity:0}}
-.fmh{display:flex;gap:10px;align-items:flex-start;padding:12px 12px 10px;border-bottom:1px solid var(--r-line)}.fmh .x{margin-left:auto;font-size:18px;color:var(--r-tx-3);cursor:pointer;padding:2px;border-radius:6px}.fmh .x:hover{background:var(--r-hover);color:var(--r-tx)}
+.fmh{display:flex;gap:10px;align-items:flex-start;padding:12px 12px 10px;border-bottom:1px solid var(--r-line)}.fmh .x{margin-left:auto;width:28px;height:28px;display:grid;place-items:center;font-size:18px;color:var(--r-tx-2);cursor:pointer;border-radius:50%;background:var(--r-raise);flex:none}.fmh .x:hover{background:var(--r-hover);color:var(--r-tx)}
 .fmbody{flex:1;min-height:0;overflow:auto;padding:10px 12px;display:flex;flex-direction:column;gap:8px}
 .fms{display:flex;align-items:center;gap:6px;border:1px solid var(--r-line-2);border-radius:99px;padding:6px 10px}.fms .ms{font-size:16px;color:var(--r-tx-3)}.fms input{border:0;outline:0;font:inherit;font-size:12px;flex:1;min-width:0;background:none}
 .fmk{font-size:10px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--r-tx-3);margin-top:2px}.fmk b{color:var(--acc);text-transform:none;letter-spacing:0;margin-left:6px}
@@ -884,7 +885,7 @@ function wfBlock(){const r=ui.run,T=ui.tenderName||'Bundaberg Regional Council',
 const FMF=['All folders','Tender documents','Insurance','Licences','Company'];
 const FMFILES=[['TEN3089 Specification.pdf','Tender documents','PDF','1.4 MB'],['TEN3089 Conditions of Contract.pdf','Tender documents','PDF','880 KB'],['Bilby Capability Statement 2026.pdf','Company','PDF','2.1 MB'],['ISO 9001 Certificate.pdf','Licences','PDF','312 KB'],['Public Liability.pdf','Insurance','PDF','248 KB'],['Workers Compensation.pdf','Insurance','PDF','196 KB'],['Professional Indemnity.pdf','Insurance','PDF','201 KB'],['Trade Licence.pdf','Licences','PDF','132 KB'],['Depot photo.jpg','Company','IMG','1.1 MB']];
 function fmSheet(){const m=ui.fm,q=m.q.toLowerCase(),files=FMFILES.filter(x=>m.folder==='All folders'||x[1]===m.folder);
-  return `<div class="fmsheet"><div class="fmh"><span class="fmi ms">drive_folder_upload</span><div><b>Choose from File Manager</b><small>Select documents you have already uploaded</small></div><span class="ms x" data-do="wffmclose" title="Close">close</span></div>
+  return `<div class="fmback" data-do="wffmclose" title="Close"></div><div class="fmsheet" role="dialog" aria-modal="true" aria-label="Choose from File Manager"><div class="fmh"><span class="fmi ms">drive_folder_upload</span><div><b>Choose from File Manager</b><small>Select documents you have already uploaded</small></div><span class="ms x" data-do="wffmclose" title="Close">close</span></div>
   <div class="fmbody"><div class="fms"><span class="ms">search</span><input id="fmq" placeholder="Search files" value="${esc(m.q)}" autocomplete="off"></div>
   <div class="fmk">Folders</div><div class="fmchips">${FMF.map(x=>`<span class="${x===m.folder?'on':''}" data-do="wffmfolder" data-f="${x}">${x}</span>`).join('')}</div>
   <div class="fmk">Files <b id="fmcount">${m.sel.length} selected</b></div><div class="fmgrid">${files.map(([n,fo,t,k])=>{const h=(n+' '+fo).toLowerCase();const on=m.sel.includes(n);return `<div class="fmcard ${on?'on':''}" data-do="wffmpick" data-f="${esc(n)}" data-n="${esc(h)}" ${q&&!h.includes(q)?'style="display:none"':''}><i class="ms cb">${on?'check_box':'check_box_outline_blank'}</i><div class="th"><span class="bd ${t==='IMG'?'img':''}">${t}</span></div><b title="${esc(n)}">${esc(n)}</b><small>${t} · ${k}</small></div>`;}).join('')}</div></div>
@@ -1127,6 +1128,7 @@ document.addEventListener('input',e=>{if(e.target.id==='libq'){ui.libQ=e.target.
 document.addEventListener('mousedown',e=>{if(e.target.closest('.qa .ms'))e.preventDefault();});
 document.addEventListener('focusout',e=>{const qa=e.target.closest&&e.target.closest('.wr .qa:not(.filled)');if(!qa)return;const id=qa.closest('.wr').dataset.q,v=e.target.innerText.trim();if(!v||stOf(id)!=='open')return;const x=S.q[id];Q[id].txt=v;Q[id].refs=[];Q[id].html=null;x.st='ready';x.human=true;x.auto=false;setTimeout(renderPane);});
 document.addEventListener('keydown',e=>{
+  if(e.key==='Escape'&&ui.fm){ui.fm=null;renderPane();return;}
   if(e.key==='Enter'&&e.target.matches&&e.target.matches('.wr .ins.go')){e.preventDefault();e.target.click();return;}
   if(e.ctrlKey&&e.altKey&&e.key.toLowerCase()==='i'){e.preventDefault();insNext();return;}
   if((e.ctrlKey||e.metaKey)&&e.key==='Enter'&&ui.view==='context'&&ui.tab==='q'&&!$('#odlg')){e.preventDefault();putIn(ui.cur,true);return;}
