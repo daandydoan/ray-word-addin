@@ -768,7 +768,7 @@ function renderPane(){
   p.innerHTML = brand()+(ui.view==='context'&&ui.tab==='q'?'':tabs())+(ui.tab==='q'?qtab():ui.tab==='ask'?asktab():ui.tab==='lib'?libtab():teamtab());
   if(ui.refocus){const id=ui.refocus;ui.refocus=null;setTimeout(()=>{const el=document.querySelector('.wr[data-q="'+id+'"] .qa .in');el&&el.focus();});}
   $('#pane').classList.toggle('edfocus',!!ui.focus&&ui.view==='context'&&ui.tab==='q');
-  const pb=p.querySelector('.pbody'),cur=p.querySelector('.wr.cur');if(keep&&pb&&top!=null)pb.scrollTop=top;else cur&&cur.scrollIntoView({block:'nearest'});
+  const pb=p.querySelector('.pbody'),cur=p.querySelector('.wr.cur');if(keep&&pb&&top!=null)pb.scrollTop=top;else cur&&cur.scrollIntoView({block:'center'});
   if(ui.toFirst&&pb&&ui.tab==='q'&&ui.view==='list'){ui.toFirst=false;const r=[...pb.querySelectorAll('.wr[data-q]')].find(w=>stOf(w.dataset.q)!=='done');if(r)pb.scrollTop+=r.getBoundingClientRect().top-pb.getBoundingClientRect().top-4-(pb.querySelector('.runsum')?.offsetHeight+6||0);}
   // slide content by tab order; glide the underline from the last tab
   const key=[ui.tab,ui.view,ui.filter,ui.stf,ui.view==='context'?ui.cur:''].join('|');if(key===ui._key)p.dataset.same='';else p.removeAttribute('data-same');ui._key=key;
