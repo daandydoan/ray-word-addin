@@ -516,6 +516,8 @@ td .cc.sel::before{display:none}
 /* hidden for now: Ask Ray history/new-chat row and Reference chips */
 .chat .top,.ray-foot .ray-seclabel,.ray-foot .ray-ctx{display:none}
 .wfsteps{display:flex}
+.wfsum{border:1px solid var(--r-line);border-radius:10px;padding:8px 10px;font-size:11.5px}.wfsum .k{font-size:10px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--r-tx-3);margin-bottom:4px}
+.wfsum .r{display:grid;grid-template-columns:16px auto minmax(0,1fr);gap:6px;align-items:center;padding:2px 0;color:var(--r-tx-3)}.wfsum .r .ms{font-size:14px;color:var(--acc)}.wfsum .r b{text-align:right;font-weight:600;color:var(--r-tx);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .wfintro{display:flex;flex-direction:column;gap:12px;padding:6px 2px 0}
 .wfintro .empty{align-items:flex-start;text-align:left;padding:8px 2px 0}
 .wfintro .empty p{max-width:none}.wfintro .empty p b{color:var(--r-tx);font-weight:700}
@@ -834,7 +836,6 @@ function wfBlock(){const r=ui.run,T=ui.tenderName||'Bundaberg Regional Council',
   const head='',pin=`<div class="wfhead"><div class="wt"><span class="ms">play_lesson</span>Fill this document<small>${at>=N?'Done · '+N+' of '+N:'Step '+(at+1)+' of '+N}</small></div><div class="ray-segs">${WFSTEPS.map((n,i)=>`<i class="ray-seg ${i<at?'done':i===at?'now':''}" title="${i+1}. ${n}"></i>`).join('')}</div></div>`;
   const [ic,lbl,warn]=gate?['bolt','Checking requirements']:r.stage==='ask'?['help','Waiting for you']:r.stage==='done'?['check_circle','Finished']:r.stage==='stopped'?['pause','Paused',1]:r.stage==='undone'?['undo','Run undone',1]:['bolt',['Reading the document','Finding questions','Matching the Response Library','Drafting the rest'][r.step||0]];
   ui._wfpin=pin;let o=head+`<div class="wfstat ${warn?'warn':''}"><span><span class="ms">${ic}</span>${lbl}</span></div>`;
-  const intro=ray(p("I'll find the questions in this document and fill what I can. First, check this is the right tender."));
   const intro0=(h,t,rows,foot='')=>`<div class="wfintro"><div class="empty"><div class="halo"><img src="${RAY}" alt=""></div><h3>${h}</h3><p>${t}</p></div><div class="starters">${rows}</div>${foot}</div>`,row=(d,t,x='')=>`<div class="starter" ${d}>${t}${x?`<small>${x}</small>`:''}</div>`;
   if(r.stage==='confirm')return intro0("Let's fill this document",'It looks like it belongs to <b>Bundaberg Regional Council</b>. There are 5 steps, and I\'ll ask before each one.',
     row('data-do="wfyes"',"Yes, that's the tender")+row('data-do="wfpick"',"It's a different tender"));
@@ -844,7 +845,7 @@ function wfBlock(){const r=ui.run,T=ui.tenderName||'Bundaberg Regional Council',
     TFOLDERS.map(f=>row(`data-do="wffolder" data-f="${f[0]}"`,f[0],f[1])).join(''),'<a class="btn ghost wflink" data-do="wfpick">Change tender</a>');
   // placeholder setup steps, still to be designed
   if(r.stage==='mock3'||r.stage==='mock4'){const n=r.stage.slice(-1);return intro0('Mock step '+n,'Placeholder. This step hasn\'t been designed yet.',row('data-do="wfmock"','Continue'),`<a class="btn ghost wflink" data-do="wfback" data-to="${n==='3'?'folder':'mock3'}">Back</a>`);}
-  o+=intro+`<div class="you">${esc(T+' · '+F)}</div>`;
+  o+=`<div class="wfsum"><div class="k">Your choices</div>${[['Tender',T],['Upload to',F],['Mock step 3','Done'],['Mock step 4','Done']].map(([k,v])=>`<div class="r"><span class="ms">check_circle</span><span>${k}</span><b>${esc(v)}</b></div>`).join('')}</div>`;
   const foot='<div class="tfoot"><span class="ms" data-do="wfcopy" title="Copy">content_copy</span>just now</div>';
   if(r.stage==='undone')return o+ray(p('Undone. Nothing from this run is in your document.')+'<div class="acts"><span class="btn" data-do="wfrestart">Start again</span></div>'+foot);
   const st=[['read_document',`Reading the document · ${Math.min(r.prog||0,8)}/8 sections`],['find_questions',`Finding questions · ${r.found?r.n+' found':'…'}`],['match_library',`Matching Response Library · ${r.k||0} matched`],['draft_answers',`Drafting the rest · ${r.d||0} drafted`]].slice(0,r.stage==='done'?4:r.stage==='ask'?r.step:(r.step||0)+1);
