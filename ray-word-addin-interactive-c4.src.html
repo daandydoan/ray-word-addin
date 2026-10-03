@@ -931,14 +931,15 @@ function teamtab(){
 
 /* ===== actions ===== */
 // after an inline answer goes in: move to the next row in the list that's still open or a draft, cursor ready
-const fabTarget=()=>ui.cur&&!S.q[ui.cur].skip&&stOf(ui.cur)!=='done'?ui.cur:queue().find(k=>stOf(k)!=='done');
+const fabTarget=()=>ui.active&&!S.q[ui.active].skip&&stOf(ui.active)!=='done'?ui.active:queue().find(k=>stOf(k)!=='done');
 function updFab(){const pb=$('.pbody'),fab=pb&&pb.querySelector('.fab');if(!fab)return;const id=fabTarget(),row=id&&pb.querySelector('.wr[data-q="'+id+'"]');
   if(!row){fab.classList.remove('on');return;}const r=row.getBoundingClientRect(),p=pb.getBoundingClientRect(),off=r.bottom<p.top+40||r.top>p.bottom-40;
-  fab.classList.toggle('on',off);fab.firstChild.textContent=r.top<p.top?'arrow_upward':'arrow_downward';fab.lastChild.textContent=(id===ui.cur?'Back to ':'Next to answer: ')+id;}
+  fab.classList.toggle('on',off||ui.cur!==id);fab.firstChild.textContent=r.top<p.top?'arrow_upward':'arrow_downward';fab.lastChild.textContent=(id===ui.active?'Back to ':'Next to answer: ')+id;}
+document.addEventListener('focusin',e=>{const w=e.target.closest&&e.target.closest('.wr .qa')&&e.target.closest('.wr[data-q]');if(w){ui.active=w.dataset.q;updFab();}});
 document.addEventListener('scroll',e=>{if(e.target.classList&&e.target.classList.contains('pbody'))updFab();},true);
 function jumpNext(id){const ids=[...document.querySelectorAll('.pbody .wr[data-q]')].map(w=>w.dataset.q).filter(k=>!S.q[k].skip);
   const nx=ids.slice(ids.indexOf(id)+1).find(k=>stOf(k)!=='done');if(!nx){toast('Nothing left to answer below');return;}
-  ui.cur=nx;document.querySelectorAll('.wr.cur').forEach(w=>w.classList.remove('cur'));const row=document.querySelector('.wr[data-q="'+nx+'"]');row.classList.add('cur');
+  ui.cur=ui.active=nx;document.querySelectorAll('.wr.cur').forEach(w=>w.classList.remove('cur'));const row=document.querySelector('.wr[data-q="'+nx+'"]');row.classList.add('cur');
   row.scrollIntoView({block:'center',behavior:'smooth'});selectCC('q:'+nx);
   const inp=row.querySelector('.qa .in');if(inp){inp.focus();const r=document.createRange();r.selectNodeContents(inp);r.collapse(false);const sel=getSelection();sel.removeAllRanges();sel.addRange(r);}
   else{const go=row.querySelector('.ins.go');if(go){go.tabIndex=0;go.focus({preventScroll:true});}}}
@@ -1100,7 +1101,7 @@ document.addEventListener('click',e=>{
     wfmock(){wfStart();},
     wfback(){ui.run.stage=t.dataset.to;renderPane();},
     wfupload(){const r=ui.run,up=r.uploads=r.uploads||[],d=['Site methodology 2025.docx','Pricing notes.xlsx'].find(x=>!up.includes(x));if(!d){toast('Nothing else to upload in the demo');return;}up.push(d);(r.refs=r.refs||[]).push(d);toast(d+' uploaded · 1.2 MB');renderPane();},
-    tocur(){const id=fabTarget();if(!id)return;ui.cur=id;selectCC('q:'+id);renderPane();const row=document.querySelector('.wr[data-q="'+id+'"]');if(!row)return;row.scrollIntoView({block:'center',behavior:'smooth'});row.querySelector('.qa .in')?.focus({preventScroll:true});},
+    tocur(){const id=fabTarget();if(!id)return;ui.cur=ui.active=id;selectCC('q:'+id);renderPane();const row=document.querySelector('.wr[data-q="'+id+'"]');if(!row)return;row.scrollIntoView({block:'center',behavior:'smooth'});row.querySelector('.qa .in')?.focus({preventScroll:true});},
     sumoff(){ui.run.sumOff=true;renderPane();},
     wffmopen(){const r=ui.run,up=r.uploads||[];ui.fm={sel:(r.refs||[]).filter(d=>!up.includes(d)),folder:'All files',q:''};renderPane();setTimeout(()=>$('#fmq')?.focus());},
     wffmclose(){ui.fm=null;renderPane();},
@@ -1114,7 +1115,7 @@ document.addEventListener('click',e=>{
     // ponytail: undo resets every question the run touched, even one you edited mid-run; per-question undo if that bites
     wfundo(){const r=ui.run;if(ui.scan)ui.scan.ids.forEach(id=>delete ui.drafting[id]);ui.scan=null;Object.keys(r.orig||{}).forEach(id=>{const x=S.q[id];if(x.auto&&x.inserted)S.changes=Math.max(0,S.changes-1);Object.assign(x,{st:'open',inserted:false,accepted:false,auto:false,ai:false,blocked:false});Q[id].txt=r.orig[id];});r.stage='undone';renderPage();renderPane();toast("Removed this run's tracked changes");},
     wfrestart(){wfStart();},
-    wfreview(){ui.tab='q';ui.view='list';ui.toFirst=true;const id=queue().find(k=>stOf(k)!=='done');if(id){ui.cur=id;selectCC('q:'+id);}renderPane();},
+    wfreview(){ui.tab='q';ui.view='list';ui.toFirst=true;const id=queue().find(k=>stOf(k)!=='done');if(id){ui.cur=ui.active=id;selectCC('q:'+id);}renderPane();},
     wfcopy(){toast(ui.run.stage==='done'&&S.protected?ui.run.k+' answers copied · paste them into the document':'Copied');},
     copyq(){toast(q+' copied · paste it into the document');},
     wfresume(){const r=ui.run;if(!r||r.stage!=='working'){toast('Start a run first, then try this while Ray is working');return;}r.resumed=true;ui.tab='ask';renderPane();mark('wfresume');},
