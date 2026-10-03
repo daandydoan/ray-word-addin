@@ -986,8 +986,8 @@ function draft(id,cb){if(ui.drafting[id])return;ui.drafting[id]=true;renderPane(
 const urSync=()=>document.querySelectorAll('[data-do="edundo"],[data-do="edredo"]').forEach(b=>b.classList.toggle('dis',!(((b.dataset.do==='edundo'?ui.undo:ui.redo)[ui.cur])||[]).length));
 const snap=ed=>{(ui.undo[ui.cur]=ui.undo[ui.cur]||[]).push(ed.innerHTML);ui.redo[ui.cur]=[];setTimeout(urSync);};
 const edText=()=>(document.getElementById('edbody')?.innerText||'').trim();const sents=t=>t.match(/[^.!?]+[.!?]+/g)||[t];function putEd(p){const ed=document.getElementById('edbody');if(!ed)return;snap(ed);ed.innerHTML='<p>'+esc(p.join(' ').replace(/\s+/g,' ').trim())+'</p>';ed.dispatchEvent(new Event('input',{bubbles:true}));}
-function nextReady(){const all=SECTIONS.flatMap(s=>s.q).filter(id=>!S.q[id].skip);return all.find(id=>stOf(id)==='ready');}
-function insNext(){const id=nextReady();if(!id){toast('Nothing ready to insert — draft something first');return;}ui.cur=id;insert(id);mark('insnext');}
+function nextReady(){const all=SECTIONS.flatMap(s=>s.q).filter(id=>!S.q[id].skip);return all.find(id=>stOf(id)==='ready'&&!S.q[id].ai&&!S.q[id].blocked);}
+function insNext(){const id=nextReady();if(!id){const n=live().filter(nr).length;toast(n?n+' need review first — open each one from the list':'Nothing ready to insert yet');return;}ui.cur=id;insert(id);mark('insnext');}
 function draftAll(cb){const ids=live().filter(id=>stOf(id)==='open'&&(!S.q[id].owner||S.q[id].owner==='DD'));if(!ids.length){toast('Nothing open that\'s yours to draft');return;}let n=0;ids.forEach((id,i)=>setTimeout(()=>draft(id,()=>{if(++n===ids.length){toast(`${ids.length} drafted · Insert ${ids.length} ready`);mark('draftall');cb&&cb();}}),i*250));}
 // ponytail: canned replies keyed on intent; the real add-in sends the thread + context chips to Ray
 const sentOf=t=>t.split(/(?<=[.!?])\s+(?=[A-Z0-9])/).filter(Boolean);
