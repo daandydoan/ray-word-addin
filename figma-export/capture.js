@@ -165,6 +165,33 @@ document.head.insertAdjacentHTML('beforeend','<style>*,*::before,*::after{animat
   await fresh(); await run(`$c('[data-do=wfnotenders]')`); await untoast();
   await snap('E38', 'No tenders', 'With no tenders on Tenderfy, step 1 says so and links to Tenderfy to create one.', 'edge');
 
+  /* ---------- failure paths (Demo > Simulate a failure) ---------- */
+  const fail = async v => { await run(`$sel('failsel','${v}')`); await untoast(); };
+  await fresh(); await fail('slow');
+  await snap('E39', 'Loading tenders', 'Tenders load from Tenderfy; placeholder rows show until they arrive.', 'fail');
+  await fresh(); await fail('nofolders'); await run(`$c('[data-do=wftender][data-i="0"]')`);
+  await snap('E40', 'Tender has no folders', 'Step 2 offers to upload to the tender itself; the team can move it later.', 'fail');
+  await fresh(); await fail('nofiles'); await setup(); await run(`$c('[data-do=wffmopen]')`);
+  await snap('E41', 'File Manager empty', 'No files yet: the sheet points to Upload File.', 'fail');
+  await fresh(); await fail('badfile'); await setup(); await run(`$c('[data-do=wfupload]')`); await untoast();
+  await snap('E42', 'Unsupported file', 'A file of the wrong type or size is refused with what is allowed.', 'fail');
+  await fresh(); await fail('upload'); await start();
+  await snap('E43', 'Upload failed', 'Nothing changes in the document or on Tenderfy. Try again, or choose another folder.', 'fail');
+  await fresh(); await fail('library'); await start(); await until(`ui.run.stage==='failed'`);
+  await snap('E44', 'Response Library unreachable', 'Ray stops before writing anything. Try again, or answer in Q&A meanwhile.', 'fail');
+  await fresh(); await fail('offline'); await start(); await until(`ui.run.stage==='failed'`);
+  await snap('E45', 'Connection lost mid-run', 'Says how many answers are already in; Try again carries on from there.', 'fail');
+  await fresh(); await fail('noquestions'); await start(); await until(`ui.run.stage==='done'`); await untoast(); await run(`renderPane()`);
+  await snap('E46', 'No questions found', 'Points to right-click Add as a question, or choosing another tender.', 'fail');
+  await boot(); await fail('insert'); await run(`$see('.wr[data-q="1.8"]')`); await run(`$type('.wr[data-q="1.8"] .qa .in','07 4152 0001')`); await run(`$c('.wr[data-q="1.8"] .qa .go')`); await run(`$see('.wr[data-q="1.8"]')`);
+  await snap('E47', "Couldn't insert", 'The answer area was moved or deleted: the row says so and offers Copy.', 'fail');
+  await boot(); await fail('chat'); await run(`$c('[data-do=tab][data-tab=ask]')`);
+  await run(`$type('#cin','What is our ABN?');document.querySelector('#cin').dispatchEvent(new KeyboardEvent('keydown',{key:'Enter',bubbles:true}))`); await b.sleep(1800);
+  await run(`const p=document.querySelector('.pbody');p.scrollTop=p.scrollHeight`);
+  await snap('E48', "Ray can't answer", 'A failed reply says nothing changed and to try again.', 'fail');
+  await boot(); await run(`$sel('failsel','session')`); await untoast();
+  await snap('E49', 'Session expired', 'A sheet over the pane: sign in again, nothing is lost.', 'fail');
+
   fs.writeFileSync(__dirname + '/states/meta.json', JSON.stringify(meta, null, 1));
   b.close();
 })().catch(e => { console.error(e); process.exit(1); });

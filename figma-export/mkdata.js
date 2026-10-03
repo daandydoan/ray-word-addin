@@ -23,10 +23,16 @@ const NAMES = {
   E30: ['Question card / 6.1 Pricing basis / Ray · Use this answer', 'H13'], E31: ['Question card / 6.1 Pricing basis / Full screen', 'H13'], E32: ['Q&A list / Not a Question / Dismissed', 'H13'],
   E35: ['Q&A list / Missed question / Right-click menu', 'H08'], E36: ['Q&A list / Missed question / Added as Needs Review', 'H08'],
   E37: ["Q&A list / Protected document / Couldn't insert rows", 'H07'], E38: ['Ask Ray / Choose the tender / No tenders', 'H01'],
+  E39: ['Ask Ray / Choose the tender / Loading', 'H01'], E40: ['Ask Ray / Choose where to upload / No folders', 'H02'], E41: ['Ask Ray / File Manager / Empty', 'H04'],
+  E42: ['Ask Ray / Add reference documents / Unsupported file', 'H03'], E43: ['Ask Ray / Fill this document / Upload failed', 'H06'],
+  E44: ['Ask Ray / Fill this document / Library unreachable', 'H06'], E45: ['Ask Ray / Fill this document / Connection lost', 'H06'],
+  E46: ['Ask Ray / Fill this document / No questions found', 'H07'], E47: ["Q&A list / Inline answer / Couldn't insert", 'H08'],
+  E48: ["Ask Ray / Conversation / Ray can't answer", 'H07'], E49: ['Header / Session expired / Sheet', 'H14'],
 };
 const OLD = { H01: '18:8546', H02: '18:9046', H03: '18:9546', H04: '18:10032', H05: '18:10745', H06: '18:11371', H07: '18:11983', H08: '18:12544', H09: '18:13106', H10: '18:13669', H11: '18:14285', H12: '18:14849', H13: '18:15411', H14: '18:16023',
   E01: '18:16639', E02: '18:17333', E03: '18:17830', E04: '18:18449', E05: '18:19070', E06: '18:19680', E07: '18:20291', E08: '18:20910', E09: '18:21539', E10: '18:22104', E11: '18:22701', E12: '18:23260', E13: '18:23841', E14: '18:24417', E15: '18:24937', E16: '18:25497', E17: '18:7925', E18: '18:26103', E19: '18:26722', E20: '18:27329', E21: '18:27930', E22: '18:28565', E23: '32:26203', E24: '32:26766', E25: '32:27332', E26: '32:27970',
-  E27: '35:21310', E28: '35:21999', E29: '35:22573', E30: '35:23167', E31: '35:23730', E32: '35:24263', E33: '35:24868', E34: '35:25430', E35: '50:5774', E36: '50:6453', E37: '50:7112', E38: '50:7738' };
+  E27: '35:21310', E28: '35:21999', E29: '35:22573', E30: '35:23167', E31: '35:23730', E32: '35:24263', E33: '35:24868', E34: '35:25430', E35: '50:5774', E36: '50:6453', E37: '50:7112', E38: '50:7738',
+  E39: '58:6257', E40: '58:6800', E41: '58:7339', E42: '58:7946', E43: '58:8501', E44: '58:9065', E45: '58:9629', E46: '58:10199', E47: '58:10763', E48: '58:11420', E49: '58:12059' };
 const pos = {}, stack = {};
 for (const [id, [, br]] of Object.entries(NAMES)) {
   if (!br) pos[id] = { x: (+id.slice(1) - 1) * 1640, y: 0 };
