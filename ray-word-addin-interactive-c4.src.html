@@ -565,7 +565,7 @@ td .cc.sel::before{display:none}
 .refcard{border:1px solid var(--r-line);border-radius:12px;padding:12px;background:#fff;display:flex;flex-direction:column;gap:10px}
 .refcard .rch{display:flex;gap:10px;align-items:center}.refcard .rch>.ms,.fmh .fmi{width:32px;height:32px;border-radius:9px;background:var(--r-teal-bg);color:var(--r-teal-tx);display:grid;place-items:center;font-size:18px;flex:none}
 .refcard .rch b,.fmh b{display:block;font-size:12.5px;color:var(--r-tx)}.refcard .rch small,.fmh small{font-size:11px;color:var(--r-tx-3)}
-.refcard .rcb{display:grid;grid-template-columns:1fr 1fr;gap:6px}.refcard .rcb .btn{justify-content:center}
+.refcard .rcb{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:6px}.refcard .rcb .btn{justify-content:center}
 .fmback{position:absolute;inset:0;z-index:29;background:rgba(20,30,28,.45);cursor:pointer;animation:fmfade .18s ease-out}@keyframes fmfade{from{opacity:0}}
 .fmsheet{position:absolute;inset:44px 6px 6px;z-index:30;background:#fff;display:flex;flex-direction:column;border-radius:14px;box-shadow:0 14px 36px rgba(0,0,0,.28);overflow:hidden;animation:fmup .2s ease-out}
 @keyframes fmup{from{transform:translateY(14px);opacity:0}}
@@ -869,7 +869,7 @@ function wfBlock(){const r=ui.run,T=ui.tenderName||'Bundaberg Regional Council',
   // placeholder setup steps, still to be designed
   if(r.stage==='mock3'){const on=r.refs||[],up=r.uploads||[];
     return intro0('Any other documents to use?','Add documents Ray should read when answering this Schedule. This step is optional.',
-      `<div class="refcard"><div class="rch"><span class="ms">library_add</span><div><b>Reference documents</b><small>From Tenderfy or this computer</small></div></div><div class="rcb"><span class="btn ghost" data-do="wffmopen"><span class="ms">folder_open</span>Select from Tenderfy</span><span class="btn ghost" data-do="wfupload"><span class="ms">upload_file</span>Upload File</span></div></div>`
+      `<div class="refcard"><div class="rch"><span class="ms">library_add</span><div><b>Reference documents</b><small>From Tenderfy or this computer</small></div></div><div class="rcb"><span class="btn ghost" data-do="wffmopen"><span class="ms">folder_open</span>Select File</span><span class="btn ghost" data-do="wfupload"><span class="ms">upload_file</span>Upload File</span></div></div>`
       +on.map(d=>`<div class="refpick"><span class="ms">${up.includes(d)?'upload_file':'description'}</span><span>${esc(d)}<small>${up.includes(d)?'Uploaded from this computer':'From Tenderfy'}</small></span><span class="ms x" data-do="wfref" data-f="${esc(d)}" title="Remove">close</span></div>`).join(''),
       `<div class="wfbtns"><a class="btn ghost" data-do="wfback" data-to="folder">Back</a><a class="btn" data-do="wfmock">${on.length?'Continue with '+on.length:'Skip'}</a></div>`);}
   if(r.stage==='mock4'){const n=r.stage.slice(-1);return intro0('Mock step '+n,'Placeholder. This step hasn\'t been designed yet.',row('data-do="wfmock"','Continue'),`<a class="btn ghost wflink" data-do="wfback" data-to="${n==='3'?'folder':'mock3'}">Back</a>`);}
