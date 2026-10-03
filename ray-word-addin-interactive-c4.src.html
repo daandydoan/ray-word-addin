@@ -584,8 +584,8 @@ td .cc.sel::before{display:none}
 .fmcard b{display:block;font-weight:500;color:var(--r-tx);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.fmcard small{color:var(--r-tx-3);font-size:10.5px}
 .fmf{display:flex;align-items:center;gap:6px;padding:10px 12px;border-top:1px solid var(--r-line)}.fmf small{flex:1;font-size:10.5px;color:var(--r-tx-3)}
 .pbody:not(.team) .wr.cur,.pbody:not(.team) .wr.cur:hover,.pbody:not(.team) .wr:focus-within{--rowbg:#E4F3EE;background:#E4F3EE;border:1px solid #BFE0D2!important;border-radius:10px;padding:10px;margin:4px 0}
-.pbody .fab{position:sticky;bottom:12px;align-self:flex-end;margin:-40px 2px 0 0;width:36px;height:36px;border-radius:50%;background:var(--acc);color:#fff;display:grid;place-items:center;box-shadow:0 4px 12px rgba(0,0,0,.22);cursor:pointer;z-index:6;opacity:0;transform:scale(.8);pointer-events:none;transition:opacity .15s,transform .15s}
-.pbody .fab.on{opacity:1;transform:none;pointer-events:auto}.pbody .fab .ms{font-size:20px}.pbody .fab:hover{filter:brightness(.92)}
+.pbody .fab{position:sticky;bottom:12px;align-self:flex-end;margin:-40px 2px 0 0;height:34px;padding:0 14px 0 10px;border-radius:99px;font-size:12px;font-weight:600;white-space:nowrap;background:var(--acc);color:#fff;display:flex;align-items:center;gap:4px;box-shadow:0 4px 12px rgba(0,0,0,.22);cursor:pointer;z-index:6;opacity:0;transform:scale(.8);pointer-events:none;transition:opacity .15s,transform .15s}
+.pbody .fab.on{opacity:1;transform:none;pointer-events:auto}.pbody .fab .ms{font-size:18px}.pbody .fab:hover{filter:brightness(.92)}
 </style></head>
 <body>
 <div class="demo" id="demo"><div class="demo-btn" data-do="demotog"><span class="ms">smart_display</span>Demo</div><div class="demo-list">
@@ -802,7 +802,7 @@ function qtab(){
   const list=SECTIONS.map(s=>{const rows=s.q.filter(id=>!S.q[id].skip).filter(id=>inScope(id)&&(!ui.stf||(ui.stf==='open'?stOf(id)!=='done':ui.stf==='review'?nr(id):stOf(id)===ui.stf))&&(ui.filter!=='all'||!ui.who||(ui.who==='none'?!S.q[id].owner:S.q[id].owner===ui.who)));if(!rows.length&&(ui.filter==='mine'||ui.who))return'';
     const d=s.q.filter(id=>!S.q[id].skip&&S.q[id].accepted).length;
     const closed=ui.open[s.id]===false;return `<div class="sec ${closed?'closed':''}" data-do="sec" data-s="${s.id}"><i class="chev"></i>${s.t.split(' · ').pop()}<small>${d}/${s.q.length}</small></div><div class="wl"><div>${rows.map(row).join('')||emptyNote()}</div></div>`;}).join('');
-  return `<div class="qbar">${phase}<div class="qf">${ui.filter==='all'?`<label class="stfsel"><select id="whosel"><option value="">Anyone</option><option value="none" ${ui.who==='none'?'selected':''}>Unassigned</option>${Object.keys(PEOPLE).map(k=>`<option value="${k}" ${ui.who===k?'selected':''}>${PEOPLE[k].n.split(' ')[0]}${PEOPLE[k].me?' (you)':''}</option>`).join('')}</select></label>`:''}${filters}</div></div>`+`<div class="pbody">${sum}${list}${dismissed}<div class="qend"></div><span class="fab" data-do="tocur" title="Back to your question"><span class="ms">arrow_downward</span></span></div>`+cta();
+  return `<div class="qbar">${phase}<div class="qf">${ui.filter==='all'?`<label class="stfsel"><select id="whosel"><option value="">Anyone</option><option value="none" ${ui.who==='none'?'selected':''}>Unassigned</option>${Object.keys(PEOPLE).map(k=>`<option value="${k}" ${ui.who===k?'selected':''}>${PEOPLE[k].n.split(' ')[0]}${PEOPLE[k].me?' (you)':''}</option>`).join('')}</select></label>`:''}${filters}</div></div>`+`<div class="pbody">${sum}${list}${dismissed}<div class="qend"></div><span class="fab" data-do="tocur" title="Go back to the question you are answering"><span class="ms">arrow_downward</span><span class="t"></span></span></div>`+cta();
 }
 const emptyNote=()=>`<div class="note">Nothing ${ui.filter==='mine'?'assigned to you':ui.stf==='open'?'open':ui.stf==='ready'?'ready':ui.stf==='review'?'to review':'inserted'} in this section.</div>`;
 function row(id){const q=Q[id],x=S.q[id],st=stOf(id),cur=ui.cur===id,text=st==='ready'||st==='done'?q.txt:'';
@@ -934,7 +934,7 @@ function teamtab(){
 const fabTarget=()=>ui.cur&&!S.q[ui.cur].skip&&stOf(ui.cur)!=='done'?ui.cur:queue().find(k=>stOf(k)!=='done');
 function updFab(){const pb=$('.pbody'),fab=pb&&pb.querySelector('.fab');if(!fab)return;const id=fabTarget(),row=id&&pb.querySelector('.wr[data-q="'+id+'"]');
   if(!row){fab.classList.remove('on');return;}const r=row.getBoundingClientRect(),p=pb.getBoundingClientRect(),off=r.bottom<p.top+40||r.top>p.bottom-40;
-  fab.classList.toggle('on',off);fab.firstChild.textContent=r.top<p.top?'arrow_upward':'arrow_downward';}
+  fab.classList.toggle('on',off);fab.firstChild.textContent=r.top<p.top?'arrow_upward':'arrow_downward';fab.lastChild.textContent=(id===ui.cur?'Back to ':'Next to answer: ')+id;}
 document.addEventListener('scroll',e=>{if(e.target.classList&&e.target.classList.contains('pbody'))updFab();},true);
 function jumpNext(id){const ids=[...document.querySelectorAll('.pbody .wr[data-q]')].map(w=>w.dataset.q).filter(k=>!S.q[k].skip);
   const nx=ids.slice(ids.indexOf(id)+1).find(k=>stOf(k)!=='done');if(!nx){toast('Nothing left to answer below');return;}
