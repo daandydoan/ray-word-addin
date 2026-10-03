@@ -153,6 +153,18 @@ document.head.insertAdjacentHTML('beforeend','<style>*,*::before,*::after{animat
   await run(`const p=document.querySelector('.pbody');p.scrollTop=p.scrollHeight`);
   await snap('E34', 'Ask Ray · chat unlocked', 'Once the run is done the composer opens under the run summary for follow-up questions.', 'edge');
 
+  /* ---------- added after the doc council ---------- */
+  await boot();
+  await run(`const m=document.querySelector('#page .mq');m.scrollIntoView({block:'center'});const r=m.getBoundingClientRect();m.dispatchEvent(new MouseEvent('contextmenu',{bubbles:true,cancelable:true,clientX:r.x+40,clientY:r.y+6}))`);
+  await snap('E35', 'Missed question · right-click', 'Ray missed 4.4. Right-click it in the document and choose Add 4.4 as a question.', 'edge');
+  await run(`$c('.cmenu [data-do=cm_addq]')`); await run(`$see('.wr[data-q="4.4"]')`);
+  await snap('E36', 'Missed question added', '4.4 joins Section 4 in Q&A. Ray drafts it as Needs Review and the run summary counts it.', 'edge');
+  await fresh(); await run(`$c('[data-do=wfprotect]')`); await untoast(); await start(); await done(); await run(`$c('[data-do=wfreview]')`);
+  await run(`$see('.wr:has(.pst.warn)')`);
+  await snap('E37', 'Protected document · rows', "In a protected document each row Ray filled says Couldn't insert, with its own Copy button.", 'edge');
+  await fresh(); await run(`$c('[data-do=wfnotenders]')`); await untoast();
+  await snap('E38', 'No tenders', 'With no tenders on Tenderfy, step 1 says so and links to Tenderfy to create one.', 'edge');
+
   fs.writeFileSync(__dirname + '/states/meta.json', JSON.stringify(meta, null, 1));
   b.close();
 })().catch(e => { console.error(e); process.exit(1); });
