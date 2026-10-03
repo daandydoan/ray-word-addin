@@ -208,7 +208,16 @@ if (D.kind === 'components') {
 /* ---------------- screens ---------------- */
 const ids = [];
 for (const s of D.screens) {
-  const f = build(Object.assign({}, s.tree, { x: 0, y: 0 }), page, false);
+  let f = build(Object.assign({}, s.tree, { x: 0, y: 0 }), page, false);
+  const ex = s.target ? await figma.getNodeByIdAsync(s.target) : null;
+  if (ex && ex.type === 'FRAME') { // keep the node id: swap the fresh content into the existing frame
+    for (const c of [...ex.children]) c.remove();
+    ex.layoutMode = 'NONE'; ex.resize(f.width, f.height);
+    ex.fills = f.fills; ex.strokes = f.strokes; ex.effects = f.effects; ex.cornerRadius = f.cornerRadius; ex.clipsContent = f.clipsContent;
+    if (f.layoutMode !== 'NONE') { ex.layoutMode = f.layoutMode; for (const k of ['paddingTop', 'paddingRight', 'paddingBottom', 'paddingLeft', 'itemSpacing', 'primaryAxisAlignItems', 'counterAxisAlignItems', 'primaryAxisSizingMode', 'counterAxisSizingMode']) ex[k] = f[k]; }
+    for (const c of [...f.children]) ex.appendChild(c);
+    f.remove(); f = ex;
+  }
   f.name = s.name; f.x = s.x; f.y = s.y; ids.push(f.id);
 }
 await Promise.all(later.map(f => f()));
