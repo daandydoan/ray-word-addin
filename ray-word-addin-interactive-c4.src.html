@@ -516,6 +516,13 @@ td .cc.sel::before{display:none}
 /* hidden for now: Ask Ray history/new-chat row and Reference chips */
 .chat .top,.ray-foot .ray-seclabel,.ray-foot .ray-ctx{display:none}
 .wfsteps{display:flex}
+.wfintro{display:flex;flex-direction:column;gap:8px;padding:0 6px 8px}.wfintro .empty{padding:18px 10px 2px}
+.wfintro .k{font-size:9.5px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--r-tx-3);margin:6px 2px -2px}
+.wfchips{display:flex;flex-wrap:wrap;gap:6px}.wfintro .wfchips{justify-content:flex-start}.wfchips .ray-ctxchip{max-width:100%}.wfchips .ray-ctxchip .t{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.wfchips.sm .ray-ctxchip{font-size:10.5px;padding:3px 9px}.wfchips .ray-ctxchip .x{cursor:pointer}
+.wfwill{margin:0;padding:10px 12px 10px 30px;border:1px solid var(--r-line);border-radius:10px;font-size:12px;line-height:1.5;color:var(--r-tx-2)}.wfwill li+li{margin-top:4px}
+.wfintro .btn.wfgo{justify-content:center;padding:9px 12px;font-size:12.5px;margin-top:4px}
+.wfintro .wfalt{align-self:center;display:inline-flex;align-items:center;gap:2px;font-size:11px;color:var(--r-accent);cursor:pointer}.wfintro .wfalt .ms{font-size:15px}
 /* workflow start, after Agentic Ray (tenderfy-ray-phase1 .ray-segs / .ray-seg, live rail) */
 .wfhead{flex:none;padding:8px 14px 10px;border-bottom:1px solid var(--r-line);background:var(--r-sunk)}
 .ray-foot{padding:6px 8px 8px}.ray-foot .composer{margin:0}
@@ -822,12 +829,14 @@ function wfBlock(){const r=ui.run,T=ui.tenderName||'Bundaberg Regional Council',
   const gate=['confirm','pick','folder'].includes(r.stage),at=gate?0:r.stage==='done'?5:(r.step||0)+1;
   const head='',pin=`<div class="wfhead"><div class="wt"><span class="ms">play_lesson</span>Fill this document<small>${at>=5?'Done · 5 of 5':'Step '+(at+1)+' of 5'}</small></div><div class="ray-segs">${WFSTEPS.map((n,i)=>`<i class="ray-seg ${i<at?'done':i===at?'now':''}" title="${i+1}. ${n}"></i>`).join('')}</div></div>`;
   const [ic,lbl,warn]=gate?['bolt','Checking requirements']:r.stage==='done'?['check_circle','Finished']:r.stage==='stopped'?['pause','Paused',1]:r.stage==='undone'?['undo','Run undone',1]:['bolt',['Reading the document','Finding questions','Matching the Response Library','Drafting the rest'][r.step||0]];
-  ui._wfpin=pin;let o=head+`<div class="wfstat ${warn?'warn':''}"><span><span class="ms">${ic}</span>${lbl}</span></div>`;
-  const intro=ray(p("I'll find the questions in this document and fill what I can. First, check this is the right tender."));
-  if(r.stage==='confirm')return o+intro+`<div class="gate"><div class="gh"><span class="ms">checklist</span><b>Before you start</b><a data-do="wfpick"><span class="ms">swap_horiz</span>Pick another</a></div><p>This document looks like it belongs to <b>Bundaberg Regional Council</b> · Default folder. Ray will:</p><ul><li>read the document and find every question</li><li>put in answers the Response Library already has, as tracked changes</li><li>draft the rest for you to review</li></ul><p class="gn">Wrong tender? Pick another, then start.</p><div class="acts"><span class="btn" data-do="wfyes">Yes, start</span></div></div>`;
-  if(r.stage==='pick')return o+intro+`<div class="gate"><div class="gh"><span class="ms">checklist</span><b>Which tender?</b><a data-do="foreign"><span class="ms">chevron_left</span>Back</a></div><div class="tpick"><div class="lib-s"><span class="ms">search</span>Search tenders…</div>${TENDERS.slice(0,3).map((t,i)=>`<div class="ti" data-do="wftender" data-i="${i}">${t.split(' · ')[0]}<small>${t.split(' · ').slice(1).join(' · ')||'Tender'}</small></div>`).join('')}</div></div>`;
-  if(r.stage==='folder')return o+intro+`<div class="you">${esc(T)}</div><div class="gate"><div class="gh"><span class="ms">checklist</span><b>Which folder has your past answers?</b><a data-do="wfpick"><span class="ms">swap_horiz</span>Change</a></div><div class="tpick">${TFOLDERS.map(f=>`<div class="ti" data-do="wffolder" data-f="${f[0]}">${f[0]}<small>${f[1]}</small></div>`).join('')}</div></div>`;
-  o+=intro+`<div class="you">${r.picked?esc(T+' · '+F):'Yes, start'}</div>`;
+  ui._wfpin=pin;
+  const chip=(ic,t,x)=>`<span class="ray-ctxchip"><span class="ms">${ic}</span><span class="t">${esc(t)}</span>${x||''}</span>`;
+  const doc=chip('description','TEN3089 Returnable Schedules.docx');
+  const intro=(title,body)=>`<div class="wfintro"><div class="empty"><div class="halo"><img src="${RAY}" alt=""></div><h3>${title}</h3></div>${body}</div>`;
+  if(r.stage==='confirm')return intro('Let Ray fill this document',`<div class="k">Working on</div><div class="wfchips">${doc}${chip('folder','Bundaberg Regional Council · Default',`<span class="ms x" data-do="wfpick" title="Pick another tender">swap_horiz</span>`)}</div><div class="k">Ray will</div><ol class="wfwill"><li>Read the document and find every question</li><li>Put in answers the Response Library already has, as tracked changes</li><li>Draft the rest for you to review</li></ol><span class="btn wfgo" data-do="wfyes"><span class="ms">play_arrow</span>Start filling</span><a class="lnk wfalt" data-do="wfpick">Not this tender? Pick another</a>`);
+  if(r.stage==='pick')return intro('Which tender is this for?',`<div class="wfchips">${doc}</div><div class="tpick"><div class="lib-s"><span class="ms">search</span>Search tenders…</div>${TENDERS.slice(0,3).map((t,i)=>`<div class="ti" data-do="wftender" data-i="${i}">${t.split(' · ')[0]}<small>${t.split(' · ').slice(1).join(' · ')||'Tender'}</small></div>`).join('')}</div><a class="lnk wfalt" data-do="foreign"><span class="ms">chevron_left</span>Back</a>`);
+  if(r.stage==='folder')return intro('Which folder has your past answers?',`<div class="wfchips">${doc}${chip('work',T,`<span class="ms x" data-do="wfpick" title="Change tender">swap_horiz</span>`)}</div><div class="tpick">${TFOLDERS.map(f=>`<div class="ti" data-do="wffolder" data-f="${f[0]}">${f[0]}<small>${f[1]}</small></div>`).join('')}</div>`);
+  let o=`<div class="wfchips sm">${doc}${chip('folder',T+' · '+F)}</div><div class="wfstat ${warn?'warn':''}"><span><span class="ms">${ic}</span>${lbl}</span></div>`;
   const foot='<div class="tfoot"><span class="ms" data-do="wfcopy" title="Copy">content_copy</span>just now</div>';
   if(r.stage==='undone')return o+ray(p('Undone. Nothing from this run is in your document.')+'<div class="acts"><span class="btn" data-do="wfrestart">Start again</span></div>'+foot);
   const st=[['read_document',`Reading the document · ${Math.min(r.prog||0,8)}/8 sections`],['find_questions',`Finding questions · ${r.found?r.n+' found':'…'}`],['match_library',`Matching Response Library · ${r.k||0} matched`],['draft_answers',`Drafting the rest · ${r.d||0} drafted`]].slice(0,r.stage==='done'?4:(r.step||0)+1);
