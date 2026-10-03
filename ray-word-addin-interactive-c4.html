@@ -589,6 +589,9 @@ td .cc.sel::before{display:none}
 /* the row above a highlighted card loses its divider, or it draws across the card outline */
 .pbody:not(.team) .wr:has(+.wr.cur),.pbody:not(.team) .wr:has(+.wr:focus-within){border-bottom-color:transparent!important}
 .pbody .wr{scroll-margin-top:48px}
+.keyrow{display:flex;align-items:center;gap:10px;padding:6px 2px;font-size:12px;color:var(--r-tx);border-bottom:1px solid var(--r-line)}.keyrow .kk{flex:none;min-width:104px;display:flex;align-items:center;gap:3px;color:var(--r-tx-3);font-size:11px}
+.keyrow kbd{font:600 10.5px Outfit,sans-serif;color:var(--r-tx);background:var(--r-raise);border:1px solid var(--r-line-2);border-bottom-width:2px;border-radius:5px;padding:1px 6px}
+.logrow{display:flex;align-items:flex-start;gap:8px;padding:8px 2px;font-size:12px;color:var(--r-tx);border-bottom:1px solid var(--r-line)}.logrow .av{flex:none;width:22px;height:22px;font-size:8.5px}.logrow small{display:block;font-size:10.5px;color:var(--r-tx-3)}
 </style></head>
 <body>
 <div class="demo" id="demo"><div class="demo-btn" data-do="demotog"><span class="ms">smart_display</span>Demo</div><div class="demo-list">
@@ -789,7 +792,7 @@ function renderPane(){
 }
 const brand=()=>{const sub=!['list','tender','review'].includes(ui.view);
   const [t1,t2]=ui.view==='context'?['',ui.cur]:!ui.picked?['Fill this document','TEN3089 Returnable Schedules.docx']:[ui.tenderName||'Bundaberg Regional Council','Due 17 Oct 2026 · '+(ui.folder||'Default')+' Folder'];
-  return `<div class="ray-head">${sub?`<span class="ms hb" data-do="${ui.view==='folder'?'foreign':'list'}" title="Back">chevron_left</span>`:`<span class="av a1 me" title="Signed in as Dana Dorsey · dana.dorsey@example.com">DD</span>`}<div class="ray-title"><b>${esc(t1)}</b><small>${esc(t2)}${ui.view==='context'?' · <span class="hasg" data-do="assignmenu" data-q="'+ui.cur+'" title="Assign or reassign">'+(S.q[ui.cur].owner?'Assigned to '+avatar(S.q[ui.cur].owner)+esc(PEOPLE[S.q[ui.cur].owner].n):'<span class="ms">person_add</span>Assign User')+'<span class="ms">expand_more</span></span>':''}</small></div><span class="ms hb bell" data-do="bell" title="Notifications">notifications${S.notes.filter(n=>!n.read).length?`<b>${S.notes.filter(n=>!n.read).length}</b>`:''}</span><span class="ms hb" title="More">more_horiz</span></div>`;};
+  return `<div class="ray-head">${sub?`<span class="ms hb" data-do="${ui.view==='folder'?'foreign':'list'}" title="Back">chevron_left</span>`:`<span class="av a1 me" title="Signed in as Dana Dorsey · dana.dorsey@example.com">DD</span>`}<div class="ray-title"><b>${esc(t1)}</b><small>${esc(t2)}${ui.view==='context'?' · <span class="hasg" data-do="assignmenu" data-q="'+ui.cur+'" title="Assign or reassign">'+(S.q[ui.cur].owner?'Assigned to '+avatar(S.q[ui.cur].owner)+esc(PEOPLE[S.q[ui.cur].owner].n):'<span class="ms">person_add</span>Assign User')+'<span class="ms">expand_more</span></span>':''}</small></div><span class="ms hb bell" data-do="bell" title="Notifications">notifications${S.notes.filter(n=>!n.read).length?`<b>${S.notes.filter(n=>!n.read).length}</b>`:''}</span><span class="ms hb" data-do="more" title="More">more_horiz</span></div>`;};
 function tabs(){const open=ui.run&&!ui.run.found?0:live().filter(id=>stOf(id)!=='done').length;const mine=live().filter(id=>S.q[id].owner==='DD'&&stOf(id)!=='done').length;
   return `<div class="ptabs"><i class="tabbar"></i>${[['q','checklist','Q&amp;A',open],['ask','forum','Ask Ray']].map(([k,i,t,b])=>`<div class="ptab ${ui.tab===k?'on':''}" data-do="tab" data-tab="${k}"><span class="ms">${i}</span>${t}${b?`<b class="${k==='team'?'hot':''}">${b}</b>`:''}</div>`).join('')}<div class="ptab ico ${ui.tab==='lib'?'on':''}" data-do="tab" data-tab="lib" title="Response Library"><span class="ms">library_books</span></div></div>`;}
 const ctx=()=>`<div class="ctx"><span>Tender</span><b>${ui.foreign&&!ui.picked?'—':'Bundaberg RC · TEN/3089'}</b><span>Folder</span><b>Default</b><span>Document</span><b>TEN3089 Returnable Schedules.docx</b></div>`;
@@ -898,6 +901,12 @@ function fmSheet(){const m=ui.fm,q=m.q.toLowerCase();
   <details class="fmsec" open><summary><span class="ms chev">chevron_right</span>Folders</summary><div class="fmfolders">${FMF.map(fo=>`<div class="fmfold ${fo===m.folder?'on':''}" data-do="wffmfolder" data-f="${fo}" title="${fo}"><span class="ms">${fo===m.folder?'folder_open':'folder'}</span><span class="fn">${fo}</span><small>${fo==='All files'?FMFILES.length:FMFILES.filter(x=>x[1]===fo).length}</small></div>`).join('')}</div></details>
   <details class="fmsec" open><summary><span class="ms chev">chevron_right</span>Files<b id="fmcount">${m.sel.length} selected</b></summary><div class="fmgrid">${FMFILES.filter(x=>m.folder==='All files'||x[1]===m.folder).map(card).join('')}</div></details></div>
   <div class="fmf"><small>Files stay in your File Manager.</small><span class="btn ghost" data-do="wffmclose">Cancel</span><span class="btn ${m.sel.length?'':'dis'}" id="fmattach" data-do="wffmattach">Attach files</span></div></div>`;}
+const KEYS=[['Question list',[['↑ ↓','Move between questions'],['Shift + ↑ ↓','Jump to the nearest unanswered question'],['Enter','Answer the highlighted question (opens the card if the answer is long)'],['Shift + Enter','Open the question card and start writing'],['Tab','Next answer field'],['Esc','Leave the answer field']]],
+  ['Question card',[['↑ ↓','Previous / next question'],['Shift + ↑ ↓','Nearest unanswered question'],['Enter','Start writing'],['Ctrl + Enter','Put in document & next'],['Esc','Leave the editor, then the card']]],
+  ['Anywhere',[['Ctrl + Alt + I','Insert the next ready draft']]]];
+// one in-pane sheet for Keyboard shortcuts and Changelog; it closes on ×, the backdrop, Esc or any re-render
+function infoSheet(icon,title,sub,body){$('#pinner .info')&&document.querySelectorAll('#pinner .info').forEach(x=>x.remove());
+  $('#pinner').insertAdjacentHTML('beforeend',`<div class="fmback info" data-do="sheetclose" title="Close"></div><div class="fmsheet info" role="dialog" aria-modal="true" aria-label="${title}"><div class="fmh"><span class="fmi ms">${icon}</span><div><b>${title}</b><small>${sub}</small></div><span class="ms x" data-do="sheetclose" title="Close">close</span></div><div class="fmbody">${body}</div></div>`);}
 function wfRender(){const a=document.activeElement;if(a&&a.isContentEditable&&$('#pane').contains(a))return;renderPane();}
 function wfStart(){const r=ui.run;ui.picked=true;Object.assign(r,{stage:'working',step:0,prog:0,orig:{},found:false,k:0,d:0,resumed:false});ui.view='list';toast('Uploaded to '+(ui.tenderName||'Bundaberg Regional Council')+' · '+(ui.folder||'Default'));wfAsk();}
 function wfAsk(){ui.run.stage='working';wfRender();setTimeout(wfTick,300);}
@@ -1008,6 +1017,7 @@ function rayAsk(id,text){const c=ui.qchat[id]=ui.qchat[id]||[];const typed=($('#
   const ctxChat=c.some(m=>m.plain)||!typed?c:[{plain:typed},...c];const r=rayReply(text,ctxChat,id);
   c.push({you:text});const m={live:true};c.push(m);drawQ(id);
   setTimeout(()=>{m.live=false;Object.assign(m,r);if(r.plain&&!r.ans)m.ans=(r.html||'<p>'+esc(r.plain)+'</p>')+(r.note?`<p class="src"><span class="ms">${/Library/.test(r.note)?'library_books':'auto_awesome'}</span>${esc(r.note)}</p>`:'');m.ask=text;drawQ(id);setTimeout(()=>$('#qcin')?.focus());},1300);}
+const A_close=()=>document.querySelectorAll('#pinner .info').forEach(x=>x.remove());
 const A_send=()=>{const v=$('#cin')?.innerText.trim();if(v)ask(v);};
 function ask(text){ui.tab='ask';ui.chat.push({you:text});const r=rayReply(text);const m={steps:r.steps||[['read_open_document','Reading the open document'],...(ui.ctx.q?[['read_question','Reading '+ui.cur+' · '+Q[ui.cur].t]]:[])],live:true};ui.chat.push(m);renderPane();setTimeout(()=>$('#cin')?.focus());
   setTimeout(()=>{if(!r.steps)m.steps.push(['find_answer_from_library','Searching the Response Library']);renderPane();},600);
@@ -1110,6 +1120,12 @@ document.addEventListener('click',e=>{
     wfback(){ui.run.stage=t.dataset.to;renderPane();},
     wfupload(){const r=ui.run,up=r.uploads=r.uploads||[],d=['Site methodology 2025.docx','Pricing notes.xlsx'].find(x=>!up.includes(x));if(!d){toast('Nothing else to upload in the demo');return;}up.push(d);(r.refs=r.refs||[]).push(d);toast(d+' uploaded · 1.2 MB');renderPane();},
     tocur(){const id=fabTarget();if(!id)return;ui.cur=ui.active=id;selectCC('q:'+id);renderPane();const row=document.querySelector('.wr[data-q="'+id+'"]');if(!row)return;toTop(row);row.querySelector('.qa .in')?.focus({preventScroll:true});},
+    more(){const r=t.getBoundingClientRect(),w=$('#win').getBoundingClientRect();$('.cmenu')?.remove();const m=document.createElement('div');m.className='cmenu';m.style.left=Math.min(r.left-w.left,w.width-220)+'px';m.style.top=(r.bottom-w.top+2)+'px';
+      m.innerHTML='<div data-do="keys"><span class="ms">keyboard</span>Keyboard shortcuts</div><div data-do="changelog"><span class="ms">history</span>Changelog</div><hr><div data-do="signout"><span class="ms">logout</span>Sign out</div>';$('#win').appendChild(m);},
+    keys(){$('.cmenu')?.remove();infoSheet('keyboard','Keyboard shortcuts','Work through the questions without the mouse',KEYS.map(([g,rows])=>`<div class="fmk">${g}</div>${rows.map(([k,d])=>`<div class="keyrow"><span class="kk">${k.split(' + ').map(x=>`<kbd>${x}</kbd>`).join('+')}</span><span>${d}</span></div>`).join('')}`).join(''));},
+    changelog(){$('.cmenu')?.remove();infoSheet('history','Changelog','What changed in this document',S.log.length?S.log.map(e=>`<div class="logrow">${avatar(e.who)}<span><b>${PEOPLE[e.who].n.split(' ')[0]}</b> ${esc(e.t)}<small>${e.when}</small></span></div>`).join(''):'<div class="note">Nothing yet.</div>');},
+    sheetclose(){document.querySelectorAll('#pinner .info').forEach(x=>x.remove());},
+    signout(){$('.cmenu')?.remove();A.reset();toast('Signed out of Tenderfy · '+PEOPLE.DD.n);},
     sumoff(){ui.run.sumOff=true;renderPane();},
     wffmopen(){const r=ui.run,up=r.uploads||[];ui.fm={sel:(r.refs||[]).filter(d=>!up.includes(d)),folder:'All files',q:''};renderPane();setTimeout(()=>$('#fmq')?.focus());},
     wffmclose(){ui.fm=null;renderPane();},
@@ -1130,7 +1146,7 @@ document.addEventListener('click',e=>{
     wfprotect(){S.protected=!S.protected;toast(S.protected?"Document is protected · Ray can't write into it":'Document is editable again');mark('wfprotect');},
     cm_accept(){toast('Saved to the Response Library');}, cm_accept(){const id=ui.sel&&ui.sel.startsWith('q:')?ui.sel.slice(2):null;if(id){S.q[id].accepted=true;logIt('DD','accepted '+id+' in Review');}S.changes=Math.max(0,S.changes-1);renderPage();renderPane();toast('Insertion accepted — '+(id||'')+' is answered');},
   };
-  if(!ui.picked&&!/^wf/.test(d)&&!['reset','demotog','foreign','finishscan','think'].includes(d)){ui.tab='ask';renderPane();toast('Confirm the tender first');return;}
+  if(!ui.picked&&!/^wf/.test(d)&&!['reset','demotog','foreign','finishscan','think','more','keys','changelog','sheetclose','signout'].includes(d)){ui.tab='ask';renderPane();toast('Confirm the tender first');return;}
   if(ui.run&&ui.run.stage!=='done'&&['ask','send','askabn','askthis'].includes(d)){ui.tab='ask';renderPane();toast('Finish filling the document with Ray first');return;}
   A[d]&&A[d]();
   if(t.dataset.next&&q&&stOf(q)==='done'){const qs=queue();goQ(qs[qs.indexOf(q)+1],'down');}
@@ -1150,6 +1166,7 @@ document.addEventListener('mousedown',e=>{if(e.target.closest('.qa .ms'))e.preve
 document.addEventListener('focusout',e=>{const qa=e.target.closest&&e.target.closest('.wr .qa:not(.filled)');if(!qa)return;const id=qa.closest('.wr').dataset.q,v=e.target.innerText.trim();if(!v||stOf(id)!=='open')return;const x=S.q[id];Q[id].txt=v;Q[id].refs=[];Q[id].html=null;x.st='ready';x.human=true;x.auto=false;setTimeout(renderPane);});
 document.addEventListener('keydown',e=>{
   if(e.key==='Escape'&&ui.fm){ui.fm=null;renderPane();return;}
+  if(e.key==='Escape'&&$('#pinner .info')){A_close();return;}
   if(e.key==='Enter'&&e.target.matches&&e.target.matches('.wr .ins.go')){e.preventDefault();e.target.click();return;}
   if(e.ctrlKey&&e.altKey&&e.key.toLowerCase()==='i'){e.preventDefault();insNext();return;}
   if((e.ctrlKey||e.metaKey)&&e.key==='Enter'&&ui.view==='context'&&ui.tab==='q'&&!$('#odlg')){e.preventDefault();putIn(ui.cur,true);return;}
