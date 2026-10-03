@@ -772,7 +772,7 @@ function renderPane(){
   $('#pane').classList.toggle('edfocus',!!ui.focus&&ui.view==='context'&&ui.tab==='q');
   const pb=p.querySelector('.pbody'),cur=p.querySelector('.wr.cur');if(keep&&pb&&top!=null)pb.scrollTop=top;else cur&&cur.scrollIntoView({block:'center'});
   setTimeout(updFab);
-  if(ui.toFirst&&pb&&ui.tab==='q'&&ui.view==='list'){ui.toFirst=false;const r=[...pb.querySelectorAll('.wr[data-q]')].find(w=>stOf(w.dataset.q)!=='done');if(r)pb.scrollTop+=r.getBoundingClientRect().top-pb.getBoundingClientRect().top-4-(pb.querySelector('.runsum')?.offsetHeight+6||0);}
+  if(ui.toFirst&&pb&&ui.tab==='q'&&ui.view==='list'){ui.toFirst=false;const r=[...pb.querySelectorAll('.wr[data-q]')].find(w=>stOf(w.dataset.q)!=='done');if(r)toTop(r,false);}
   // slide content by tab order; glide the underline from the last tab
   const key=[ui.tab,ui.view,ui.filter,ui.stf,ui.view==='context'?ui.cur:''].join('|');if(key===ui._key)p.dataset.same='';else p.removeAttribute('data-same');ui._key=key;
   if(ui.qdir){p.dataset.qslide=ui.qdir;ui.qdir=null;}else p.removeAttribute('data-qslide');
@@ -936,11 +936,12 @@ function updFab(){const pb=$('.pbody'),fab=pb&&pb.querySelector('.fab');if(!fab)
   fab.classList.toggle('on',off||ui.cur!==id);fab.firstChild.textContent=r.top<p.top?'arrow_upward':'arrow_downward';fab.lastChild.textContent='Back to: '+id;}
 document.addEventListener('focusin',e=>{const w=e.target.closest&&e.target.closest('.wr .qa')&&e.target.closest('.wr[data-q]');if(w){const id=w.dataset.q;ui.cur=id;document.querySelectorAll('.wr.cur').forEach(x=>x!==w&&x.classList.remove('cur'));w.classList.add('cur');selectCC('q:'+id);updFab();}});
 document.addEventListener('scroll',e=>{if(e.target.classList&&e.target.classList.contains('pbody'))updFab();},true);
+const toTop=(row,smooth=true)=>{const pb=row.closest('.pbody');pb.scrollTo({top:pb.scrollTop+row.getBoundingClientRect().top-pb.getBoundingClientRect().top-(pb.querySelector('.runsum')?.offsetHeight+10||4),behavior:smooth?'smooth':'auto'});};
 function jumpNext(id){const ids=[...document.querySelectorAll('.pbody .wr[data-q]')].map(w=>w.dataset.q).filter(k=>!S.q[k].skip);
   const nx=ids.slice(ids.indexOf(id)+1).find(k=>stOf(k)!=='done');if(!nx){toast('Nothing left to answer below');return;}
   ui.cur=ui.active=nx;document.querySelectorAll('.wr.cur').forEach(w=>w.classList.remove('cur'));const row=document.querySelector('.wr[data-q="'+nx+'"]');row.classList.add('cur');
-  row.scrollIntoView({block:'center',behavior:'smooth'});selectCC('q:'+nx);
-  const inp=row.querySelector('.qa .in');if(inp){inp.focus();const r=document.createRange();r.selectNodeContents(inp);r.collapse(false);const sel=getSelection();sel.removeAllRanges();sel.addRange(r);}
+  toTop(row);selectCC('q:'+nx);
+  const inp=row.querySelector('.qa .in');if(inp){inp.focus({preventScroll:true});const r=document.createRange();r.selectNodeContents(inp);r.collapse(false);const sel=getSelection();sel.removeAllRanges();sel.addRange(r);}
   else{const go=row.querySelector('.ins.go');if(go){go.tabIndex=0;go.focus({preventScroll:true});}}}
 function putIn(id,next,text,html){const x=S.q[id],st=stOf(id),ed=document.getElementById('edbody');
   if(text==null){text=ed?ed.innerText.trim():Q[id].txt;html=ed&&ed.querySelector('table')?ed.innerHTML:null;}
@@ -1100,7 +1101,7 @@ document.addEventListener('click',e=>{
     wfmock(){wfStart();},
     wfback(){ui.run.stage=t.dataset.to;renderPane();},
     wfupload(){const r=ui.run,up=r.uploads=r.uploads||[],d=['Site methodology 2025.docx','Pricing notes.xlsx'].find(x=>!up.includes(x));if(!d){toast('Nothing else to upload in the demo');return;}up.push(d);(r.refs=r.refs||[]).push(d);toast(d+' uploaded · 1.2 MB');renderPane();},
-    tocur(){const id=fabTarget();if(!id)return;ui.cur=ui.active=id;selectCC('q:'+id);renderPane();const row=document.querySelector('.wr[data-q="'+id+'"]');if(!row)return;row.scrollIntoView({block:'center',behavior:'smooth'});row.querySelector('.qa .in')?.focus({preventScroll:true});},
+    tocur(){const id=fabTarget();if(!id)return;ui.cur=ui.active=id;selectCC('q:'+id);renderPane();const row=document.querySelector('.wr[data-q="'+id+'"]');if(!row)return;toTop(row);row.querySelector('.qa .in')?.focus({preventScroll:true});},
     sumoff(){ui.run.sumOff=true;renderPane();},
     wffmopen(){const r=ui.run,up=r.uploads||[];ui.fm={sel:(r.refs||[]).filter(d=>!up.includes(d)),folder:'All files',q:''};renderPane();setTimeout(()=>$('#fmq')?.focus());},
     wffmclose(){ui.fm=null;renderPane();},
