@@ -549,7 +549,7 @@ td .cc.sel::before{display:none}
 .composer .model{display:inline-flex;align-items:center;gap:1px;padding:2px 4px 2px 8px;border:1px solid var(--r-line-2);border-radius:7px;font-size:10.5px;color:var(--r-tx-2);cursor:pointer}.composer .model .ms{font-size:14px}
 .pst{font-size:10.5px;color:var(--r-tx-3);margin-right:auto}.pst.warn,.qst.warn{color:#8A5A00}
 .qst{margin:2px 0 0;font-size:11px;color:var(--r-tx-3)}
-.runsum{display:flex;align-items:center;gap:6px;margin:6px 8px 2px;padding:6px 10px;border-radius:8px;background:#E8F5EF;font-size:11px;color:var(--r-tx)}.runsum img{width:14px}
+.runsum{display:flex;align-items:center;gap:6px;margin:6px 8px 2px;padding:6px 10px;border-radius:8px;background:#E8F5EF;font-size:11px;color:var(--r-tx)}.runsum img{width:14px}.runsum .x{margin-left:auto;font-size:15px;color:var(--r-tx-3);cursor:pointer;border-radius:6px;padding:1px}.runsum .x:hover{background:var(--r-hover);color:var(--r-tx)}
 .ray .lnk{color:var(--r-accent);cursor:pointer;margin-left:4px}.ray .tpick{padding:6px 0 0}.ray .acts .qnote{font-size:10.5px;color:var(--r-tx-3)}
 .pbody .qend{flex:none;height:calc(100vh - 380px);min-height:120px}
 /* Ask Ray: tighter, more room for the thread */
@@ -767,7 +767,7 @@ const ctx=()=>`<div class="ctx"><span>Tender</span><b>${ui.foreign&&!ui.picked?'
 function qtab(){
   if(ui.view==='context') return contextCard();
   if(ui.run&&!ui.run.found) return '<div class="pbody"><div class="note">Ray is reading the document. Questions appear here as they\'re found.</div></div>';
-  const r=ui.run,sum=r&&r.stage==='done'?`<div class="runsum"><img src="${RAY}" alt="">${r.k} ${S.protected?'ready, not in document':'in document'} · ${r.d} need review · ${r.o} open</div>`:'';
+  const r=ui.run,sum=r&&r.stage==='done'&&!r.sumOff?`<div class="runsum"><img src="${RAY}" alt="">${r.k} ${S.protected?'ready, not in document':'in document'} · ${r.d} need review · ${r.o} open<span class="ms x" data-do="sumoff" title="Close">close</span></div>`:'';
   const all=live(), done=all.filter(id=>S.q[id].accepted).length, drafted=all.filter(id=>stOf(id)==='done'&&!S.q[id].accepted).length;
   const phase=`<div class="modes"><i class="segbar"></i>${[['all','All'],['mine','Assigned']].map(([k,t])=>`<div class="mode ${ui.filter===k?'on':''}" data-do="filter" data-f="${k}">${t}</div>`).join('')}</div>`;
   const filters=`<label class="stfsel"><select id="stfsel">${[['','Default'],['done','Inserted'],['review','Needs Review'],['open','Open']].map(([k,t])=>`<option value="${k}" ${(ui.stf||'')===k?'selected':''}>${t}</option>`).join('')}</select></label>`;
@@ -1062,6 +1062,7 @@ document.addEventListener('click',e=>{
     wfmock(){if(ui.run.stage==='mock3'){ui.run.stage='mock4';renderPane();}else wfStart();},
     wfback(){ui.run.stage=t.dataset.to;renderPane();},
     wfupload(){const r=ui.run,up=r.uploads=r.uploads||[],d=['Site methodology 2025.docx','Pricing notes.xlsx'].find(x=>!up.includes(x));if(!d){toast('Nothing else to upload in the demo');return;}up.push(d);(r.refs=r.refs||[]).push(d);toast(d+' uploaded · 1.2 MB');renderPane();},
+    sumoff(){ui.run.sumOff=true;renderPane();},
     wfref(){const a=ui.run.refs=ui.run.refs||[],d=t.dataset.f,i=a.indexOf(d);i<0?a.push(d):a.splice(i,1);renderPane();},
     wfstop(){ui.run.stage='stopped';if(ui.scan)ui.scan.ids.forEach(id=>delete ui.drafting[id]);renderPane();},
     wfgo(){ui.run.stage='working';if(ui.scan)ui.scan.ids.forEach(id=>ui.drafting[id]=true);renderPane();setTimeout(wfTick,220);},
