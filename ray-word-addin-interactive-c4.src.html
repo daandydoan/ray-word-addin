@@ -586,6 +586,8 @@ td .cc.sel::before{display:none}
 .pbody:not(.team) .wr.cur,.pbody:not(.team) .wr.cur:hover,.pbody:not(.team) .wr:focus-within{--rowbg:#E4F3EE;background:#E4F3EE;border-radius:10px;box-shadow:inset 0 0 0 1px #BFE0D2;border-bottom-color:transparent!important}
 .pbody .fab{position:sticky;bottom:12px;align-self:flex-end;margin:-40px 2px 0 0;height:34px;padding:0 14px 0 10px;border-radius:99px;font-size:12px;font-weight:600;white-space:nowrap;background:var(--acc);color:#fff;display:flex;align-items:center;gap:4px;box-shadow:0 4px 12px rgba(0,0,0,.22);cursor:pointer;z-index:6;opacity:0;transform:scale(.8);pointer-events:none;transition:opacity .15s,transform .15s}
 .pbody .fab.on{opacity:1;transform:none;pointer-events:auto}.pbody .fab .ms{font-size:18px}.pbody .fab:hover{filter:brightness(.92)}
+/* the row above a highlighted card loses its divider, or it draws across the card outline */
+.pbody:not(.team) .wr:has(+.wr.cur),.pbody:not(.team) .wr:has(+.wr:focus-within){border-bottom-color:transparent!important}
 </style></head>
 <body>
 <div class="demo" id="demo"><div class="demo-btn" data-do="demotog"><span class="ms">smart_display</span>Demo</div><div class="demo-list">
