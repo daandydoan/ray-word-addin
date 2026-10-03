@@ -733,7 +733,7 @@ function fresh(){
     changes:0, track:true,
     log:[{who:'MW',t:'edited 3.1 · Delivery lead times',when:'40 min ago'},{who:'TB',t:'assigned 4.1 to himself',when:'Yesterday'},{who:'DD',t:'assigned 3.4 to Maya · due Fri',when:'Yesterday'}],
   };
-  ui = {picked:false,view:'list',run:{stage:'confirm'},runShown:true,libFolder:'Default Responses',libOpen:null,libQ:'',exp:null,teamOpen:{a:true,c:true},teamWho:null,tab:'ask',filter:'all',cur:'3.2',open:{},sel:null,wide:false,dialog:false,lib:false,platform:'desktop',foreign:false,chat:[],qchat:{},ctab:'write',chats:[{title:'Which insurance certificates expire this year?',when:'Yesterday',chat:[{you:'Which insurance certificates expire this year?'},{ans:'<p>None this year. Public liability (QBE, PL-88213), workers compensation (WorkCover QLD and icare NSW) and motor vehicle (Allianz) all run to <b>30 June 2027</b>.</p>',secs:3}]},{title:'Draft 2.1 for Bundaberg',when:'Mon',chat:[{you:'Draft 2.1 for Bundaberg'},{ans:'<p>Environmental Industries has supplied HDPE pipe and fittings to 14 Queensland and WA councils since 2015.</p>',secs:5}]}],ctx:{doc:true,q:true},histOpen:false,thinkOpen:false,fillReview:false,menu:null,drafting:{},undo:{},redo:{},gensrc:'lib',genfile:''};
+  ui = {picked:false,view:'list',run:{stage:'pick'},runShown:true,libFolder:'Default Responses',libOpen:null,libQ:'',exp:null,teamOpen:{a:true,c:true},teamWho:null,tab:'ask',filter:'all',cur:'3.2',open:{},sel:null,wide:false,dialog:false,lib:false,platform:'desktop',foreign:false,chat:[],qchat:{},ctab:'write',chats:[{title:'Which insurance certificates expire this year?',when:'Yesterday',chat:[{you:'Which insurance certificates expire this year?'},{ans:'<p>None this year. Public liability (QBE, PL-88213), workers compensation (WorkCover QLD and icare NSW) and motor vehicle (Allianz) all run to <b>30 June 2027</b>.</p>',secs:3}]},{title:'Draft 2.1 for Bundaberg',when:'Mon',chat:[{you:'Draft 2.1 for Bundaberg'},{ans:'<p>Environmental Industries has supplied HDPE pipe and fittings to 14 Queensland and WA councils since 2015.</p>',secs:5}]}],ctx:{doc:true,q:true},histOpen:false,thinkOpen:false,fillReview:false,menu:null,drafting:{},undo:{},redo:{},gensrc:'lib',genfile:''};
 }
 const $ = s=>document.querySelector(s), esc=s=>String(s).replace(/[&<>]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;'}[c]));
 const avatar=(id,cls='')=>id?`<span class="av ${PEOPLE[id].c} ${cls}" title="${PEOPLE[id].n}">${id}</span>`:'';
@@ -866,15 +866,13 @@ const TFOLDERS=[['Default','3 files'],['Response schedules','2 files'],['Pricing
 const WFSTEPS=['Choose the tender','Choose where to upload','Add reference documents','Analyse and fill'];
 function wfBlock(){const r=ui.run,T=ui.tenderName||'Bundaberg Regional Council',F=ui.folder||'Default',sc=ui.scan;
   const ray=h=>`<div class="ray"><div class="by"><img src="${RAY}" alt="">Ray</div>${h}</div>`,p=t=>`<div class="ans"><p>${t}</p></div>`;
-  const SET={confirm:0,pick:0,folder:1,mock3:2},gate=r.stage in SET,N=WFSTEPS.length,at=gate?SET[r.stage]:r.stage==='done'?N:3;
+  const SET={pick:0,folder:1,mock3:2},gate=r.stage in SET,N=WFSTEPS.length,at=gate?SET[r.stage]:r.stage==='done'?N:3;
   const head='',pin=`<div class="wfhead"><div class="wt"><span class="ms">play_lesson</span>Fill this document<small>${at>=N?'Done · '+N+' of '+N:'Step '+(at+1)+' of '+N}</small></div><div class="ray-segs">${WFSTEPS.map((n,i)=>`<i class="ray-seg ${i<at?'done':i===at?'now':''}" title="${i+1}. ${n}"></i>`).join('')}</div></div>`;
   const [ic,lbl,warn]=gate?['bolt','Checking requirements']:r.stage==='ask'?['help','Waiting for you']:r.stage==='done'?['check_circle','Finished']:r.stage==='stopped'?['pause','Paused',1]:r.stage==='undone'?['undo','Run undone',1]:['bolt',['Reading the document','Finding questions','Matching the Response Library','Drafting the rest'][r.step||0]];
   ui._wfpin=pin;let o=head+`<div class="wfstat ${warn?'warn':''}"><span><span class="ms">${ic}</span>${lbl}</span></div>`;
   const intro0=(h,t,rows,foot='')=>`<div class="wfintro"><div class="empty"><div class="halo"><img src="${RAY}" alt=""></div><h3>${h}</h3><p>${t}</p></div><div class="starters">${rows}</div>${foot}</div>`,row=(d,t,x='')=>`<div class="starter" ${d}>${t}${x?`<small>${x}</small>`:''}</div>`;
-  if(r.stage==='confirm')return intro0("Let's fill this document",'It looks like it belongs to <b>Bundaberg Regional Council</b>. There are 4 steps, and I\'ll ask before each one.',
-    row('data-do="wfyes"',"Yes, that's the tender")+row('data-do="wfpick"',"It's a different tender"));
-  if(r.stage==='pick')return intro0('Which tender is it?',"Pick the tender this document belongs to.",
-    '<div class="lib-s"><span class="ms">search</span>Search tenders…</div>'+TENDERS.slice(0,3).map((t,i)=>row(`data-do="wftender" data-i="${i}"`,t.split(' · ')[0],t.split(' · ').slice(1).join(' · ')||'Tender')).join(''),'<a class="btn ghost wflink" data-do="foreign">Back</a>');
+  if(r.stage==='pick')return intro0("Let's fill this document","Which tender is this document for? There are 4 steps, and I'll ask before each one.",
+    '<div class="lib-s"><span class="ms">search</span>Search tenders…</div>'+TENDERS.map((t,i)=>row(`data-do="wftender" data-i="${i}"`,t.split(' · ')[0],t.split(' · ').slice(1).join(' · ')||'Tender')).join(''));
   if(r.stage==='folder')return intro0('Where should I upload this document?',`Pick a folder in <b>${esc(T)}</b> on Tenderfy. Your team will find it there.`,
     TFOLDERS.map(f=>row(`data-do="wffolder" data-f="${f[0]}"`,f[0],f[1])).join(''),'<a class="btn ghost wflink" data-do="wfpick">Change tender</a>');
   // placeholder setup steps, still to be designed
@@ -1111,8 +1109,7 @@ document.addEventListener('click',e=>{
     teamsec(){ui.teamOpen[t.dataset.k]=!ui.teamOpen[t.dataset.k];renderPane();},
     check(){toast('Criteria check: 3.2 and 3.3 carry 30% and are still open');},
     track(){S.track=!S.track;renderPage();toast(`Track Changes ${S.track?'on':'off'} for Ray's writes`);},
-    foreign(){if(ui.scan){ui.scan.ids.forEach(id=>delete ui.drafting[id]);ui.scan=null;}ui.picked=false;ui.run={stage:'confirm'};ui.runShown=true;ui.tab='ask';ui.view='list';renderPane();mark('foreign');},
-    wfyes(){ui.tenderName='Bundaberg Regional Council';ui.run.stage='folder';renderPane();},
+    foreign(){if(ui.scan){ui.scan.ids.forEach(id=>delete ui.drafting[id]);ui.scan=null;}ui.picked=false;ui.run={stage:'pick'};ui.runShown=true;ui.tab='ask';ui.view='list';renderPane();mark('foreign');},
     wfpick(){ui.run.stage='pick';renderPane();},
     wftender(){ui.tenderName=TENDERS[t.dataset.i].split(' · ')[0];ui.run.stage='folder';renderPane();},
     wffolder(){ui.folder=t.dataset.f;ui.run.stage='mock3';renderPane();},
