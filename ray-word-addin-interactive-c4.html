@@ -330,7 +330,7 @@ td .cc.sel::before{display:none}
 .card.full .qnote{margin:0}
 .odlg-win.sm{width:min(440px,90%);height:auto;max-height:90%}
 .gdlg{padding:14px 16px;display:flex;flex-direction:column;gap:10px;font-family:Outfit,sans-serif}.gdlg label{font-size:11px;color:var(--r-tx-2)}.gdlg input{font:inherit;font-size:13px;border:1px solid var(--r-line-2);border-radius:10px;padding:9px 12px;outline:none}.gdlg input:focus{border-color:var(--r-accent)}
-.wfintro .or,.gdlg .or{display:flex;align-items:center;gap:10px;font-size:11px;color:var(--r-tx-3)}.wfintro .or i,.gdlg .or i{flex:1;height:1px;background:var(--r-line)}.gdlg .btn{justify-content:center}.gdlg .qnote{margin:0;font-size:11px;color:var(--r-tx-3);line-height:1.45}
+.gdlg .or{display:flex;align-items:center;gap:10px;font-size:11px;color:var(--r-tx-3)}.gdlg .or i{flex:1;height:1px;background:var(--r-line)}.gdlg .btn{justify-content:center}.gdlg .qnote{margin:0;font-size:11px;color:var(--r-tx-3);line-height:1.45}
 .card.full .ed-tools{gap:0;padding:4px 8px}.card.full .ed-tools .ms{padding:2px;font-size:15px}.ed-tools small{white-space:nowrap;margin-right:2px}
 .card .acts{grid-template-columns:minmax(0,1fr) minmax(0,1fr)}.card .acts .btn{min-width:0;white-space:nowrap;overflow:hidden;padding-left:8px;padding-right:8px}.card .acts .btn .ms{flex:none}
 .qnote a{color:var(--r-accent);cursor:pointer;text-decoration:underline}
@@ -558,8 +558,8 @@ td .cc.sel::before{display:none}
 .wfintro .starter,.wfopts .starter{padding:9px 12px}
 .ray-foot{padding:4px 6px 6px}.ray-foot .composer{padding:4px 4px 4px 8px}
 .ray .btn[data-do=wfreview]{flex:1;justify-content:center}
-.refrow{display:flex;align-items:flex-start;gap:8px}.refrow .ms{font-size:18px;color:var(--r-tx-3);margin-top:1px}.refrow.on{border-color:var(--acc);background:#fff}.refrow.on .ms{color:var(--acc)}
-.wfbtns{display:flex;gap:6px}.reflbl{font-size:10px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--r-tx-3);margin:2px 2px 0}.refup{justify-content:center}.wfbtns .btn:last-child{flex:1;justify-content:center}
+.refpick{display:flex;align-items:center;gap:8px;padding:7px 10px;border:1px solid var(--r-line);border-radius:10px;font-size:12px}.refpick>.ms:first-child{font-size:17px;color:var(--acc)}.refpick>span:nth-child(2){flex:1;min-width:0}.refpick small{display:block;font-size:10.5px;color:var(--r-tx-3)}.refpick .x{font-size:15px;color:var(--r-tx-3);cursor:pointer;border-radius:6px;padding:2px}.refpick .x:hover{background:var(--r-hover);color:var(--r-tx)}
+.wfbtns{display:flex;gap:6px}.wfbtns .btn:last-child{flex:1;justify-content:center}
 </style></head>
 <body>
 <div class="demo" id="demo"><div class="demo-btn" data-do="demotog"><span class="ms">smart_display</span>Demo</div><div class="demo-list">
@@ -847,11 +847,10 @@ function wfBlock(){const r=ui.run,T=ui.tenderName||'Bundaberg Regional Council',
     TFOLDERS.map(f=>row(`data-do="wffolder" data-f="${f[0]}"`,f[0],f[1])).join(''),'<a class="btn ghost wflink" data-do="wfpick">Change tender</a>');
   // placeholder setup steps, still to be designed
   if(r.stage==='mock3'){const on=r.refs||[],up=r.uploads||[];
-    const rr=(d,sub)=>`<div class="starter refrow ${on.includes(d)?'on':''}" data-do="wfref" data-f="${esc(d)}"><span class="ms">${on.includes(d)?'check_box':'check_box_outline_blank'}</span><span>${esc(d)}<small>${sub}</small></span></div>`;
-    return intro0('Any other documents to use?','Select documents already on Tenderfy, or upload your own. Ray reads them when answering this Schedule.',
-      '<div class="reflbl">On Tenderfy</div>'+TFILES.slice(1).map(d=>rr(d,/^TEN/.test(d)?'Tender document':'Company document')).join('')
-      +'<div class="or"><i></i>or<i></i></div>'+(up.length?'<div class="reflbl">From this computer</div>'+up.map(d=>rr(d,'Uploaded from this computer')).join(''):'')
-      +'<a class="btn ghost refup" data-do="wfupload"><span class="ms">upload_file</span>Upload from this computer</a>',
+    return intro0('Any other documents to use?','Add documents already on Tenderfy, or upload your own. Ray reads them when answering this Schedule.',
+      `<div class="gdlg"><label>Tender file on Tenderfy</label><input id="wfreffile" list="wfrefs" placeholder="Type a file name…" autocomplete="off"><datalist id="wfrefs">${TFILES.slice(1).filter(d=>!on.includes(d)).map(d=>`<option value="${esc(d)}">`).join('')}</datalist>
+      <div class="or"><i></i>or<i></i></div><span class="btn ghost" data-do="wfupload"><span class="ms">upload_file</span>Upload a file from this computer</span></div>`
+      +on.map(d=>`<div class="refpick"><span class="ms">${up.includes(d)?'upload_file':'description'}</span><span>${esc(d)}<small>${up.includes(d)?'Uploaded from this computer':'On Tenderfy'}</small></span><span class="ms x" data-do="wfref" data-f="${esc(d)}" title="Remove">close</span></div>`).join(''),
       `<div class="wfbtns"><a class="btn ghost" data-do="wfback" data-to="folder">Back</a><a class="btn" data-do="wfmock">${on.length?'Continue with '+on.length:'Skip'}</a></div>`);}
   if(r.stage==='mock4'){const n=r.stage.slice(-1);return intro0('Mock step '+n,'Placeholder. This step hasn\'t been designed yet.',row('data-do="wfmock"','Continue'),`<a class="btn ghost wflink" data-do="wfback" data-to="${n==='3'?'folder':'mock3'}">Back</a>`);}
   o+=`<div class="wfsum"><div class="k">Your choices</div>${[['Tender',T],['Upload to',F],['References',(r.refs||[]).length?(r.refs.length+' document'+(r.refs.length>1?'s':'')):'None'],['Mock step 4','Done']].map(([k,v])=>`<div class="r"><span class="ms">check_circle</span><span>${k}</span><b>${esc(v)}</b></div>`).join('')}</div>`;
@@ -1063,7 +1062,7 @@ document.addEventListener('click',e=>{
     wfback(){ui.run.stage=t.dataset.to;renderPane();},
     wfupload(){const r=ui.run,up=r.uploads=r.uploads||[],d=['Site methodology 2025.docx','Pricing notes.xlsx'].find(x=>!up.includes(x));if(!d){toast('Nothing else to upload in the demo');return;}up.push(d);(r.refs=r.refs||[]).push(d);toast(d+' uploaded · 1.2 MB');renderPane();},
     sumoff(){ui.run.sumOff=true;renderPane();},
-    wfref(){const a=ui.run.refs=ui.run.refs||[],d=t.dataset.f,i=a.indexOf(d);i<0?a.push(d):a.splice(i,1);renderPane();},
+    wfref(){const a=ui.run.refs=ui.run.refs||[],d=t.dataset.f,i=a.indexOf(d);i<0?a.push(d):a.splice(i,1);ui.run.uploads=(ui.run.uploads||[]).filter(x=>a.includes(x));renderPane();},
     wfstop(){ui.run.stage='stopped';if(ui.scan)ui.scan.ids.forEach(id=>delete ui.drafting[id]);renderPane();},
     wfgo(){ui.run.stage='working';if(ui.scan)ui.scan.ids.forEach(id=>ui.drafting[id]=true);renderPane();setTimeout(wfTick,220);},
     // ponytail: undo resets every question the run touched, even one you edited mid-run; per-question undo if that bites
@@ -1089,7 +1088,7 @@ document.addEventListener('contextmenu',e=>{const qEl=e.target.closest('.q, td')
   m.innerHTML=`<div class="dis"><span class="ms">content_cut</span>Cut</div><div><span class="ms">content_copy</span>Copy</div><div><span class="ms">content_paste</span>Paste Options:</div><hr>${trk?`<div data-do="cm_accept"><span class="ms">check</span>Accept Insertion</div><div><span class="ms">close</span>Reject Insertion</div><hr>`:''}${isQ?`<div class="cmray" data-do="cm_assign" data-q="${id}"><span class="ms">person_add</span>Assign ${id} to…<span class="sub">Tenderfy Ray</span></div><div class="cmray" data-do="cm_draft" data-q="${id}"><span class="ms">auto_awesome</span>Generate ${id} with AI</div><div class="cmray" data-do="cm_ask" data-q="${id}"><span class="ms">forum</span>Ask Ray about ${id}</div><div class="cmray" data-do="cm_lib"><span class="ms">library_add</span>Add to Response Library</div><hr>`:''}<div><span class="ms">text_fields</span>Font…</div><div><span class="ms">format_paragraph</span>Paragraph…</div><div><span class="ms">translate</span>Translate</div>`;
   $('#win').appendChild(m);if(isQ)mark('assigncur');});
 document.addEventListener('input',e=>{const qa=e.target.closest&&e.target.closest('.wr .qa');if(qa){const long=e.target.innerText.trim().length>85,n=qa.nextElementSibling,has=n&&n.classList.contains('longnote');if(long&&!has)qa.insertAdjacentHTML('afterend','<div class="chnote longnote" data-do="qaopen" data-q="'+qa.closest('.wr').dataset.q+'"><span class="ms">open_in_full</span>Getting long — Shift+Enter for the full editor</div>');if(!long&&has)n.remove();}if(e.target.id==='edbody'||e.target.id==='dlgbody'){const n=e.target.innerText.trim().split(/\s+/).filter(Boolean).length;const w=document.getElementById(e.target.id==='dlgbody'?'dlgwc':'edwc');if(w){w.textContent=wcText(ui.cur,n);w.classList.toggle('over',!!limOf(ui.cur)&&n>limOf(ui.cur));}const pb=document.getElementById('primbtn');if(pb&&e.target.id==='edbody')pb.classList.toggle('dis',!n);const ub=document.getElementById('updbtn');if(ub)ub.classList.toggle('dis',!n||(e.target.innerText.trim()===Q[ui.cur].txt&&!(e.target.querySelector('table')&&!Q[ui.cur].html)));}});
-document.addEventListener('change',e=>{if(e.target.id==='stfsel'){ui.stf=e.target.value||null;renderPane();}if(e.target.id==='whosel'){ui.who=e.target.value||null;renderPane();}if(e.target.id==='libsel'){ui.libFolder=e.target.value;ui.libQ='';ui.libOpen=null;renderPane();}});
+document.addEventListener('change',e=>{if(e.target.id==='wfreffile'&&TFILES.includes(e.target.value)){const r=ui.run;(r.refs=r.refs||[]).includes(e.target.value)||r.refs.push(e.target.value);renderPane();return;}if(e.target.id==='stfsel'){ui.stf=e.target.value||null;renderPane();}if(e.target.id==='whosel'){ui.who=e.target.value||null;renderPane();}if(e.target.id==='libsel'){ui.libFolder=e.target.value;ui.libQ='';ui.libOpen=null;renderPane();}});
 document.addEventListener('input',e=>{if(e.target.id==='libq'){ui.libQ=e.target.innerText;const v=ui.libQ;renderPane();const el=document.getElementById('libq');if(el){el.focus();const r=document.createRange();r.selectNodeContents(el);r.collapse(false);const sel=getSelection();sel.removeAllRanges();sel.addRange(r);}}});
 document.addEventListener('mousedown',e=>{if(e.target.closest('.qa .ms'))e.preventDefault();});
 document.addEventListener('focusout',e=>{const qa=e.target.closest&&e.target.closest('.wr .qa:not(.filled)');if(!qa)return;const id=qa.closest('.wr').dataset.q,v=e.target.innerText.trim();if(!v||stOf(id)!=='open')return;const x=S.q[id];Q[id].txt=v;Q[id].refs=[];Q[id].html=null;x.st='ready';x.human=true;x.auto=false;setTimeout(renderPane);});
