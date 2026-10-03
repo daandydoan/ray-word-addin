@@ -588,6 +588,7 @@ td .cc.sel::before{display:none}
 .pbody .fab.on{opacity:1;transform:none;pointer-events:auto}.pbody .fab .ms{font-size:18px}.pbody .fab:hover{filter:brightness(.92)}
 /* the row above a highlighted card loses its divider, or it draws across the card outline */
 .pbody:not(.team) .wr:has(+.wr.cur),.pbody:not(.team) .wr:has(+.wr:focus-within){border-bottom-color:transparent!important}
+.pbody .wr{scroll-margin-top:48px}
 </style></head>
 <body>
 <div class="demo" id="demo"><div class="demo-btn" data-do="demotog"><span class="ms">smart_display</span>Demo</div><div class="demo-list">
@@ -808,8 +809,8 @@ function qtab(){
 }
 const emptyNote=()=>`<div class="note">Nothing ${ui.filter==='mine'?'assigned to you':ui.stf==='open'?'open':ui.stf==='ready'?'ready':ui.stf==='review'?'to review':'inserted'} in this section.</div>`;
 function row(id){const q=Q[id],x=S.q[id],st=stOf(id),cur=ui.cur===id,text=st==='ready'||st==='done'?q.txt:'';
-  const sub = text?`${text.length>85?`<div class="answ"><div class="ans" data-do="qaopen" data-q="${id}" title="Click to edit in the full editor"><span class="apre">A:</span> ${esc(text)}</div><a class="more" data-do="more">Show more</a></div>`:`<div class="qa filled" data-do="noop" title="Enter puts it in · Shift+Enter opens the full editor · Tab goes to the next one"><span class="apre">A:</span><span class="in" contenteditable="true">${esc(text)}</span><span class="ms go" data-do="quick" data-q="${id}" title="Put in document (Enter)">arrow_upward</span><span class="ms adv" data-do="qaopen" data-q="${id}" title="Open the full editor — formatting, tables, Ray">open_in_full</span></div>`}${x.changed?'<div class="chnote"><span class="ms">edit_note</span>Edited by Maya in Word</div>':''}`
-    : `<div class="qa" data-do="noop" title="Enter puts it in · Shift+Enter opens the full editor · Tab goes to the next one"><span class="in" contenteditable="true" data-ph="Click to answer"></span><span class="ms go" data-do="quick" data-q="${id}" title="Put in document (Enter)">arrow_upward</span><span class="ms adv" data-do="qaopen" data-q="${id}" title="Open the full editor — formatting, tables, Ray">open_in_full</span></div>`;
+  const sub = text?`${text.length>85?`<div class="answ"><div class="ans" data-do="qaopen" data-q="${id}" title="Click to edit in the full editor"><span class="apre">A:</span> ${esc(text)}</div><a class="more" data-do="more">Show more</a></div>`:`<div class="qa filled" data-do="noop" title="Enter puts it in · Shift+Enter opens the full editor · Tab goes to the next one · ↑↓ moves between questions · Shift+↑↓ jumps to the next unanswered · Esc leaves the field"><span class="apre">A:</span><span class="in" contenteditable="true">${esc(text)}</span><span class="ms go" data-do="quick" data-q="${id}" title="Put in document (Enter)">arrow_upward</span><span class="ms adv" data-do="qaopen" data-q="${id}" title="Open the full editor — formatting, tables, Ray">open_in_full</span></div>`}${x.changed?'<div class="chnote"><span class="ms">edit_note</span>Edited by Maya in Word</div>':''}`
+    : `<div class="qa" data-do="noop" title="Enter puts it in · Shift+Enter opens the full editor · Tab goes to the next one · ↑↓ moves between questions · Shift+↑↓ jumps to the next unanswered · Esc leaves the field"><span class="in" contenteditable="true" data-ph="Click to answer"></span><span class="ms go" data-do="quick" data-q="${id}" title="Put in document (Enter)">arrow_upward</span><span class="ms adv" data-do="qaopen" data-q="${id}" title="Open the full editor — formatting, tables, Ray">open_in_full</span></div>`;
   const ph=phase(id);
   let pill=`${st==='done'?(`<span class="ins" title="${x.accepted?'In the document · accepted':'In the document · tracked change waiting in Review'}"><span class="ms">check_circle</span>Inserted</span>`):st==='ready'&&!ui.drafting[id]?`<span class="ins go" data-do="pillins" data-q="${id}" title="Put this draft in the document as a tracked change"><span class="ms">keyboard_return</span>Click to insert</span>`:''}`;
   if(x.blocked&&st!=='done')pill=`<span class="pst warn">Couldn't insert · document is protected</span><span class="ins go" data-do="copyq" data-q="${id}"><span class="ms">content_copy</span>Copy</span>`;
@@ -939,6 +940,11 @@ function updFab(){const pb=$('.pbody'),fab=pb&&pb.querySelector('.fab');if(!fab)
 document.addEventListener('focusin',e=>{const w=e.target.closest&&e.target.closest('.wr .qa')&&e.target.closest('.wr[data-q]');if(w){const id=w.dataset.q;ui.cur=id;document.querySelectorAll('.wr.cur').forEach(x=>x!==w&&x.classList.remove('cur'));w.classList.add('cur');selectCC('q:'+id);updFab();}});
 document.addEventListener('scroll',e=>{if(e.target.classList&&e.target.classList.contains('pbody'))updFab();},true);
 const toTop=(row,smooth=true)=>{const pb=row.closest('.pbody');pb.scrollTo({top:pb.scrollTop+row.getBoundingClientRect().top-pb.getBoundingClientRect().top-(pb.querySelector('.runsum')?.offsetHeight+10||4),behavior:smooth?'smooth':'auto'});};
+function qnav(dir,open){const ids=[...document.querySelectorAll('.pbody .wr[data-q]')].filter(r=>r.getBoundingClientRect().height>0).map(r=>r.dataset.q).filter(k=>!S.q[k].skip);
+  let i=ids.indexOf(ui.cur),nx;do{i+=dir;nx=ids[i];}while(nx&&open&&stOf(nx)==='done');
+  if(!nx){toast(open?'No unanswered question '+(dir>0?'below':'above'):dir>0?'That was the last question':'That was the first question');return;}
+  ui.cur=nx;document.querySelectorAll('.wr.cur').forEach(x=>x.classList.remove('cur'));const row=document.querySelector('.wr[data-q="'+nx+'"]');row.classList.add('cur');
+  if(open){ui.active=nx;toTop(row);}else row.scrollIntoView({block:'nearest',behavior:'smooth'});selectCC('q:'+nx);updFab();}
 function jumpNext(id){const ids=[...document.querySelectorAll('.pbody .wr[data-q]')].map(w=>w.dataset.q).filter(k=>!S.q[k].skip);
   const nx=ids.slice(ids.indexOf(id)+1).find(k=>stOf(k)!=='done');if(!nx){toast('Nothing left to answer below');return;}
   ui.cur=ui.active=nx;document.querySelectorAll('.wr.cur').forEach(w=>w.classList.remove('cur'));const row=document.querySelector('.wr[data-q="'+nx+'"]');row.classList.add('cur');
@@ -1150,14 +1156,16 @@ document.addEventListener('keydown',e=>{
   if(e.target.id==='qcin'&&e.key==='Enter'&&!e.shiftKey){e.preventDefault();$('[data-do=qsend]')?.click();return;}
   if(e.target.id==='cin'&&e.key==='Enter'&&!e.shiftKey){e.preventDefault();if(!ui.chat.some(m=>m.live))A_send();return;}
   const qa=e.target.closest&&e.target.closest('.wr .qa');
+  if(qa&&(e.key==='ArrowDown'||e.key==='ArrowUp')){e.preventDefault();e.target.blur();qnav(e.key==='ArrowDown'?1:-1,e.shiftKey);return;}
+  if(qa&&e.key==='Escape'){e.target.blur();return;}
   if(qa&&e.key==='Enter'&&e.shiftKey){e.preventDefault();qa.querySelector('.adv').click();return;}
   if(qa&&e.key==='Enter'){e.preventDefault();qa.querySelector('.go').click();return;}
   if(qa&&e.key==='Tab'){const all=[...document.querySelectorAll('.wr .qa:not(.filled) .in')],i=all.indexOf(e.target),nx=all[i+(e.shiftKey?-1:1)];if(nx){e.preventDefault();ui.refocus=e.target.innerText.trim()?nx.closest('.wr').dataset.q:null;nx.focus();}return;}
   if(e.key==='Escape'&&ui.focus&&ui.view==='context'&&!$('#odlg')){$('[data-do=fullscreen]')?.click();return;}
-  if(e.target.isContentEditable)return;const ids=SECTIONS.flatMap(s=>s.q);const i=ids.indexOf(ui.cur);
-  if(e.key==='ArrowDown'&&i<ids.length-1){ui.cur=ids[i+1];ui.view='list';renderPane();e.preventDefault();}
-  if(e.key==='ArrowUp'&&i>0){ui.cur=ids[i-1];ui.view='list';renderPane();e.preventDefault();}
-  if(e.key==='Enter'&&ui.view==='list'){ui.view='context';renderPane();}
+  if(e.target.isContentEditable)return;
+  if(ui.tab==='q'&&ui.view==='list'&&(e.key==='ArrowDown'||e.key==='ArrowUp')){e.preventDefault();qnav(e.key==='ArrowDown'?1:-1,e.shiftKey);return;}
+  if(e.key==='Enter'&&ui.tab==='q'&&ui.view==='list'){e.preventDefault();const row=$('.pbody .wr.cur'),inp=row&&row.querySelector('.qa .in');
+    if(inp){inp.focus();const r=document.createRange();r.selectNodeContents(inp);r.collapse(false);const sel=getSelection();sel.removeAllRanges();sel.addRange(r);}else if(row){ui.view='context';renderPane();}return;}
   if(e.key==='Escape'){if($('#odlg')){$('#odlg').remove();return;}$('.cmenu')?.remove();if(ui.view!=='list'){ui.view='list';renderPane();}}
 });
 document.addEventListener('click',e=>{const cc=e.target.closest('[data-cc]');if(!cc)return;const key=cc.dataset.cc;ui.sel=key;if(key.startsWith('q:')){ui.cur=key.slice(2);ui.tab='q';ui.view=ui.view==='context'||stOf(ui.cur)==='done'?'context':'list';}renderPage();renderPane();});
