@@ -520,7 +520,7 @@ td .cc.sel::before{display:none}
 .wfintro .empty{align-items:flex-start;text-align:left;padding:8px 2px 0}
 .wfintro .empty p{max-width:none}.wfintro .empty p b{color:var(--r-tx);font-weight:700}
 .wfopts{display:flex;flex-direction:column;gap:6px;margin-top:4px}.wfopts .starter,.wfintro .starter{padding:11px 13px;font-size:12.5px}.wfintro .starter small{display:block;margin-top:1px;font-size:11px;color:var(--r-tx-3)}
-.wfintro .lib-s{margin:0}.wflink{align-self:flex-start;font-size:11.5px;font-weight:600;color:var(--r-tx-2);cursor:pointer;padding:2px}
+.wfintro .lib-s{margin:0}.wflink{align-self:flex-start}
 /* workflow start, after Agentic Ray (tenderfy-ray-phase1 .ray-segs / .ray-seg, live rail) */
 .wfhead{flex:none;padding:8px 14px 10px;border-bottom:1px solid var(--r-line);background:var(--r-sunk)}
 .ray-foot{padding:6px 8px 8px}.ray-foot.off{cursor:not-allowed}.ray-foot.off>*{opacity:.55;pointer-events:none}.ray-foot .composer{margin:0}
@@ -839,11 +839,11 @@ function wfBlock(){const r=ui.run,T=ui.tenderName||'Bundaberg Regional Council',
   if(r.stage==='confirm')return intro0("Let's fill this document",'It looks like it belongs to <b>Bundaberg Regional Council</b>. There are 5 steps, and I\'ll ask before each one.',
     row('data-do="wfyes"',"Yes, that's the tender")+row('data-do="wfpick"',"It's a different tender"));
   if(r.stage==='pick')return intro0('Which tender is it?',"Pick the tender this document belongs to.",
-    '<div class="lib-s"><span class="ms">search</span>Search tenders…</div>'+TENDERS.slice(0,3).map((t,i)=>row(`data-do="wftender" data-i="${i}"`,t.split(' · ')[0],t.split(' · ').slice(1).join(' · ')||'Tender')).join(''),'<a class="wflink" data-do="foreign">Back</a>');
+    '<div class="lib-s"><span class="ms">search</span>Search tenders…</div>'+TENDERS.slice(0,3).map((t,i)=>row(`data-do="wftender" data-i="${i}"`,t.split(' · ')[0],t.split(' · ').slice(1).join(' · ')||'Tender')).join(''),'<a class="btn ghost wflink" data-do="foreign">Back</a>');
   if(r.stage==='folder')return intro0('Where should I upload this document?',`Pick a folder in <b>${esc(T)}</b> on Tenderfy. Your team will find it there.`,
-    TFOLDERS.map(f=>row(`data-do="wffolder" data-f="${f[0]}"`,f[0],f[1])).join('')+row('data-do="wffolder" data-f="New folder"','New folder…'),'<a class="wflink" data-do="wfpick">Change tender</a>');
+    TFOLDERS.map(f=>row(`data-do="wffolder" data-f="${f[0]}"`,f[0],f[1])).join('')+row('data-do="wffolder" data-f="New folder"','New folder…'),'<a class="btn ghost wflink" data-do="wfpick">Change tender</a>');
   // placeholder setup steps, still to be designed
-  if(r.stage==='mock3'||r.stage==='mock4'){const n=r.stage.slice(-1);return intro0('Mock step '+n,'Placeholder. This step hasn\'t been designed yet.',row('data-do="wfmock"','Continue'),`<a class="wflink" data-do="wfback" data-to="${n==='3'?'folder':'mock3'}">Back</a>`);}
+  if(r.stage==='mock3'||r.stage==='mock4'){const n=r.stage.slice(-1);return intro0('Mock step '+n,'Placeholder. This step hasn\'t been designed yet.',row('data-do="wfmock"','Continue'),`<a class="btn ghost wflink" data-do="wfback" data-to="${n==='3'?'folder':'mock3'}">Back</a>`);}
   o+=intro+`<div class="you">${esc(T+' · '+F)}</div>`;
   const foot='<div class="tfoot"><span class="ms" data-do="wfcopy" title="Copy">content_copy</span>just now</div>';
   if(r.stage==='undone')return o+ray(p('Undone. Nothing from this run is in your document.')+'<div class="acts"><span class="btn" data-do="wfrestart">Start again</span></div>'+foot);
