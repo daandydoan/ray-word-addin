@@ -606,6 +606,8 @@ td .cc.sel::before{display:none}
   <span class="g" data-do="foreign"><i></i>Start over · confirm the tender</span>
   <span class="g" data-do="wfresume"><i></i>Reopen the pane mid-run</span>
   <span class="g" data-do="wfprotect"><i></i>Protected document · toggle before a run</span>
+  <span class="g" data-do="wfnotenders"><i></i>No tenders · toggle before a run</span>
+  <span class="g" data-do="cm_addq"><i></i>Add a missed question · or right-click 4.4 in the page</span>
   <span class="g sw" data-do="reset">Reset</span>
 </div></div>
 <section class="frame"><div class="win" id="win">
@@ -726,8 +728,12 @@ const RESP = [
 const TFILES=['TEN3089 Returnable Schedules.docx','TEN3089 Specification.pdf','TEN3089 Conditions of Contract.pdf','Bilby Capability Statement 2026.pdf','ISO 9001 Certificate.pdf'];
 const TENDERS = ['Bundaberg RC · TEN/3089 · HDPE Pipe and Fittings','North Burnett RC · 2911_2026-27 · Winning, Crushing, Screening','Footpath and Kerbline Spraying','Grounds Maintenance at The Springs','Landscape Maintenance Joondalup'];
 
+// a question the run misses: plain text in the page until the writer adds it from the right-click menu (RW-56)
+const MISSED={id:'4.4',sec:'S4',q:{t:'Local subcontractors',full:'Describe how you will use local subcontractors, apprentices and trainees on this contract.',crit:'Local benefits · 5%',txt:'',refs:[],st:'open'},
+  draft:'We will subcontract freight and site deliveries to Bundaberg-based carriers and take on two local apprentices at our Bundaberg depot for the life of the contract.'};
 let S, ui;
 function fresh(){
+  delete Q[MISSED.id];const ms=SECTIONS.find(s=>s.id===MISSED.sec);ms.q=ms.q.filter(i=>i!==MISSED.id);
   S = {
 
     q:Object.fromEntries(Object.entries(Q).map(([id,q])=>[id,{st:q.st,owner:q.owner||null,due:q.due||(q.owner?{DD:'Thu',MW:'Fri',TB:'Wed',SK:'Mon'}[q.owner]:null),changed:!!q.changed,inserted:q.st==='done',accepted:q.st==='done',skip:false}])),
@@ -761,7 +767,7 @@ function renderPage(){
     const q=Q[id],x=S.q[id];const done=x.inserted;const isPh=!done;
     const body = done ? (x.human?(q.html||esc(q.txt)):x.ownerText?`<span class="trk m">${esc(x.ownerText)}</span>`:`<span class="trk">${q.html||esc(q.txt)}</span>`) : 'Click here to enter text.';
     return `<div class="q" data-q="${id}"><div class="qh"><span class="n">${id}</span><span>${esc(q.full)}</span></div><div class="cc ${isPh?'ph':''} ${done&&!x.human?'chg':''} ${ui.sel==='q:'+id?'sel':''}" data-title="${id} · ${esc(q.t)}" data-cc="q:${id}">${body}</div></div>`;
-  }).join('')).join('');
+  }).join('')+(s.id===MISSED.sec&&!Q[MISSED.id]?`<p class="q mq" data-mq="${MISSED.id}"><b>${MISSED.id}</b>&nbsp;&nbsp;${esc(MISSED.q.full)}</p>`:'')).join('');
   $('#page').innerHTML = `<div class="hdr"><div class="logo">BUNDABERG<small>REGIONAL COUNCIL</small></div><div class="meta">Returnable Schedules<br>Contract No. TEN/3089<br>Supply of HDPE Pipe and Fittings<br>September 2026</div></div>
   <h4>1&nbsp;&nbsp;TENDERER'S PARTICULARS</h4><h5>1.1&nbsp;&nbsp;Tenderer Details Form</h5>
   <table class="wt"><tr><td class="fk">Contract Number:</td><td>TEN/3089</td></tr><tr><td class="fk">Description of Goods/Services:</td><td>Supply of HDPE Pipe and Fittings</td></tr>${fields}</table>
@@ -872,6 +878,8 @@ function wfBlock(){const r=ui.run,T=ui.tenderName||'Bundaberg Regional Council',
   const [ic,lbl,warn]=gate?['bolt','Checking requirements']:r.stage==='ask'?['help','Waiting for you']:r.stage==='done'?['check_circle','Finished']:r.stage==='stopped'?['pause','Paused',1]:r.stage==='undone'?['undo','Run undone',1]:['bolt',['Reading the document','Finding questions','Matching the Response Library','Drafting the rest'][r.step||0]];
   ui._wfpin=pin;let o=head+`<div class="wfstat ${warn?'warn':''}"><span><span class="ms">${ic}</span>${lbl}</span></div>`;
   const intro0=(h,t,rows,foot='')=>`<div class="wfintro"><div class="empty"><div class="halo"><img src="${RAY}" alt=""></div><h3>${h}</h3><p>${t}</p></div><div class="starters">${rows}</div>${foot}</div>`,row=(d,t,x='')=>`<div class="starter" ${d}>${t}${x?`<small>${x}</small>`:''}</div>`;
+  if(r.stage==='pick'&&S.noTenders)return intro0('No tenders yet',"There are no tenders on Tenderfy for this account. Create one there, then come back and I'll fill this document.",
+    row('data-do="wfnewtender"','Create a tender in Tenderfy','Opens Tenderfy in your browser'));
   if(r.stage==='pick')return intro0("Let's fill this document","Which tender is this document for? There are 4 steps, and I'll ask before each one.",
     '<label class="lib-s"><span class="ms">search</span><input id="tsq" placeholder="Search tenders…" autocomplete="off"></label><div class="note" id="tsnone" hidden>No tenders match.</div>'+TENDERS.map((t,i)=>row(`data-do="wftender" data-i="${i}"`,t.split(' · ')[0],t.split(' · ').slice(1).join(' · ')||'Tender')).join(''));
   if(r.stage==='folder')return intro0('Where should I upload this document?',`Pick a folder in <b>${esc(T)}</b> on Tenderfy. Your team will find it there.`,
@@ -1140,6 +1148,11 @@ document.addEventListener('click',e=>{
     wfcopy(){toast(ui.run.stage==='done'&&S.protected?ui.run.k+' answers copied · paste them into the document':'Copied');},
     copyq(){toast(q+' copied · paste it into the document');},
     wfresume(){const r=ui.run;if(!r||r.stage!=='working'){toast('Start a run first, then try this while Ray is working');return;}r.resumed=true;ui.tab='ask';renderPane();mark('wfresume');},
+    wfnotenders(){S.noTenders=!S.noTenders;if(ui.run.stage==='pick')renderPane();toast(S.noTenders?'No tenders on Tenderfy':'Tenders are back');mark('wfnotenders');},
+    wfnewtender(){toast('Opens Tenderfy in your browser to create a tender');},
+    cm_addq(){const id=MISSED.id,r=ui.run;$('.cmenu')?.remove();if(Q[id]){toast(id+' is already a question');return;}Q[id]={...MISSED.q};S.q[id]={st:'open',owner:null,due:null,changed:false,inserted:false,accepted:false,skip:false};SECTIONS.find(s=>s.id===MISSED.sec).q.push(id);
+      const drafted=r.stage==='done';if(drafted){Q[id].txt=MISSED.draft;Object.assign(S.q[id],{st:'ready',ai:true});r.d=(r.d||0)+1;}
+      logIt('DD','added '+id+' as a question');ui.cur=id;ui.tab='q';ui.view='list';renderPage();renderPane();toast(`${id} added to Q&A`+(drafted?' · Ray drafted it, check it first':''));mark('cm_addq');},
     wfprotect(){S.protected=!S.protected;toast(S.protected?"Document is protected · Ray can't write into it":'Document is editable again');mark('wfprotect');},
     cm_accept(){toast('Saved to the Response Library');}, cm_accept(){const id=ui.sel&&ui.sel.startsWith('q:')?ui.sel.slice(2):null;if(id){S.q[id].accepted=true;logIt('DD','accepted '+id+' in Review');}S.changes=Math.max(0,S.changes-1);renderPage();renderPane();toast('Insertion accepted — '+(id||'')+' is answered');},
   };
@@ -1152,8 +1165,8 @@ document.addEventListener('click',e=>{
 document.addEventListener('contextmenu',e=>{const qEl=e.target.closest('.q, td');if(!qEl||!$('#page').contains(qEl))return;e.preventDefault();$('.cmenu')?.remove();
   const id=qEl.dataset.q||(e.target.closest('[data-cc]')?.dataset.cc||'').replace('q:','');const isQ=!!qEl.dataset.q;const win=$('#win').getBoundingClientRect();
   const m=document.createElement('div');m.className='cmenu';m.style.left=(e.clientX-win.left)+'px';m.style.top=(e.clientY-win.top)+'px';
-  const trk=e.target.closest('.trk');
-  m.innerHTML=`<div class="dis"><span class="ms">content_cut</span>Cut</div><div><span class="ms">content_copy</span>Copy</div><div><span class="ms">content_paste</span>Paste Options:</div><hr>${trk?`<div data-do="cm_accept"><span class="ms">check</span>Accept Insertion</div><div><span class="ms">close</span>Reject Insertion</div><hr>`:''}${isQ?`<div class="cmray" data-do="cm_assign" data-q="${id}"><span class="ms">person_add</span>Assign ${id} to…<span class="sub">Tenderfy Ray</span></div><div class="cmray" data-do="cm_draft" data-q="${id}"><span class="ms">auto_awesome</span>Generate ${id} with AI</div><div class="cmray" data-do="cm_ask" data-q="${id}"><span class="ms">forum</span>Ask Ray about ${id}</div><div class="cmray" data-do="cm_lib"><span class="ms">library_add</span>Add to Response Library</div><hr>`:''}<div><span class="ms">text_fields</span>Font…</div><div><span class="ms">format_paragraph</span>Paragraph…</div><div><span class="ms">translate</span>Translate</div>`;
+  const trk=e.target.closest('.trk'),mq=qEl.dataset.mq;
+  m.innerHTML=`<div class="dis"><span class="ms">content_cut</span>Cut</div><div><span class="ms">content_copy</span>Copy</div><div><span class="ms">content_paste</span>Paste Options:</div><hr>${mq?`<div class="cmray" data-do="cm_addq"><span class="ms">add_task</span>Add ${mq} as a question<span class="sub">Tenderfy Ray</span></div><hr>`:''}${trk?`<div data-do="cm_accept"><span class="ms">check</span>Accept Insertion</div><div><span class="ms">close</span>Reject Insertion</div><hr>`:''}${isQ?`<div class="cmray" data-do="cm_assign" data-q="${id}"><span class="ms">person_add</span>Assign ${id} to…<span class="sub">Tenderfy Ray</span></div><div class="cmray" data-do="cm_draft" data-q="${id}"><span class="ms">auto_awesome</span>Generate ${id} with AI</div><div class="cmray" data-do="cm_ask" data-q="${id}"><span class="ms">forum</span>Ask Ray about ${id}</div><div class="cmray" data-do="cm_lib"><span class="ms">library_add</span>Add to Response Library</div><hr>`:''}<div><span class="ms">text_fields</span>Font…</div><div><span class="ms">format_paragraph</span>Paragraph…</div><div><span class="ms">translate</span>Translate</div>`;
   $('#win').appendChild(m);if(isQ)mark('assigncur');});
 document.addEventListener('input',e=>{if(e.target.id==='tsq'){const v=e.target.value.trim().toLowerCase();let n=0;document.querySelectorAll('[data-do=wftender]').forEach(c=>{const on=c.innerText.toLowerCase().includes(v);c.style.display=on?'':'none';n+=on;});$('#tsnone').hidden=!!n;return;}if(e.target.id==='fmq'){ui.fm.q=e.target.value;const v=ui.fm.q.toLowerCase();document.querySelectorAll('.fmcard').forEach(c=>c.style.display=c.dataset.n.includes(v)?'':'none');return;}});
 document.addEventListener('input',e=>{const qa=e.target.closest&&e.target.closest('.wr .qa');if(qa){const long=e.target.innerText.trim().length>85,n=qa.nextElementSibling,has=n&&n.classList.contains('longnote');if(long&&!has)qa.insertAdjacentHTML('afterend','<div class="chnote longnote" data-do="qaopen" data-q="'+qa.closest('.wr').dataset.q+'"><span class="ms">open_in_full</span>Getting long — Shift+Enter for the full editor</div>');if(!long&&has)n.remove();}if(e.target.id==='edbody'||e.target.id==='dlgbody'){const n=e.target.innerText.trim().split(/\s+/).filter(Boolean).length;const w=document.getElementById(e.target.id==='dlgbody'?'dlgwc':'edwc');if(w){w.textContent=wcText(ui.cur,n);w.classList.toggle('over',!!limOf(ui.cur)&&n>limOf(ui.cur));}const pb=document.getElementById('primbtn');if(pb&&e.target.id==='edbody')pb.classList.toggle('dis',!n);const ub=document.getElementById('updbtn');if(ub)ub.classList.toggle('dis',!n||(e.target.innerText.trim()===Q[ui.cur].txt&&!(e.target.querySelector('table')&&!Q[ui.cur].html)));}});
