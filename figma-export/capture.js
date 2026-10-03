@@ -1,4 +1,4 @@
-// Drives the C4 mock through every state and serializes each to states/<id>.json (+ reference png)
+// Drives the C4 mock (Ask Ray workflow) through every state and serializes each to states/<id>.json (+ reference png)
 const open = require('./cdp'), fs = require('fs');
 const URL = 'file:///C:/Users/tieun/ray-word-addin/ray-word-addin-interactive-c4.html';
 fs.mkdirSync(__dirname + '/states', { recursive: true });
@@ -7,9 +7,12 @@ const meta = [];
 const HELP = `
 window.$c=s=>{const e=document.querySelector(s);if(!e)throw new Error('missing '+s);e.click();};
 window.$type=(s,t)=>{const e=document.querySelector(s);if(!e)throw new Error('missing '+s);e.focus();e.innerText=t;e.dispatchEvent(new Event('input',{bubbles:true}));};
-window.$see=s=>{const e=document.querySelector(s);if(!e)throw new Error('missing '+s);e.scrollIntoView({block:'center'});};
+window.$val=(s,t)=>{const e=document.querySelector(s);if(!e)throw new Error('missing '+s);e.focus();e.value=t;e.dispatchEvent(new Event('input',{bubbles:true}));};
+window.$see=s=>{const e=document.querySelector(s);if(!e)throw new Error('missing '+s);toTop(e,false);};
 window.$top=()=>{const p=document.querySelector('.pbody');if(p)p.scrollTop=0;};
 window.$sel=(id,v)=>{const e=document.getElementById(id);e.value=v;e.dispatchEvent(new Event('change',{bubbles:true}));};
+window.$key=(k,o={})=>(document.activeElement||document).dispatchEvent(new KeyboardEvent('keydown',Object.assign({key:k,bubbles:true},o)));
+window.$nr=()=>document.querySelector('.pbody .wr .atag.ai').closest('.wr').dataset.q;
 document.head.insertAdjacentHTML('beforeend','<style>*,*::before,*::after{animation:none!important;transition:none!important}</style>');1`;
 
 (async () => {
@@ -17,7 +20,7 @@ document.head.insertAdjacentHTML('beforeend','<style>*,*::before,*::after{animat
   await b.send('Emulation.setFocusEmulationEnabled', { enabled: true });
   const SER = fs.readFileSync(__dirname + '/ser.js', 'utf8');
   const fresh = async () => { await b.go(URL); await b.ev(SER + ';' + HELP); };
-  const until = async (expr, ms = 8000) => { const t = Date.now(); while (Date.now() - t < ms) { if (await b.ev(expr)) return; await b.sleep(100); } throw new Error('timeout ' + expr); };
+  const until = async (expr, ms = 20000) => { const t = Date.now(); while (Date.now() - t < ms) { if (await b.ev(expr)) return; await b.sleep(100); } throw new Error('timeout ' + expr); };
   const run = async js => { await b.ev(js + ';1'); await b.sleep(250); };
   const snap = async (id, title, note, group) => {
     meta.push({ id, title, note, group });
@@ -29,104 +32,126 @@ document.head.insertAdjacentHTML('beforeend','<style>*,*::before,*::after{animat
     await b.shot(`${__dirname}/states/${id}.png`);
     console.log(id, JSON.stringify(t).length);
   };
-  const boot = async () => { await fresh(); await run(`$c('[data-do=picktender][data-i="0"]')`); await run(`$c('[data-do=pickfolder][data-f="Default"]')`); await until(`ui.view==='list'&&!!ui.scan`); await b.sleep(300); };
-  const finish = async () => { await run(`$c('.demoscan')`); await b.ev(`document.querySelector('#toast').classList.remove('on');1`); };
-  const CORR = 'Our Chain of Responsibility controls follow the NHVR Safety Management System: telematics fatigue and speed monitoring, load-restraint checks before every dispatch, and quarterly CoR audits reported to the board.';
+  const untoast = () => b.ev(`document.querySelector('#toast').classList.remove('on');1`);
+  const setup = async () => { await run(`$c('[data-do=wftender][data-i="0"]')`); await run(`$c('[data-do=wffolder][data-f="Default"]')`); };
+  const start = async () => { await setup(); await run(`$c('[data-do=wfmock]')`); };
+  const done = async () => { await until(`!!ui.scan||ui.run.stage==='done'`); await run(`if(ui.scan)$c('.demoscan')`); await until(`ui.run.stage==='done'`); await untoast(); await run(`renderPane()`); };
+  const boot = async () => { await fresh(); await start(); await done(); await run(`$c('[data-do=wfreview]')`); };
 
   /* ---------- happy flow ---------- */
   await fresh();
-  await snap('H01', 'Choose a tender', 'Ray opens on an unlinked document and asks which Tenderfy tender it belongs to. Nothing else in the pane works until a tender is picked.', 'happy');
-  await run(`$c('[data-do=picktender][data-i="0"]')`);
-  await snap('H02', 'Choose a folder', 'Pick the tender folder the document is filed under, or create a new one. Back returns to the tender list.', 'happy');
-  await b.ev(`$c('[data-do=pickfolder][data-f="Default"]');1`); await b.sleep(700);
-  await snap('H03', 'Reading the document', 'Ray reads the file section by section in place. Nothing is copied out of Word; the user can keep working.', 'happy');
-  await until(`ui.view==='list'&&!!ui.scan`); await b.sleep(250); await run(`$top()`);
-  await snap('H04', 'Ray scanning the Response Library', 'Every open question shows "Ray is analysing". The scan card sits above Apply to document. Rows stay clickable, so answering can start right away.', 'happy');
-  await run(`$c('.demoscan')`); await run(`$top()`);
-  await snap('H05', 'Analysis finished', 'Library matches go straight into the document (Response Library tag, Inserted). Questions with no match get a Ray draft (AI generated tag, Put in document). The toast counts each.', 'happy');
-  await run(`$see('.wr[data-q="3.7"]')`);
-  await snap('H06', 'Open questions and AI drafts', 'AI generated drafts wait for a click to go in; questions owned by teammates stay open with "Click to answer".', 'happy');
-  await run(`$c('.wr[data-q="4.1"]')`);
-  await snap('H07', 'Question card · empty', 'The card: section and source tag, full question, the editor box with Write manually / Answer with Ray tabs, and Put in document & next.', 'happy');
+  await snap('H01', 'Choose the tender', 'Ray opens in Ask Ray with a pinned "Fill this document" stepper (4 steps). Step 1 asks which Tenderfy tender the document is for; nothing is guessed. Chat stays disabled until the run finishes.', 'happy');
+  await run(`$c('[data-do=wftender][data-i="0"]')`);
+  await snap('H02', 'Choose where to upload', 'Step 2: the Tenderfy folder this document is uploaded to. Change tender goes back a step.', 'happy');
+  await run(`$c('[data-do=wffolder][data-f="Default"]')`);
+  await snap('H03', 'Add reference documents', 'Step 3 (optional): extra documents Ray reads when answering. Select File opens the File Manager; Upload File takes one from this computer. Skip moves on.', 'happy');
+  await run(`$c('[data-do=wffmopen]')`); await run(`$c('[data-do=wffmpick][data-f="Bilby Capability Statement 2026.pdf"]')`); await run(`$c('[data-do=wffmpick][data-f="ISO 9001 Certificate.pdf"]')`);
+  await snap('H04', 'File Manager', 'A modal sheet over the pane: search, collapsible Folders (cards, selected one dark) and Files (one-line rows with a format badge). Close with ×, the backdrop or Esc.', 'happy');
+  await run(`$c('[data-do=wffmattach]')`); await run(`$c('[data-do=wfupload]')`); await untoast();
+  await snap('H05', 'Reference documents chosen', 'Chosen files list under the card with where they came from; × removes one. The button now reads Continue with 3.', 'happy');
+  await run(`$c('[data-do=wfmock]')`); await until(`ui.run.step>=2`, 8000); await untoast();
+  await snap('H06', 'Analysing and filling', 'Step 4 starts by itself. "Your choices" sums up the setup while Ray reads, finds questions, matches the Response Library and drafts the rest. Stop pauses; Q&A is usable meanwhile.', 'happy');
+  await done();
+  await snap('H07', 'Run finished', 'Library matches are in the document as tracked changes; Ray drafts wait as Needs Review; the rest is left for you. Review in Q&A opens the list. Chat unlocks.', 'happy');
+  await run(`$c('[data-do=wfreview]')`);
+  await snap('H08', 'Review in Q&A', 'Q&A opens on the first question that needs you, highlighted green under a sticky run summary strip (closable).', 'happy');
+  await run(`$see('.wr[data-q="'+$nr()+'"]')`);
+  await snap('H09', 'Needs Review drafts', 'Ray drafts carry an orange Needs Review tag and a Click to insert pill. Apply to document skips them until someone checks them.', 'happy');
+  await run(`$c('.wr[data-q="'+$nr()+'"] .t b')`);
+  await snap('H10', 'Question card · Needs Review', 'The card shows the draft in the editor and the Needs Review tag beside the section. Put in document & next inserts it and moves on.', 'happy');
+  await run(`$c('[data-do=list]')`); await run(`$c('.wr[data-q="4.1"] .t b')`);
+  await snap('H11', 'Question card · empty', 'An open question: full text, the editor with Write manually / Answer with Ray, Put in document & next disabled until there is text.', 'happy');
   await run(`$type('#edbody','We expect to engage four local employees on this contract: two Bundaberg depot staff for receiving and dispatch, one local driver, and a part-time administrator.')`);
-  await snap('H08', 'Answer written', 'Typing enables Put in document & next (Ctrl+Enter). Previous / Next Question and Not a question sit underneath.', 'happy');
-  await run(`$c('#primbtn')`); await b.sleep(250);
-  await snap('H09', 'Put in document & next', 'The answer goes in as a tracked change and the card moves to the next question still to answer or check.', 'happy');
-  await run(`$c('[data-do=list]')`); await run(`$see('.wr[data-q="4.1"]')`);
-  await snap('H10', 'Back in the list · Inserted', 'The row now shows the answer with an Inserted pill; the Apply count goes up.', 'happy');
-  await run(`$c('.wr[data-q="3.2"] .t b')`);
-  await snap('H11', 'Library answer · review', 'A Response Library answer opens with the text in the editor and the source tag beside the section name.', 'happy');
-  await run(`$type('#edbody','We hold buffer stock of the full HDPE range at our Bundaberg depot (opened 2025), with weekly replenishment from Brisbane. Standard orders are delivered within 2 business days; urgent orders confirmed by 10am are delivered the same day.')`);
-  await snap('H12', 'Edited → Put in document', 'Editing an inserted answer and pressing Put in document rewrites it as a tracked change.', 'happy');
-  await run(`$c('#primbtn')`); await b.sleep(250); await run(`$c('[data-do=list]')`);
-  await run(`$see('.wr[data-q="1.8"]')`); await run(`$type('.wr[data-q="1.8"] .qa .in','07 4152 0001')`); await run(`document.activeElement.blur()`);
-  await run(`$see('.wr[data-q="1.12"]')`); await run(`$type('.wr[data-q="1.12"] .qa .in','accounts@eiwa.com.au')`); await run(`document.activeElement.blur()`);
-  await run(`$see('.wr[data-q="1.8"]')`);
-  await snap('H13', 'Drafts ready to apply', 'Answers left mid-typing are kept as drafts with Put in document. Apply to document puts every draft in at once.', 'happy');
-  await run(`$c('.cta [data-do=insall]')`);
-  await snap('H14', 'Apply to document', "All drafts land as tracked changes in one go; the count updates. Accept or reject them from Word's Review tab.", 'happy');
+  await snap('H12', 'Answer written', 'Typing enables Put in document & next (Ctrl+Enter).', 'happy');
+  await run(`$c('#primbtn')`); await untoast();
+  await snap('H13', 'Put in document & next', 'The answer goes in as a tracked change and the card moves to the next question still to answer or check.', 'happy');
+  await run(`$c('[data-do=list]')`);
+  await snap('H14', 'Back in the list', 'Back from the card puts the question you were on at the top, highlighted, with its answer marked Inserted.', 'happy');
 
-  /* ---------- edge cases ---------- */
+  /* ---------- setup edge cases ---------- */
+  await fresh();
+  await run(`$val('#tsq','north')`);
+  await snap('E01', 'Tender search', 'The search box filters tenders live by name or reference.', 'edge');
+  await run(`$val('#tsq','zzz')`);
+  await snap('E02', 'Tender search · no match', 'No match shows a short note instead of an empty list.', 'edge');
+  await fresh(); await setup(); await run(`$c('[data-do=wffmopen]')`); await run(`$c('[data-do=wffmfolder][data-f="Insurance"]')`); await run(`$c('[data-do=wffmpick][data-f="Public Liability.pdf"]')`);
+  await snap('E03', 'File Manager · folder', 'Picking a folder card narrows Files to that folder; the selected count sits in the Files header.', 'edge');
+  await run(`$c('[data-do=wffmfolder][data-f="All files"]')`); await run(`$val('#fmq','cert')`);
+  await snap('E04', 'File Manager · search', 'Search filters files across every folder.', 'edge');
+
+  /* ---------- run edge cases ---------- */
+  await fresh(); await start(); await until(`ui.run.step>=1`, 8000); await run(`$c('[data-do=wfstop]')`); await untoast();
+  await snap('E05', 'Run paused', 'Stop pauses the run. Carry on picks up; Undo this run takes out everything Ray put in.', 'edge');
+  await run(`$c('[data-do=wfundo]')`); await untoast();
+  await snap('E06', 'Run undone', 'Nothing from the run is left in the document. Start again reruns with the same choices.', 'edge');
+  await fresh(); await start(); await until(`ui.run.step>=2`, 8000); await run(`$c('[data-do=wfresume]')`); await untoast();
+  await snap('E07', 'Reopened mid-run', 'Closing and reopening the pane mid-run shows where Ray left off.', 'edge');
+  await run(`$c('[data-do=tabq]')`); await run(`$see('.wr[data-q="8.3"]')`); await run(`$type('.wr[data-q="8.3"] .qa .in','No conflicts of interest to declare.')`);
+  await snap('E08', 'Answering while Ray works', 'Q&A works during the run. Rows Ray is still on say so; anything you answer first, Ray skips.', 'edge');
+  await fresh(); await run(`$c('[data-do=wfprotect]')`); await start(); await done();
+  await snap('E09', 'Protected document', 'If Word blocks edits, answers are ready but not written. Copy answers puts them on the clipboard.', 'edge');
+
+  /* ---------- Q&A list ---------- */
   await boot();
-  await run(`$see('.wr[data-q="8.3"]')`); await run(`$type('.wr[data-q="8.3"] .qa .in','No conflicts of interest to declare.')`);
-  await snap('E01', 'Answering while Ray is still analysing', 'The inline field works during the scan. A quick answer can go in before Ray finishes; Ray skips anything already answered.', 'edge');
-  await run(`$c('.wr[data-q="2.3"]')`);
-  await snap('E02', 'Opening a question Ray is still analysing', 'The card shows Ray searching the Response Library for this question.', 'edge');
-  await finish(); await run(`$c('[data-do=list]')`);
-  await run(`$see('.wr[data-q="5.5"]')`);
-  await snap('E03', 'No library match → AI generated', 'With no library match Ray drafts the answer during the scan and leaves it for the user to check and put in.', 'edge');
   await run(`$see('.wr[data-q="1.8"]')`); await run(`$type('.wr[data-q="1.8"] .qa .in','07 4152 0001')`);
-  await snap('E04', 'Quick inline answer', 'A short answer typed into the row. Enter puts it in and jumps to the next open question; Shift+Enter opens the full editor.', 'edge');
+  await snap('E10', 'Quick inline answer', 'A short answer typed into the row. Enter puts it in and jumps to the next open question; Shift+Enter opens the card.', 'edge');
   await run(`$type('.wr[data-q="1.8"] .qa .in','07 4152 0001 (main) and 07 4152 0002 (after hours), both monitored on weekdays from 7am to 5pm AEST.')`);
-  await snap('E05', 'Inline answer getting long', 'Past ~85 characters a note suggests the full editor (Shift+Enter).', 'edge');
+  await snap('E11', 'Inline answer getting long', 'Past ~85 characters a note suggests the card (Shift+Enter).', 'edge');
   await run(`document.activeElement.blur()`);
-  await snap('E06', 'Left mid-typing → draft kept', 'Clicking away keeps the text as a draft with Put in document instead of losing it.', 'edge');
+  await snap('E12', 'Left mid-typing → draft kept', 'Clicking away keeps the text as a draft with Click to insert; Apply to document puts every draft in at once.', 'edge');
+  await run(`ui.cur='5.4';document.querySelectorAll('.wr.cur').forEach(x=>x.classList.remove('cur'));$see('.wr[data-q="5.4"]');document.querySelector('.wr[data-q="5.4"]').classList.add('cur');updFab()`);
+  await snap('E13', 'Back to: pill', 'When the question you are working on is off screen, or another row is highlighted, a floating "Back to: …" pill returns you to it.', 'edge');
   await run(`$see('.wr[data-q="5.4"]')`);
-  await snap('E07', 'Assigned to someone else', 'Rows assigned to a teammate show their avatar, name and due day. You can still click to answer.', 'edge');
-  await run(`$top()`); await run(`$see('.wr[data-q="3.1"]')`);
-  await snap('E08', 'Edited by a teammate in Word', 'If Mia changes an answer directly in the document, the row flags it.', 'edge');
-  await run(`$c('.wr[data-q="3.1"] .t b')`);
-  await snap('E09', 'Teammate edit · card', 'The note at the bottom of the editor says Mia changed it; replacing her text asks first.', 'edge');
-  await run(`$c('[data-do=list]')`); await run(`$see('.wr[data-q="3.2"] .more')`); await run(`$c('.wr[data-q="3.2"] .more')`);
-  await snap('E10', 'Long answer · Show more', 'Answers clamp to two lines; Show more expands in place.', 'edge');
-  await run(`$c('.wr[data-q="6.1"]')`);
-  await snap('E11', 'Card for an open question', 'Empty editor, Put in document & next disabled until there is text.', 'edge');
-  await run(`$c('.hasg')`);
-  await snap('E12', 'Assign from the card header', 'Assign User in the header opens the people menu to assign or reassign inline.', 'edge');
-  await run(`document.querySelector('.cmenu')?.remove()`);
-  await run(`$c('.ctabs .ptab[data-k=ray]')`); await run(`$c('.rffile')`);
-  await snap('E13', 'Answer with Ray · draft from a file', 'The paperclip opens an in-pane picker: a Tenderfy file name or an upload.', 'edge');
-  await run(`$c('.gdlg [data-do=genfile]')`); await run(`$c('.qempty .starter')`); await b.sleep(100);
-  await snap('E14', 'Answer with Ray · drafting', 'Ray drafts this question in a per-question conversation.', 'edge');
-  await b.sleep(1500);
-  await snap('E15', 'Answer with Ray · reply', 'Each reply shows its source, Use this answer, copy, retry and follow-up suggestions.', 'edge');
-  await run(`$c('.qthread [data-do=quse]')`);
-  await snap('E23', 'Use this answer → editor', 'Use this answer drops the reply into the editor and switches back to Write manually.', 'edge');
-  await run(`$c('.ctabrow [data-do=fullscreen]')`); await b.sleep(400);
-  await snap('E16', 'Full screen', 'The editor box takes the pane; only the tabs and Put in document & next stay.', 'edge');
-  await run(`$c('.ctabs .ptab[data-k=ray]')`); await b.sleep(200);
-  await snap('E24', 'Full screen · Ray', 'Full screen works for the Ray conversation too.', 'edge');
-  await run(`$c('.ctabs .ptab[data-k=write]')`); await run(`$c('.ctabrow [data-do=fullscreen]')`); await b.sleep(400);
-  await run(`$c('.naq')`); await run(`$c('[data-do=list]')`);
-  await run(`$c('[data-do=sec][data-s="X"]')`); await run(`$see('[data-do=sec][data-s="X"]')`);
-  await snap('E17', 'Not a Question', 'Dismissed items leave the queue and the count, and collect in a Not a Question section with Restore.', 'edge');
-  await run(`$top()`); await run(`$c('[data-do=filter][data-f=mine]')`);
+  await snap('E14', 'Assigned to someone else', 'Rows assigned to a teammate show their avatar, name and due day. You can still answer.', 'edge');
+  await run(`$c('.wr[data-q="3.2"] .t b')`);
+  await snap('E15', 'Library answer · card', 'A Response Library answer opens with the text in the editor and the source tag beside the section name.', 'edge');
+  await run(`$c('[data-do=list]')`);
+  await boot(); await run(`$sel('stfsel','review')`); await run(`$top()`);
+  await snap('E16', 'Status filter · Needs Review', 'Needs Review narrows the list to Ray drafts waiting for a check.', 'edge');
+  await run(`$sel('stfsel','open')`); await run(`$top()`);
+  await snap('E17', 'Status filter · Open', 'Open shows everything not yet in the document.', 'edge');
+  await run(`$sel('stfsel','')`); await run(`$c('[data-do=filter][data-f=mine]')`);
   await snap('E18', 'Assigned to me', 'The Assigned switch narrows the list to questions assigned to you.', 'edge');
   await run(`$c('[data-do=filter][data-f=all]')`); await run(`$sel('whosel','MW')`);
   await snap('E19', 'Filter by person', "In All, the person filter shows one teammate's questions across sections.", 'edge');
-  await run(`$sel('whosel','')`); await run(`$sel('stfsel','open')`); await run(`$top()`);
-  await snap('E20', 'Status filter · Open', 'Open shows everything not yet in the document: unanswered questions and drafts.', 'edge');
-  await run(`$sel('stfsel','')`); await run(`$c('.bell')`);
-  await snap('E21', 'Notifications', 'The bell lists assignments and teammate answers; clicking one opens that question.', 'edge');
-  await run(`document.querySelector('.cmenu')?.remove()`); await run(`$c('.wr[data-q="1.1"]')`);
-  await snap('E22', 'First in the queue', 'Previous Question is disabled on the first item. Fields in the Tenderer Details Form use the same card.', 'edge');
-  await run(`$c('[data-do=list]')`); await run(`$c('.wr[data-q="7.4"]')`);
-  await snap('E26', 'AI generated draft · card', 'An AI generated draft opens with the text in the editor and the AI generated tag; put it in once checked.', 'edge');
+  await run(`$sel('whosel','')`); await run(`$c('.bell')`);
+  await snap('E20', 'Notifications', 'The bell lists the run summary, assignments and teammate answers; clicking one opens that question.', 'edge');
+  await run(`document.querySelector('.cmenu')?.remove()`); await run(`$c('[data-do=more]')`);
+  await snap('E21', 'More menu', 'The ⋯ menu: Keyboard shortcuts, Changelog and Sign out.', 'edge');
+  await run(`$c('[data-do=keys]')`);
+  await snap('E22', 'Keyboard shortcuts', 'An in-pane sheet listing list, card and global shortcuts.', 'edge');
+  await run(`$c('[data-do=sheetclose]')`); await run(`$c('[data-do=more]')`); await run(`$c('[data-do=changelog]')`);
+  await snap('E23', 'Changelog', 'Who changed what in this document, newest first.', 'edge');
+  await run(`$c('[data-do=sheetclose]')`);
+
+  /* ---------- question card ---------- */
+  await run(`$c('.wr[data-q="6.1"] .t b')`);
+  await snap('E24', 'Card for an open question', 'Empty editor, Put in document & next disabled until there is text.', 'edge');
+  await run(`$c('.hasg')`);
+  await snap('E25', 'Assign from the card header', 'Assign User in the header opens the people menu.', 'edge');
+  await run(`document.querySelector('.cmenu')?.remove()`); await run(`$c('.ctabs .ptab[data-k=ray]')`); await run(`$c('.rffile')`);
+  await snap('E26', 'Answer with Ray · draft from a file', 'The paperclip opens the same card as the reference step: Select File or Upload File.', 'edge');
+  await run(`$c('.genpick [data-do=wffmopen]')`); await run(`$c('[data-do=wffmpick][data-f="TEN3089 Specification.pdf"]')`);
+  await snap('E27', 'Draft from files · File Manager', 'The File Manager sheet again; its button reads Draft from files.', 'edge');
+  await run(`$c('[data-do=wffmattach]')`); await b.sleep(100);
+  await snap('E28', 'Answer with Ray · drafting', 'Ray drafts this question in a per-question conversation.', 'edge');
+  await b.sleep(1700);
+  await snap('E29', 'Answer with Ray · reply', 'Each reply shows its source, Use this answer, copy, retry and follow-ups.', 'edge');
+  await run(`$c('.qthread [data-do=quse]')`);
+  await snap('E30', 'Use this answer → editor', 'Use this answer drops the reply into the editor and switches back to Write manually.', 'edge');
+  await run(`$c('.ctabrow [data-do=fullscreen]')`); await b.sleep(400);
+  await snap('E31', 'Full screen', 'The editor box takes the pane; only the tabs and Put in document & next stay.', 'edge');
+  await run(`$c('.ctabrow [data-do=fullscreen]')`); await b.sleep(400);
+  await run(`$c('.naq')`); await run(`$c('[data-do=list]')`); await run(`$c('[data-do=sec][data-s="X"]')`); await run(`$see('[data-do=sec][data-s="X"]')`);
+  await snap('E32', 'Not a Question', 'Dismissed items leave the queue and the count, and collect in a Not a Question section with Restore.', 'edge');
+  await run(`$top()`); await run(`$c('.wr[data-q="1.1"] .t b')`);
+  await snap('E33', 'First in the queue', 'Previous Question is disabled on the first item.', 'edge');
+
+  /* ---------- Ask Ray after the run ---------- */
   await run(`$c('[data-do=list]')`); await run(`$c('[data-do=tab][data-tab=ask]')`);
-  await run(`$type('#cin','Draft 3.2');document.querySelector('#cin').dispatchEvent(new KeyboardEvent('keydown',{key:'Enter',bubbles:true}))`); await b.sleep(1700);
-  await run(`$type('#cin','make it shorter');document.querySelector('#cin').dispatchEvent(new KeyboardEvent('keydown',{key:'Enter',bubbles:true}))`); await b.sleep(1700);
+  await run(`$type('#cin','Draft 3.2');document.querySelector('#cin').dispatchEvent(new KeyboardEvent('keydown',{key:'Enter',bubbles:true}))`); await b.sleep(1800);
   await run(`const p=document.querySelector('.pbody');p.scrollTop=p.scrollHeight`);
-  await snap('E25', 'Ask Ray · conversation', 'Ask Ray is a full conversation: follow-ups rework the last answer, Use for puts it in a question, history and context chips sit around it.', 'edge');
+  await snap('E34', 'Ask Ray · chat unlocked', 'Once the run is done the composer opens under the run summary for follow-up questions.', 'edge');
 
   fs.writeFileSync(__dirname + '/states/meta.json', JSON.stringify(meta, null, 1));
   b.close();
