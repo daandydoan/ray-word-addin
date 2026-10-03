@@ -558,6 +558,8 @@ td .cc.sel::before{display:none}
 .wfintro .starter,.wfopts .starter{padding:9px 12px}
 .ray-foot{padding:4px 6px 6px}.ray-foot .composer{padding:4px 4px 4px 8px}
 .ray .btn[data-do=wfreview]{flex:1;justify-content:center}
+.refrow{display:flex;align-items:flex-start;gap:8px}.refrow .ms{font-size:18px;color:var(--r-tx-3);margin-top:1px}.refrow.on{border-color:var(--acc);background:#fff}.refrow.on .ms{color:var(--acc)}
+.wfbtns{display:flex;gap:6px}.wfbtns .btn:last-child{flex:1;justify-content:center}
 </style></head>
 <body>
 <div class="demo" id="demo"><div class="demo-btn" data-do="demotog"><span class="ms">smart_display</span>Demo</div><div class="demo-list">
@@ -829,7 +831,7 @@ function asktab(){
     : ui.runShown?'':`<div class="empty"><div class="halo"><img src="${RAY}" alt=""></div><h3>How can Ray help?</h3><p>Ray has read this document in place — nothing is copied. Ask about it or your company knowledge.</p></div><div class="starters"><div class="starter" data-do="askabn">What's our ABN?</div><div class="starter" data-do="ask" data-t="Summarise what section 3 is asking for">Summarise what section 3 is asking for</div><div class="starter" data-do="ask" data-t="Which answers still need a reference?">Which answers still need a reference?</div><div class="starter" data-do="ask" data-t="Draft ${ui.cur}">Draft ${ui.cur} · ${esc(Q[ui.cur].t)}</div></div>`);
   return (wb?ui._wfpin:'')+`<div class="pbody"><div class="chat"><div class="top"><span class="ms ${ui.histOpen?'on':''}" data-do="history" title="Recent chats">history</span><span class="ms" data-do="newchat" title="New chat">edit_square</span></div>${body}</div></div><div class="ray-foot ${lk?'off':''}" ${lk?'title="Chat opens once Ray has filled the document. Finish the steps above first."':''}><div class="ray-seclabel">Reference</div><div class="ray-ctx">${ui.ctx.doc?`<span class="ray-ctxchip"><span class="ms">description</span><span class="t">TEN3089 Returnable Schedules.docx</span><span class="ms x" data-do="ctxoff" data-k="doc" title="Don't use the document">close</span></span>`:`<span class="ray-ctxchip off" data-do="ctxon" data-k="doc"><span class="ms">add</span><span class="t">Document</span></span>`}${ui.ctx.q?`<span class="ray-ctxchip"><span class="ms">tag</span><span class="t">${ui.cur} · ${esc(Q[ui.cur].t)}</span><span class="ms x" data-do="ctxoff" data-k="q" title="Don't use this question">close</span></span>`:`<span class="ray-ctxchip off" data-do="ctxon" data-k="q"><span class="ms">add</span><span class="t">${ui.cur}</span></span>`}</div><div class="composer"><span class="ms ic" title="Attach a document">attach_file</span><span class="in" contenteditable="${!lk}" data-ph="${ui.chat.length?'Reply to Ray…':'Ask Ray anything…'}" id="cin"></span><span class="send ms" data-do="send">arrow_upward</span></div></div>`;}
 const TFOLDERS=[['Default','3 files'],['Response schedules','2 files'],['Pricing','1 file'],['Correspondence','empty']];
-const WFSTEPS=['Choose the tender','Choose where to upload','Mock step 3','Mock step 4','Analyse and fill'];
+const WFSTEPS=['Choose the tender','Choose where to upload','Add reference documents','Mock step 4','Analyse and fill'];
 function wfBlock(){const r=ui.run,T=ui.tenderName||'Bundaberg Regional Council',F=ui.folder||'Default',sc=ui.scan;
   const ray=h=>`<div class="ray"><div class="by"><img src="${RAY}" alt="">Ray</div>${h}</div>`,p=t=>`<div class="ans"><p>${t}</p></div>`;
   const SET={confirm:0,pick:0,folder:1,mock3:2,mock4:3},gate=r.stage in SET,N=WFSTEPS.length,at=gate?SET[r.stage]:r.stage==='done'?N:4;
@@ -844,8 +846,12 @@ function wfBlock(){const r=ui.run,T=ui.tenderName||'Bundaberg Regional Council',
   if(r.stage==='folder')return intro0('Where should I upload this document?',`Pick a folder in <b>${esc(T)}</b> on Tenderfy. Your team will find it there.`,
     TFOLDERS.map(f=>row(`data-do="wffolder" data-f="${f[0]}"`,f[0],f[1])).join(''),'<a class="btn ghost wflink" data-do="wfpick">Change tender</a>');
   // placeholder setup steps, still to be designed
-  if(r.stage==='mock3'||r.stage==='mock4'){const n=r.stage.slice(-1);return intro0('Mock step '+n,'Placeholder. This step hasn\'t been designed yet.',row('data-do="wfmock"','Continue'),`<a class="btn ghost wflink" data-do="wfback" data-to="${n==='3'?'folder':'mock3'}">Back</a>`);}
-  o+=`<div class="wfsum"><div class="k">Your choices</div>${[['Tender',T],['Upload to',F],['Mock step 3','Done'],['Mock step 4','Done']].map(([k,v])=>`<div class="r"><span class="ms">check_circle</span><span>${k}</span><b>${esc(v)}</b></div>`).join('')}</div>`;
+  if(r.stage==='mock3'){const on=r.refs||[];
+    return intro0('Any other documents to use?','Pick documents on Tenderfy that Ray should read when answering this Schedule. They stay on Tenderfy; nothing is copied.',
+      TFILES.slice(1).map(d=>`<div class="starter refrow ${on.includes(d)?'on':''}" data-do="wfref" data-f="${esc(d)}"><span class="ms">${on.includes(d)?'check_box':'check_box_outline_blank'}</span><span>${esc(d)}<small>${/^TEN/.test(d)?'Tender document':'Company document'}</small></span></div>`).join(''),
+      `<div class="wfbtns"><a class="btn ghost" data-do="wfback" data-to="folder">Back</a><a class="btn" data-do="wfmock">${on.length?'Continue with '+on.length:'Skip'}</a></div>`);}
+  if(r.stage==='mock4'){const n=r.stage.slice(-1);return intro0('Mock step '+n,'Placeholder. This step hasn\'t been designed yet.',row('data-do="wfmock"','Continue'),`<a class="btn ghost wflink" data-do="wfback" data-to="${n==='3'?'folder':'mock3'}">Back</a>`);}
+  o+=`<div class="wfsum"><div class="k">Your choices</div>${[['Tender',T],['Upload to',F],['References',(r.refs||[]).length?(r.refs.length+' document'+(r.refs.length>1?'s':'')):'None'],['Mock step 4','Done']].map(([k,v])=>`<div class="r"><span class="ms">check_circle</span><span>${k}</span><b>${esc(v)}</b></div>`).join('')}</div>`;
   const foot='<div class="tfoot"><span class="ms" data-do="wfcopy" title="Copy">content_copy</span>just now</div>';
   if(r.stage==='undone')return o+ray(p('Undone. Nothing from this run is in your document.')+'<div class="acts"><span class="btn" data-do="wfrestart">Start again</span></div>'+foot);
   const st=[['read_document',`Reading the document · ${Math.min(r.prog||0,8)}/8 sections`],['find_questions',`Finding questions · ${r.found?r.n+' found':'…'}`],['match_library',`Matching Response Library · ${r.k||0} matched`],['draft_answers',`Drafting the rest · ${r.d||0} drafted`]].slice(0,r.stage==='done'?4:r.stage==='ask'?r.step:(r.step||0)+1);
@@ -1052,6 +1058,7 @@ document.addEventListener('click',e=>{
     wffolder(){ui.folder=t.dataset.f;ui.run.stage='mock3';renderPane();},
     wfmock(){if(ui.run.stage==='mock3'){ui.run.stage='mock4';renderPane();}else wfStart();},
     wfback(){ui.run.stage=t.dataset.to;renderPane();},
+    wfref(){const a=ui.run.refs=ui.run.refs||[],d=t.dataset.f,i=a.indexOf(d);i<0?a.push(d):a.splice(i,1);renderPane();},
     wfstop(){ui.run.stage='stopped';if(ui.scan)ui.scan.ids.forEach(id=>delete ui.drafting[id]);renderPane();},
     wfgo(){ui.run.stage='working';if(ui.scan)ui.scan.ids.forEach(id=>ui.drafting[id]=true);renderPane();setTimeout(wfTick,220);},
     // ponytail: undo resets every question the run touched, even one you edited mid-run; per-question undo if that bites
