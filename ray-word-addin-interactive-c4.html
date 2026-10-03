@@ -934,7 +934,7 @@ function teamtab(){
 const fabTarget=()=>ui.active&&!S.q[ui.active].skip&&stOf(ui.active)!=='done'?ui.active:queue().find(k=>stOf(k)!=='done');
 function updFab(){const pb=$('.pbody'),fab=pb&&pb.querySelector('.fab');if(!fab)return;const id=fabTarget(),row=id&&pb.querySelector('.wr[data-q="'+id+'"]');
   if(!row){fab.classList.remove('on');return;}const r=row.getBoundingClientRect(),p=pb.getBoundingClientRect(),off=r.bottom<p.top+40||r.top>p.bottom-40;
-  fab.classList.toggle('on',off||ui.cur!==id);fab.firstChild.textContent=r.top<p.top?'arrow_upward':'arrow_downward';fab.lastChild.textContent=(id===ui.active?'Back to ':'Next to answer: ')+id;}
+  fab.classList.toggle('on',off||ui.cur!==id);fab.firstChild.textContent=r.top<p.top?'arrow_upward':'arrow_downward';fab.lastChild.textContent='Back to: '+id;}
 document.addEventListener('focusin',e=>{const w=e.target.closest&&e.target.closest('.wr .qa')&&e.target.closest('.wr[data-q]');if(w){const id=w.dataset.q;ui.active=ui.cur=id;document.querySelectorAll('.wr.cur').forEach(x=>x!==w&&x.classList.remove('cur'));w.classList.add('cur');selectCC('q:'+id);updFab();}});
 document.addEventListener('scroll',e=>{if(e.target.classList&&e.target.classList.contains('pbody'))updFab();},true);
 function jumpNext(id){const ids=[...document.querySelectorAll('.pbody .wr[data-q]')].map(w=>w.dataset.q).filter(k=>!S.q[k].skip);
