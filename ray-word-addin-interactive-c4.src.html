@@ -511,7 +511,7 @@ td .cc.sel::before{display:none}
 .pane.edfocus .cta{padding:8px}.pane.edfocus .ctarow.two{display:none}
 .card.full .qsec{display:flex;align-items:center;justify-content:space-between;gap:8px;min-height:18px}.card.full .qsec .atag{text-transform:none;letter-spacing:0;font-weight:500}
 .ed>.note.warn{flex:none;margin:0;border-radius:0;border:0;border-top:1px solid #F2DDB5;padding:8px 12px;font-size:11.5px;line-height:1.45}
-.atag.ai{background:#EEEAFB;color:#4B3A8C}
+.atag.ai{background:#FDEBD8;color:#A1490C}
 .card.full .qfull{font-weight:400}.card.full .qfull .qpre{font-weight:700}
 /* hidden for now: Ask Ray history/new-chat row and Reference chips */
 .chat .top,.ray-foot .ray-seclabel,.ray-foot .ray-ctx{display:none}
@@ -558,6 +558,8 @@ td .cc.sel::before{display:none}
 .wfintro{gap:8px;padding:0}.wfintro .empty{padding:2px 0 0;gap:4px}.wfintro .empty .halo{width:40px;height:40px}.wfintro .empty .halo img{width:26px}.wfintro .empty h3{margin:2px 0 0;font-size:15px}
 .wfintro .starter,.wfopts .starter{padding:9px 12px}
 .ray-foot{padding:4px 6px 6px}.ray-foot .composer{padding:4px 4px 4px 8px}
+/* Needs Review reads orange */
+.wr.nrv .st{background:#E8792B!important;border-color:#E8792B!important}.wr.nrv .pst{color:#A1490C}
 </style></head>
 <body>
 <div class="demo" id="demo"><div class="demo-btn" data-do="demotog"><span class="ms">smart_display</span>Demo</div><div class="demo-list">
@@ -783,7 +785,7 @@ function row(id){const q=Q[id],x=S.q[id],st=stOf(id),cur=ui.cur===id,text=st==='
   let pill=`${st==='done'?(`<span class="ins" title="${x.accepted?'In the document · accepted':'In the document · tracked change waiting in Review'}"><span class="ms">check_circle</span>Inserted</span>`):st==='ready'&&!ui.drafting[id]?`<span class="ins go" data-do="pillins" data-q="${id}" title="Put this draft in the document as a tracked change"><span class="ms">keyboard_return</span>Put in document</span>`:''}`;
   if(x.blocked&&st!=='done')pill=`<span class="pst warn">Couldn't insert · document is protected</span><span class="ins go" data-do="copyq" data-q="${id}"><span class="ms">content_copy</span>Copy</span>`;
   else if(x.ai&&st==='ready'&&pill)pill='<span class="pst">Not in document yet</span>'+pill;
-  return `<div class="wr ${st} ${ph==='review'?'rev':''} ${cur?'cur':''}" data-do="cur" data-q="${id}"><div class="rtop"><i class="st"></i>${x.owner?avatar(x.owner)+'<span class="rwho">'+(x.owner==='DD'?'You':esc(PEOPLE[x.owner].n))+(x.due?' · due '+x.due:'')+'</span>':'<span class="rwho none">Unassigned</span>'}${ui.drafting[id]?`<span class="atag anl"><img src="${RAY}" alt="">Ray is analysing…</span>`:x.ai?'<span class="atag ai" title="No Response Library match · Ray drafted this. Not in document yet"><span class="ms">auto_awesome</span>Needs Review</span>':x.auto?(st==='done'||x.blocked?'<span class="atag" title="Ray filled this from the Response Library"><span class="ms">check</span>Response Library</span>':'<span class="atag pend" title="Ray drafted this but did not insert it — long answers wait for you to read them first"><span class="ms">schedule</span>Response Library</span>'):q.field&&st==='open'&&ui.run&&ui.run.stage==='done'?'<span class="atag anl" style="color:var(--r-tx-3)">Yours to answer</span>':''}</div><span class="t"><b title="${esc(q.t)}"><span class="qpre">Q:</span> ${esc(q.full)}</b>${sub}${pill?`<div class="pillrow">${pill}</div>`:''}</span></div>`;}
+  return `<div class="wr ${st} ${ph==='review'?'rev':''} ${cur?'cur':''} ${nr(id)?'nrv':''}" data-do="cur" data-q="${id}"><div class="rtop"><i class="st"></i>${x.owner?avatar(x.owner)+'<span class="rwho">'+(x.owner==='DD'?'You':esc(PEOPLE[x.owner].n))+(x.due?' · due '+x.due:'')+'</span>':'<span class="rwho none">Unassigned</span>'}${ui.drafting[id]?`<span class="atag anl"><img src="${RAY}" alt="">Ray is analysing…</span>`:x.ai?'<span class="atag ai" title="No Response Library match · Ray drafted this. Not in document yet"><span class="ms">auto_awesome</span>Needs Review</span>':x.auto?(st==='done'||x.blocked?'<span class="atag" title="Ray filled this from the Response Library"><span class="ms">check</span>Response Library</span>':'<span class="atag pend" title="Ray drafted this but did not insert it — long answers wait for you to read them first"><span class="ms">schedule</span>Response Library</span>'):q.field&&st==='open'&&ui.run&&ui.run.stage==='done'?'<span class="atag anl" style="color:var(--r-tx-3)">Yours to answer</span>':''}</div><span class="t"><b title="${esc(q.t)}"><span class="qpre">Q:</span> ${esc(q.full)}</b>${sub}${pill?`<div class="pillrow">${pill}</div>`:''}</span></div>`;}
 function assignRow(id){const x=S.q[id];return `<div class="acts" style="margin-top:8px;align-items:center"><span style="font-size:10px;color:#6B7975">Assign ${id} to</span><span class="who">${Object.keys(PEOPLE).map(k=>avatar(k,x.owner===k?'sel':'')).map(a=>a.replace('<span','<span data-do="own" data-q="'+id+'" data-who="'+a.slice(a.indexOf('>')+1,a.indexOf('>')+3)+'"')).join('')}</span><span class="btn ghost" data-do="ownall" data-q="${id}" title="Assign every open question in this section to the same person">Section →</span></div>`;}
 function cta(){
   const ready=live().filter(id=>stOf(id)==='ready'&&!S.q[id].ai&&!S.q[id].blocked),nrc=live().filter(nr).length;
