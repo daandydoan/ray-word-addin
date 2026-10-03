@@ -849,15 +849,13 @@ function wfBlock(){const r=ui.run,T=ui.tenderName||'Bundaberg Regional Council',
   if(r.stage==='undone')return o+ray(p('Undone. Nothing from this run is in your document.')+'<div class="acts"><span class="btn" data-do="wfrestart">Start again</span></div>'+foot);
   const st=[['read_document',`Reading the document · ${Math.min(r.prog||0,8)}/8 sections`],['find_questions',`Finding questions · ${r.found?r.n+' found':'…'}`],['match_library',`Matching Response Library · ${r.k||0} matched`],['draft_answers',`Drafting the rest · ${r.d||0} drafted`]].slice(0,r.stage==='done'?4:r.stage==='ask'?r.step:(r.step||0)+1);
   const steps=`<div class="steps wfsteps">${st.map((x,i)=>`<div class="step"><i class="${r.stage==='working'&&i===r.step?'live':''}"></i><code>${x[0]}</code><span>${x[1]}</span></div>`).join('')}</div>`;
-  if(r.stage==='ask'){const say=[`Last step. Let me analyse the document: read it, find the questions, put in what the Response Library already answers, and draft the rest for you to review.`,`Read 8 sections. Next, let me find the questions.`,`Found ${r.n} questions. Next, let me match them against the Response Library and ${S.protected?'get those answers ready':'put in the answers it already has, as tracked changes'}.`,`${r.k} answered from the Response Library. Next, let me draft the rest for you to review.`][r.step];
-    return o+ray((r.step?steps:'')+p(say)+`<div class="wfopts">${row('data-do="wfgo"','Go ahead')+(!r.step?'':r.step===3?row('data-do="wfnodraft"',"No, I'll write them myself"):'')+(r.step?row('data-do="wfauto"','Do the rest without asking'):'')}</div>`);}
   if(r.stage==='working')return o+ray((r.resumed?`<p class="qst">Picking up where I left off · ${sc?sc.total-sc.ids.size:0} of ${sc?sc.total:r.n||'…'} done.</p>`:'')+'<div class="thk live"><span class="ms">progress_activity</span>Working…</div>'+steps+'<div class="acts"><span class="btn ghost" data-do="wfstop"><span class="ms">stop</span>Stop</span><span class="qnote">You can start answering in Q&amp;A.</span></div>');
   if(r.stage==='stopped')return o+ray(steps+p(`I've stopped. ${S.protected?'Nothing':r.k||0} answers are already in your document.`)+'<div class="acts"><span class="btn" data-do="wfgo">Carry on</span><span class="btn ghost" data-do="wfundo">Undo this run</span></div>'+foot);
   return o+ray(`<div class="thk ${ui.thinkOpen?'open':''}" data-do="think"><span class="ms">chevron_right</span>Read 8 sections · found ${r.n} questions</div>${steps.replace(' wfsteps','')}`+p(S.protected?`This document is protected. ${r.k} answers are ready but not in Word yet.<br>${r.d} need review · ${r.o} left for you.`:`${r.k} in your document from the Response Library · ${r.d} need review · ${r.o} left for you.`)+`<div class="acts">${S.protected?'<span class="btn ghost" data-do="wfcopy"><span class="ms">content_copy</span>Copy answers</span>':''}<span class="btn" data-do="wfreview"><span class="ms">checklist</span>Review in Q&amp;A</span></div>`+foot);}
 // ponytail: skips a repaint while the user is typing in the pane, so live filling never eats a keystroke; the next tick catches up
 function wfRender(){const a=document.activeElement;if(a&&a.isContentEditable&&$('#pane').contains(a))return;renderPane();}
-function wfStart(){const r=ui.run;ui.picked=true;Object.assign(r,{stage:'working',step:0,prog:0,orig:{},found:false,k:0,d:0,resumed:false,auto:false});ui.view='list';toast('Uploaded to '+(ui.tenderName||'Bundaberg Regional Council')+' · '+(ui.folder||'Default'));wfAsk();}
-function wfAsk(){const r=ui.run;if(r.auto){r.stage='working';wfRender();return setTimeout(wfTick,300);}r.stage='ask';if(ui.scan)ui.scan.ids.forEach(id=>delete ui.drafting[id]);wfRender();}
+function wfStart(){const r=ui.run;ui.picked=true;Object.assign(r,{stage:'working',step:0,prog:0,orig:{},found:false,k:0,d:0,resumed:false});ui.view='list';toast('Uploaded to '+(ui.tenderName||'Bundaberg Regional Council')+' · '+(ui.folder||'Default'));wfAsk();}
+function wfAsk(){ui.run.stage='working';wfRender();setTimeout(wfTick,300);}
 function wfTick(){const r=ui.run;if(!r||r.stage!=='working')return;
   if(r.step===0){if(++r.prog>=8){r.step=1;return wfAsk();}wfRender();return setTimeout(wfTick,220);}
   if(r.step===1){r.found=true;r.n=live().length;r.step=2;ui.toFirst=true;$('#docname').innerHTML='TEN3089 Returnable Schedules.docx <small>· Saved to SharePoint</small>';renderPage();return wfAsk();}
@@ -1053,12 +1051,10 @@ document.addEventListener('click',e=>{
     wfmock(){if(ui.run.stage==='mock3'){ui.run.stage='mock4';renderPane();}else wfStart();},
     wfback(){ui.run.stage=t.dataset.to;renderPane();},
     wfstop(){ui.run.stage='stopped';if(ui.scan)ui.scan.ids.forEach(id=>delete ui.drafting[id]);renderPane();},
-    wfgo(){ui.run.auto=true;ui.run.stage='working';if(ui.scan)ui.scan.ids.forEach(id=>ui.drafting[id]=true);renderPane();setTimeout(wfTick,220);},
+    wfgo(){ui.run.stage='working';if(ui.scan)ui.scan.ids.forEach(id=>ui.drafting[id]=true);renderPane();setTimeout(wfTick,220);},
     // ponytail: undo resets every question the run touched, even one you edited mid-run; per-question undo if that bites
     wfundo(){const r=ui.run;if(ui.scan)ui.scan.ids.forEach(id=>delete ui.drafting[id]);ui.scan=null;Object.keys(r.orig||{}).forEach(id=>{const x=S.q[id];if(x.auto&&x.inserted)S.changes=Math.max(0,S.changes-1);Object.assign(x,{st:'open',inserted:false,accepted:false,auto:false,ai:false,blocked:false});Q[id].txt=r.orig[id];});r.stage='undone';renderPage();renderPane();toast("Removed this run's tracked changes");},
     wfrestart(){wfStart();},
-    wfauto(){ui.run.auto=true;A.wfgo();},
-    wfnodraft(){const sc=ui.scan;if(sc){sc.ids.forEach(id=>delete ui.drafting[id]);ui.scan=null;wfDone(sc);}renderPage();renderPane();},
     wfreview(){ui.tab='q';ui.view='list';ui.toFirst=true;renderPane();},
     wfcopy(){toast(ui.run.stage==='done'&&S.protected?ui.run.k+' answers copied · paste them into the document':'Copied');},
     copyq(){toast(q+' copied · paste it into the document');},
