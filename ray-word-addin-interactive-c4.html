@@ -522,7 +522,7 @@ td .cc.sel::before{display:none}
 .wfintro .empty{align-items:flex-start;text-align:left;padding:8px 2px 0}
 .wfintro .empty p{max-width:none}.wfintro .empty p b{color:var(--r-tx);font-weight:700}
 .wfopts{display:flex;flex-direction:column;gap:6px;margin-top:4px}.wfopts .starter,.wfintro .starter{padding:11px 13px;font-size:12.5px}.wfintro .starter small{display:block;margin-top:1px;font-size:11px;color:var(--r-tx-3)}
-.wfintro .lib-s{margin:0}.wflink{align-self:flex-start}
+.wfintro .lib-s{margin:0}.wfor{display:flex;align-items:center;gap:8px;font-size:11px;color:var(--r-tx-3)}.wfor::before,.wfor::after{content:"";flex:1;height:1px;background:var(--r-line)}.wfchat{align-self:stretch;justify-content:center}.wflink{align-self:flex-start}
 /* workflow start, after Agentic Ray (tenderfy-ray-phase1 .ray-segs / .ray-seg, live rail) */
 .wfhead{flex:none;padding:8px 14px 10px;border-bottom:1px solid var(--r-line);background:var(--r-sunk)}
 .ray-foot{padding:6px 8px 8px}.ray-foot.off{cursor:not-allowed}.ray-foot.off>*{opacity:.55;pointer-events:none}.ray-foot .composer{margin:0}
@@ -814,7 +814,7 @@ const ctx=()=>`<div class="ctx"><span>Tender</span><b>${ui.foreign&&!ui.picked?'
 
 function qtab(){
   if(ui.view==='context') return contextCard();
-  if(ui.run&&!ui.run.found) return '<div class="pbody"><div class="note">Ray is reading the document. Questions appear here as they\'re found.</div></div>';
+  if(ui.run&&!ui.run.found) return ui.chatOnly&&ui.run.stage==='pick'?'<div class="pbody"><div class="note">Questions show here once Ray fills this document.</div><div class="acts"><span class="btn" data-do="wffill"><span class="ms">play_lesson</span>Fill this document</span></div></div>':'<div class="pbody"><div class="note">Ray is reading the document. Questions appear here as they\'re found.</div></div>';
   const r=ui.run,sum=r&&r.stage==='done'&&!r.sumOff?`<div class="runsum"><img src="${RAY}" alt="">${r.k} ${S.protected?'ready, not in document':'in document'} · ${r.d} need review · ${r.o} open<span class="ms x" data-do="sumoff" title="Close">close</span></div>`:'';
   const all=live(), done=all.filter(id=>S.q[id].accepted).length, drafted=all.filter(id=>stOf(id)==='done'&&!S.q[id].accepted).length;
   const phase=`<div class="modes"><i class="segbar"></i>${[['all','All'],['mine','Assigned']].map(([k,t])=>`<div class="mode ${ui.filter===k?'on':''}" data-do="filter" data-f="${k}">${t}</div>`).join('')}</div>`;
@@ -891,7 +891,7 @@ function wfBlock(){const r=ui.run,T=ui.tenderName||'Bundaberg Regional Council',
   if(r.stage==='folder'&&S.fail==='nofolders')return intro0('This tender has no folders yet',`<b>${esc(T)}</b> has no folders on Tenderfy. I can upload the document to the tender itself, and your team can move it later.`,
     row('data-do="wffolder" data-f="Tender (no folder)"','Upload to the tender itself','Your team can move it later'),'<a class="btn ghost wflink" data-do="wfpick">Change tender</a>');
   if(r.stage==='pick')return intro0("Let's fill this document","Which tender is this document for? There are 4 steps, and I'll ask before each one.",
-    '<label class="lib-s"><span class="ms">search</span><input id="tsq" placeholder="Search tenders…" autocomplete="off"></label><div class="note" id="tsnone" hidden>No tenders match.</div>'+TENDERS.map((t,i)=>row(`data-do="wftender" data-i="${i}"`,t.split(' · ')[0],t.split(' · ').slice(1).join(' · ')||'Tender')).join(''));
+    '<label class="lib-s"><span class="ms">search</span><input id="tsq" placeholder="Search tenders…" autocomplete="off"></label><div class="note" id="tsnone" hidden>No tenders match.</div>'+TENDERS.map((t,i)=>row(`data-do="wftender" data-i="${i}"`,t.split(' · ')[0],t.split(' · ').slice(1).join(' · ')||'Tender')).join(''),'<div class="wfor">or</div><span class="btn ghost wfchat" data-do="wfchat"><span class="ms">forum</span>Just chat with Ray</span>');
   if(r.stage==='folder')return intro0('Where should I upload this document?',`Pick a folder in <b>${esc(T)}</b> on Tenderfy. Your team will find it there.`,
     TFOLDERS.map(f=>row(`data-do="wffolder" data-f="${f[0]}"`,f[0],f[1])).join(''),'<a class="btn ghost wflink" data-do="wfpick">Change tender</a>');
   // placeholder setup steps, still to be designed
@@ -1122,6 +1122,8 @@ document.addEventListener('click',e=>{
     askthis(){ask(`Does ${ui.cur} address ${Q[ui.cur].crit.split(' · ')[0]} fully?`);},
     ask(){ask(t.dataset.t);}, askabn(){ask("What's our ABN?");mark('askabn');},
     send(){const v=$('#cin')?.innerText.trim();if(v)ask(v);},
+    wfchat(){ui.chatOnly=true;ui.runShown=false;renderPane();setTimeout(()=>$('#cin')?.focus());},
+    wffill(){ui.chatOnly=false;ui.runShown=true;ui.tab='ask';renderPane();},
     newchat(){stash();ui.chat=[];ui.runShown=false;ui.histOpen=false;renderPane();setTimeout(()=>$('#cin')?.focus());},
     history(){ui.histOpen=!ui.histOpen;renderPane();},
     histpick(){const c=ui.chats.splice(+t.dataset.i,1)[0];stash();ui.chat=c.chat;ui.runShown=!!c.run;ui.histOpen=false;renderPane();},
@@ -1147,7 +1149,7 @@ document.addEventListener('click',e=>{
     teamsec(){ui.teamOpen[t.dataset.k]=!ui.teamOpen[t.dataset.k];renderPane();},
     check(){toast('Criteria check: 3.2 and 3.3 carry 30% and are still open');},
     track(){S.track=!S.track;renderPage();toast(`Track Changes ${S.track?'on':'off'} for Ray's writes`);},
-    foreign(){if(ui.scan){ui.scan.ids.forEach(id=>delete ui.drafting[id]);ui.scan=null;}ui.picked=false;ui.run={stage:'pick'};ui.runShown=true;ui.tab='ask';ui.view='list';renderPane();mark('foreign');},
+    foreign(){ui.chatOnly=false;if(ui.scan){ui.scan.ids.forEach(id=>delete ui.drafting[id]);ui.scan=null;}ui.picked=false;ui.run={stage:'pick'};ui.runShown=true;ui.tab='ask';ui.view='list';renderPane();mark('foreign');},
     wfpick(){ui.run.stage='pick';renderPane();},
     wftender(){ui.tenderName=TENDERS[t.dataset.i].split(' · ')[0];ui.run.stage='folder';renderPane();},
     wffolder(){ui.folder=t.dataset.f;ui.run.stage='mock3';renderPane();},
@@ -1189,8 +1191,8 @@ document.addEventListener('click',e=>{
     wfprotect(){S.protected=!S.protected;toast(S.protected?"Document is protected · Ray can't write into it":'Document is editable again');mark('wfprotect');},
     cm_accept(){toast('Saved to the Response Library');}, cm_accept(){const id=ui.sel&&ui.sel.startsWith('q:')?ui.sel.slice(2):null;if(id){S.q[id].accepted=true;logIt('DD','accepted '+id+' in Review');}S.changes=Math.max(0,S.changes-1);renderPage();renderPane();toast('Insertion accepted — '+(id||'')+' is answered');},
   };
-  if(!ui.picked&&!/^wf/.test(d)&&!['reset','demotog','foreign','finishscan','think','more','keys','changelog','sheetclose','signout','signin'].includes(d)){ui.tab='ask';renderPane();toast('Confirm the tender first');return;}
-  if(ui.run&&ui.run.stage!=='done'&&['ask','send','askabn','askthis'].includes(d)){ui.tab='ask';renderPane();toast('Finish filling the document with Ray first');return;}
+  if(!ui.picked&&!ui.chatOnly&&!/^wf/.test(d)&&!['reset','demotog','foreign','finishscan','think','more','keys','changelog','sheetclose','signout','signin'].includes(d)){ui.tab='ask';renderPane();toast('Confirm the tender first');return;}
+  if(ui.run&&ui.run.stage!=='done'&&!ui.chatOnly&&['ask','send','askabn','askthis'].includes(d)){ui.tab='ask';renderPane();toast('Finish filling the document with Ray first');return;}
   A[d]&&A[d]();
   if(t.dataset.next&&q&&stOf(q)==='done'){const qs=queue();goQ(qs[qs.indexOf(q)+1],'down');}
   if(t.closest('.demo-list')&&d!=='platform'&&!t.closest('label'))$('#demo').classList.remove('open');
