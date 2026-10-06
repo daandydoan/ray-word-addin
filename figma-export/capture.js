@@ -74,7 +74,7 @@ document.head.insertAdjacentHTML('beforeend','<style>*,*::before,*::after{animat
   await snap('E01', 'Tender search', 'The search box filters tenders live by name or reference.', 'edge');
   await run(`$val('#tsq','zzz')`);
   await snap('E02', 'Tender search · no match', 'No match shows a short note instead of an empty list.', 'edge');
-  await fresh(); await setup(); await run(`$c('[data-do=wffmopen]')`); await run(`$c('[data-do=wffmfolder][data-f="Insurance"]')`); await run(`$c('[data-do=wffmpick][data-f="Public Liability.pdf"]')`);
+  await fresh(); await setup(); await run(`$c('[data-do=wffmopen]')`); await run(`$c('[data-do=wffmfolder][data-f="Insurances"]')`); await run(`$c('[data-do=wffmpick][data-f="Public Liability.pdf"]')`);
   await snap('E03', 'File Manager · folder', 'Picking a folder card narrows Files to that folder; the selected count sits in the Files header.', 'edge');
   await run(`$c('[data-do=wffmfolder][data-f="All files"]')`); await run(`$val('#fmq','cert')`);
   await snap('E04', 'File Manager · search', 'Search filters files across every folder.', 'edge');
