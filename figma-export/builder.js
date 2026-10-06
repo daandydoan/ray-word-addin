@@ -221,4 +221,12 @@ for (const s of D.screens) {
   f.name = s.name; f.x = s.x; f.y = s.y; ids.push(f.id);
 }
 await Promise.all(later.map(f => f()));
+// status pill (.wfstat): its ::before/::after lines come through stacked over the pill; put them either side, behind it
+for (const id of ids) { const fr = await figma.getNodeByIdAsync(id);
+  for (const w of fr.findAll(n => n.type === 'FRAME' && /wfstat/.test(n.name))) {
+    const sp = w.children.find(c => c.name === 'span'), b = w.children.find(c => c.name === '::before'), af = w.children.find(c => c.name === '::after');
+    if (!sp || !b || !af) continue; const y = Math.round(sp.y + sp.height / 2);
+    b.x = 0; b.y = y; b.resize(Math.max(1, sp.x - 8), 1); af.x = sp.x + sp.width + 8; af.y = y; af.resize(Math.max(1, w.width - af.x), 1);
+    w.insertChild(0, b); w.insertChild(1, af);
+  } }
 return { ids, layers: count, misses };
