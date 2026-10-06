@@ -397,7 +397,7 @@ td .cc.sel::before{display:none}
 .demoscan{display:inline-flex;align-items:center;gap:4px;padding:1px 8px;border:1px dashed rgba(255,255,255,.7);border-radius:999px;cursor:pointer;font-size:10.5px}.demoscan:hover{background:rgba(255,255,255,.15)}.demoscan .ms{font-size:13px}
 .scanbar i.ind{position:relative;overflow:hidden;background:#DDE3E1}.scanbar i.ind::after{content:"";position:absolute;inset:0;width:35%;background:var(--r-accent);border-radius:2px;animation:gprog 1.2s ease-in-out infinite}
 .scanbar.off img{animation:none}.scanbar:has(.pgb){grid-template-columns:18px 1fr auto}.scanbar em{font-style:normal;font-weight:600;font-size:11px;color:#1F5A47}
-.pgb{grid-column:1/-1;height:6px;border-radius:3px;background:#CDE9DD;overflow:hidden;margin-top:2px}.pgb b{display:block;height:100%;border-radius:3px;background:#1D9E75;width:var(--to);animation:pgw .4s ease-out}@keyframes pgw{from{width:var(--from)}}
+.pgb{grid-column:1/-1;height:6px;border-radius:3px;background:#CDE9DD;overflow:hidden;margin-top:2px}.pgb b{display:block;height:100%;border-radius:3px;background:#1D9E75;transition:width .8s linear}
 .atag{display:inline-flex;align-items:center;gap:3px;padding:1px 7px 1px 5px;border-radius:999px;background:#E8F5EF;color:#1F5A47;font-size:10px;font-weight:500;white-space:nowrap}.atag .ms{font-size:11px}
 .qnav{display:flex;align-items:center;justify-content:space-between;margin:0 0 6px;font-size:11.5px}
 .qnav>span{display:inline-flex;align-items:center;gap:2px;color:var(--r-accent);font-weight:500;cursor:pointer;padding:3px 6px;border-radius:8px}.qnav>span:hover{background:var(--r-raise)}.qnav>span.dis{color:var(--r-tx-3);opacity:.5;pointer-events:none}
@@ -784,9 +784,10 @@ function renderPage(){
 /* ===== the pane ===== */
 function renderPane(){
   const p=$('#pinner');
-  const keep=[ui.tab,ui.view,ui.filter,ui.stf,ui.view==='context'?ui.cur:''].join('|')===ui._key,top=p.querySelector('.pbody')?.scrollTop;
+  const keep=[ui.tab,ui.view,ui.filter,ui.stf,ui.view==='context'?ui.cur:''].join('|')===ui._key,top=p.querySelector('.pbody')?.scrollTop,ob=p.querySelector('.pgb b'),ow=ob&&ob.offsetWidth/ob.parentNode.offsetWidth*100;
   p.innerHTML = brand()+(ui.view==='context'&&ui.tab==='q'?'':tabs())+(ui.tab==='q'?qtab():ui.tab==='ask'?asktab():ui.tab==='lib'?libtab():teamtab());
   if(ui.fm)p.insertAdjacentHTML('beforeend',fmSheet());
+  const nb=p.querySelector('.pgb b');if(nb&&ow!=null){const to=nb.style.width;nb.style.transition='none';nb.style.width=ow+'%';nb.offsetWidth;nb.style.transition='';nb.style.width=to;}
   if(ui.refocus){const id=ui.refocus;ui.refocus=null;setTimeout(()=>{const el=document.querySelector('.wr[data-q="'+id+'"] .qa .in');el&&el.focus();});}
   $('#pane').classList.toggle('edfocus',!!ui.focus&&ui.view==='context'&&ui.tab==='q');
   const pb=p.querySelector('.pbody'),cur=p.querySelector('.wr.cur');if(keep&&pb&&top!=null)pb.scrollTop=top;else cur&&toTop(cur,false);
@@ -937,8 +938,8 @@ function wfStart(){const r=ui.run;ui.picked=true;Object.assign(r,{stage:'working
 // ponytail: pages read is simulated from run progress (reading = first quarter, filling = the rest); the real add-in reports the page itself
 const PAGES=13;function wfPage(){const r=ui.run,sc=ui.scan;if(!r)return 0;if(r.stage==='done')return r.page=PAGES;if(r.stage!=='working')return r.page||1;
   const f=r.step===0?(r.prog||0)/32:!sc||!sc.total?.25:.25+.75*(sc.total-sc.ids.size)/sc.total;return r.page=Math.max(r.page||1,Math.min(PAGES,Math.ceil(f*PAGES)));}
-const pageBar=(t,live)=>{const r=ui.run,pg=wfPage(),pct=Math.round((r.stage==='working'?pg-1:pg)/PAGES*100);if(pct!==r.pgTo){r.pgFrom=r.pgTo||0;r.pgTo=pct;r.pgAt=Date.now();}const from=Date.now()-r.pgAt<400?r.pgFrom:pct;
-  return `<div class="scanbar ${live?'':'off'}"><img src="${RAY}" alt=""><span>${t} <b>page ${pg} of ${PAGES}</b></span><em>${pct}%</em><div class="pgb" role="progressbar" aria-valuenow="${pct}" aria-valuemin="0" aria-valuemax="100"><b style="--from:${from}%;--to:${pct}%"></b></div></div>`;};
+const pageBar=(t,live)=>{const r=ui.run,pg=wfPage(),pct=Math.round((r.stage==='working'?pg-1:pg)/PAGES*100);
+  return `<div class="scanbar ${live?'':'off'}"><img src="${RAY}" alt=""><span>${t} <b>page ${pg} of ${PAGES}</b></span><em>${pct}%</em><div class="pgb" role="progressbar" aria-valuenow="${pct}" aria-valuemin="0" aria-valuemax="100"><b style="width:${pct}%"></b></div></div>`;};
 function wfAsk(){ui.run.stage='working';wfRender();setTimeout(wfTick,300);}
 function wfTick(){const r=ui.run;if(!r||r.stage!=='working')return;
   if(r.step===0){if(++r.prog>=8){r.step=1;return wfAsk();}wfRender();return setTimeout(wfTick,220);}
