@@ -24,8 +24,10 @@ function main() {
 const esc = s => s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
 const dev = u => !u || !/figma\.com\/design\//.test(u) || /[?&]m=dev\b/.test(u) ? u : u + (u.includes('?') ? '&' : '?') + 'm=dev';
 function rep(b, find, to) {
-  if (b.findText(esc(to))) return;
-  if (!b.findText(esc(find))) { LOG.push('MISS ' + find.slice(0, 50)); return; }
+  // skip when already applied: the old text is gone, or the new text contains it and is already there
+  const hasFind = b.findText(esc(find)), hasTo = b.findText(esc(to));
+  if (!hasFind) { if (!hasTo) LOG.push('MISS ' + find.slice(0, 50)); return; }
+  if (hasTo && to.includes(find)) return;
   b.replaceText(esc(find), to.replace(/\$/g, '\\$')); LOG.push('rep');
 }
 function para(b, text) { const r = b.findText(esc(text)); if (!r) return null; let e = r.getElement(); while (e && e.getType() !== DocumentApp.ElementType.PARAGRAPH && e.getType() !== DocumentApp.ElementType.LIST_ITEM) e = e.getParent(); return e; }
@@ -146,7 +148,7 @@ function stories(b) {
   rep(b, 'a "Ray is filling answers · n of 32" card with a progress bar sits above Apply to document', 'a "Ray is reading page n of 13" bar sits above Apply to document, which stays greyed out until the run ends');
   retire(b, 'RW-07 Answer while Ray is still working', 'Retired 7 Oct 2026. Q&A is read-only until Ray finishes reading, so there is nothing to answer during the run (see RW-03).');
   retire(b, 'RW-47 Stop, carry on or undo a run', 'Retired 7 Oct 2026. A run can no longer be stopped, so there is no Paused or Undone state. E05 and E06 stay in Figma, faded. To take an answer out, reject it in Word\'s Review tab.');
-  rep(b, 'Whether undo can find every answer the run put in, and what it does to answers the writer has since edited', 'Retired 7 Oct 2026');
+  rep(b, 'Whether undo can find every answer the run put in, and what it does to answers the writer has since edited', 'Retired 7 Oct 2026. Runs can no longer be stopped or undone');
   rep(b, 'OQ-7 Undo this run: if the writer has edited an answer the run put in, does undo take their edit out too?', 'OQ-7 Undo this run: closed 7 Oct 2026. RW-47 is retired because a run can no longer be stopped or undone.');
   rep(b, 'opens on the run with "Picking up where I left off · n of 32 done."', 'opens on the run with "Picking up where I left off." and the progress bar keeps its page');
   rep(b, 'the steps continue from there', 'the run continues from there');
@@ -188,10 +190,10 @@ function uc(b) {
   rep(b, '3b The writer stops the run: see UC-05.', '3b Stopping a run is no longer possible. UC-05 is retired.');
   rep(b, 'Stop, carry on or undo a run', 'Stop, carry on or undo a run (retired)');
   rep(b, 'Stop during step 4', 'None. Retired 7 Oct 2026');
-  rep(b, 'Run paused, resumed or undone', 'None');
+  rep(b, 'Run paused, resumed or undone', 'None. Retired');
   rep(b, 'Status shows Paused and how many answers are in.', 'Retired 7 Oct 2026. A run can no longer be stopped, so there is no Paused or Undone state. E05 and E06 stay in Figma, faded.');
   drop(b, 'Carry on resumes the run.');
-  rep(b, '2a Undo this run removes everything the run added. Start again reruns it.', 'None.');
+  rep(b, '2a Undo this run removes everything the run added. Start again reruns it.', 'None. Retired with UC-05.');
   rep(b, 'Ask Ray shows "Picking up where I left off · n of 32 done."', 'Ask Ray shows "Picking up where I left off." and the progress bar keeps its page.');
   rep(b, '1b Run still going: a progress card sits above Apply to document.', '1b Run still going: the list is read-only and faded, a "Ray is reading page n of 13" bar sits above Apply to document, and Apply to document is greyed out.');
   rep(b, 'Before the run ends, chat is disabled. Hover explains why.', 'Before the run ends, chat is disabled. Hover explains why. Just chat with Ray in step 1 opens it straight away (E50).');
