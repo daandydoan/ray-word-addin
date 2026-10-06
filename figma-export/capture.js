@@ -40,19 +40,19 @@ document.head.insertAdjacentHTML('beforeend','<style>*,*::before,*::after{animat
 
   /* ---------- happy flow ---------- */
   await fresh();
-  await snap('H01', 'Choose the tender', 'Ray opens in Ask Ray with a pinned "Fill this document" stepper (4 steps). Step 1 asks which Tenderfy tender the document is for; nothing is guessed. Chat stays disabled until the run finishes.', 'happy');
+  await snap('H01', 'Choose the tender', 'Ray opens in Ask Ray with a pinned "Fill this document" stepper (4 steps). Step 1 asks which Tenderfy tender the document is for; nothing is guessed. Just chat with Ray skips filling and opens the chat.', 'happy');
   await run(`$c('[data-do=wftender][data-i="0"]')`);
   await snap('H02', 'Choose where to upload', 'Step 2: the Tenderfy folder this document is uploaded to. Change tender goes back a step.', 'happy');
   await run(`$c('[data-do=wffolder][data-f="Default"]')`);
   await snap('H03', 'Add reference documents', 'Step 3 (optional): extra documents Ray reads when answering. Select File opens the File Manager; Upload File takes one from this computer. Skip moves on.', 'happy');
   await run(`$c('[data-do=wffmopen]')`); await run(`$c('[data-do=wffmpick][data-f="Bilby Capability Statement 2026.pdf"]')`); await run(`$c('[data-do=wffmpick][data-f="ISO 9001 Certificate.pdf"]')`);
-  await snap('H04', 'File Manager', 'A modal sheet over the pane: search, collapsible Folders (cards, selected one dark) and Files (one-line rows with a format badge). Close with ×, the backdrop or Esc.', 'happy');
+  await snap('H04', 'File Manager', 'A modal sheet over the pane: search, file-type tabs (All, Resumes, Case Studies, Policies, Insurances, Certifications, Organisation Chart, Others), the folders that hold that type (selected one dark) and Files. Close with ×, the backdrop or Esc.', 'happy');
   await run(`$c('[data-do=wffmattach]')`); await run(`$c('[data-do=wfupload]')`); await untoast();
   await snap('H05', 'Reference documents chosen', 'Chosen files list under the card with where they came from; × removes one. The button now reads Continue with 3.', 'happy');
   await run(`$c('[data-do=wfmock]')`); await until(`ui.run.step>=2`, 8000); await untoast();
-  await snap('H06', 'Analysing and filling', 'Step 4 starts by itself. "Your choices" sums up the setup while Ray reads, finds questions, matches the Response Library and drafts the rest. Stop pauses; Q&A is usable meanwhile.', 'happy');
+  await snap('H06', 'Analysing and filling', 'Step 4 starts by itself. "Your choices" sums up the setup; a progress bar shows which page Ray is reading (page 6 of 13). The run cannot be stopped and Q&A is locked until it finishes.', 'happy');
   await done();
-  await snap('H07', 'Run finished', 'Library matches are in the document as tracked changes; Ray drafts wait as Needs Review; the rest is left for you. Review in Q&A opens the list. Chat unlocks.', 'happy');
+  await snap('H07', 'Run finished', '"Read all 13 pages · found 43 questions". Library matches are in the document as tracked changes; Ray drafts wait as Needs Review; the rest is left for you. Review in Q&A opens the list. Chat unlocks.', 'happy');
   await run(`$c('[data-do=wfreview]')`);
   await snap('H08', 'Review in Q&A', 'Q&A opens on the first question that needs you, highlighted green under a sticky run summary strip (closable).', 'happy');
   await run(`$see('.wr[data-q="'+$nr()+'"]')`);
@@ -74,20 +74,17 @@ document.head.insertAdjacentHTML('beforeend','<style>*,*::before,*::after{animat
   await snap('E01', 'Tender search', 'The search box filters tenders live by name or reference.', 'edge');
   await run(`$val('#tsq','zzz')`);
   await snap('E02', 'Tender search · no match', 'No match shows a short note instead of an empty list.', 'edge');
-  await fresh(); await setup(); await run(`$c('[data-do=wffmopen]')`); await run(`$c('[data-do=wffmfolder][data-f="Insurance"]')`); await run(`$c('[data-do=wffmpick][data-f="Public Liability.pdf"]')`);
-  await snap('E03', 'File Manager · folder', 'Picking a folder card narrows Files to that folder; the selected count sits in the Files header.', 'edge');
+  await fresh(); await setup(); await run(`$c('[data-do=wffmopen]')`); await run(`$c('[data-do=wffmtab][data-f="Insurances"]')`); await run(`$c('[data-do=wffmfolder][data-f="Insurance"]')`); await run(`$c('[data-do=wffmpick][data-f="Public Liability.pdf"]')`);
+  await snap('E03', 'File Manager · folder', 'A file-type tab shows only that type and the folders holding it; a folder card narrows Files further. The selected count sits in the Files header.', 'edge');
   await run(`$c('[data-do=wffmfolder][data-f="All files"]')`); await run(`$val('#fmq','cert')`);
   await snap('E04', 'File Manager · search', 'Search filters files across every folder.', 'edge');
 
   /* ---------- run edge cases ---------- */
-  await fresh(); await start(); await until(`ui.run.step>=1`, 8000); await run(`$c('[data-do=wfstop]')`); await untoast();
-  await snap('E05', 'Run paused', 'Stop pauses the run. Carry on picks up; Undo this run takes out everything Ray put in.', 'edge');
-  await run(`$c('[data-do=wfundo]')`); await untoast();
-  await snap('E06', 'Run undone', 'Nothing from the run is left in the document. Start again reruns with the same choices.', 'edge');
+  // E05 Run paused and E06 Run undone retired 7 Oct 2026: a run can no longer be stopped
   await fresh(); await start(); await until(`ui.run.step>=2`, 8000); await run(`$c('[data-do=wfresume]')`); await untoast();
-  await snap('E07', 'Reopened mid-run', 'Closing and reopening the pane mid-run shows where Ray left off.', 'edge');
-  await run(`$c('[data-do=tabq]')`); await run(`$see('.wr[data-q="8.3"]')`); await run(`$type('.wr[data-q="8.3"] .qa .in','No conflicts of interest to declare.')`);
-  await snap('E08', 'Answering while Ray works', 'Q&A works during the run. Rows Ray is still on say so; anything you answer first, Ray skips.', 'edge');
+  await snap('E07', 'Reopened mid-run', 'Closing and reopening the pane mid-run says Ray is picking up where it left off; the progress bar keeps its page.', 'edge');
+  await run(`$c('[data-do=tabq]')`);
+  await snap('E08', 'Q&A locked while Ray reads', 'During the run the list is read-only and faded; answering and inserting unlock when Ray finishes reading.', 'edge');
   await fresh(); await run(`$c('[data-do=wfprotect]')`); await start(); await done();
   await snap('E09', 'Protected document', 'If Word blocks edits, answers are ready but not written. Copy answers puts them on the clipboard.', 'edge');
 
@@ -164,6 +161,12 @@ document.head.insertAdjacentHTML('beforeend','<style>*,*::before,*::after{animat
   await snap('E37', 'Protected document · rows', "In a protected document each row Ray filled says Couldn't insert, with its own Copy button.", 'edge');
   await fresh(); await run(`$c('[data-do=wfnotenders]')`); await untoast();
   await snap('E38', 'No tenders', 'With no tenders on Tenderfy, step 1 says so and links to Tenderfy to create one.', 'edge');
+  await fresh(); await run(`$c('[data-do=wfchat]')`);
+  await run(`$type('#cin','What is our ABN?');document.querySelector('#cin').dispatchEvent(new KeyboardEvent('keydown',{key:'Enter',bubbles:true}))`); await b.sleep(2600); await untoast();
+  await run(`const p=document.querySelector('.pbody');p.scrollTop=p.scrollHeight`);
+  await snap('E50', 'Just chat with Ray', 'Step 1 offers Just chat with Ray: no tender, no fill, straight to the chat.', 'edge');
+  await run(`$c('[data-do=tab][data-tab=q]')`);
+  await snap('E51', 'Q&A · chat only', 'Without a fill, Q&A says questions show once Ray fills the document, with Fill this document to start.', 'edge');
 
   /* ---------- failure paths (Demo > Simulate a failure) ---------- */
   const fail = async v => { await run(`$sel('failsel','${v}')`); await untoast(); };
