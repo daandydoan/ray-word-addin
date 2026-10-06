@@ -96,7 +96,10 @@ function addShot(b, anchor, code, title) {
     if (!at && s.includes(anchor + ' in Figma')) at = cell;
   }
   if (!at) { LOG.push('MISS shot ' + anchor); return; }
-  const row = at.getParent(), nc = row.appendTableCell(at.copy());
+  const row = at.getParent();
+  // drop leftover copies of the anchor cell from an interrupted run
+  for (let i = row.getNumCells() - 1; i >= 0; i--) { const c = row.getCell(i); if (c !== at && c.getText().includes(anchor + ' in Figma') && i > row.getChildIndex(at)) { c.removeFromParent(); LOG.push('dedupe'); } }
+  const nc = row.appendTableCell(at.copy());
   const img = firstImg(nc); if (img) swapImg(img, code);
   const url = FILE + '?node-id=' + NODE[code] + '&m=dev';
   const r = nc.findText(anchor + ' in Figma.*'); if (r) { const tx = r.getElement().asText(); tx.setLinkUrl(null); tx.setText(code + ' in Figma ' + title); tx.setLinkUrl(0, (code + ' in Figma').length - 1, url); }
