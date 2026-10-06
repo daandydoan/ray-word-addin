@@ -53,6 +53,9 @@ function addRowAfter(b, after, cells, link) {
 }
 function dropRow(b, first) { const row = rowOf(b, first); if (row) { row.removeFromParent(); LOG.push('droprow'); } }
 
+// TableCell has no getImages(): walk it for the first inline image
+function firstImg(el) { if (el.getType() === DocumentApp.ElementType.INLINE_IMAGE) return el; if (el.getNumChildren) for (let i = 0; i < el.getNumChildren(); i++) { const f = firstImg(el.getChild(i)); if (f) return f; } return null; }
+
 /* ---------- every doc ---------- */
 function devLinks(b, k) {
   let n = 0;
@@ -94,7 +97,7 @@ function addShot(b, anchor, code, title) {
   }
   if (!at) { LOG.push('MISS shot ' + anchor); return; }
   const row = at.getParent(), nc = row.appendTableCell(at.copy());
-  const img = nc.getImages()[0]; if (img) swapImg(img, code);
+  const img = firstImg(nc); if (img) swapImg(img, code);
   const url = FILE + '?node-id=' + NODE[code] + '&m=dev';
   const r = nc.findText(anchor + ' in Figma.*'); if (r) { const tx = r.getElement().asText(); tx.setLinkUrl(null); tx.setText(code + ' in Figma ' + title); tx.setLinkUrl(0, (code + ' in Figma').length - 1, url); }
   LOG.push('addshot ' + code);
@@ -164,8 +167,8 @@ function newStory(b) {
     else if (t === T.LIST_ITEM) { if (li < gwt.length) { setTxt(c, gwt[li], [gwt[li].split(' ')[0]]); parent.insertListItem(at++, c); li++; } }
     else if (t === T.PARAGRAPH) { const s = c.asParagraph().getText(); if (/^Size/.test(s)) setTxt(c, 'Size S   |   Priority Should', ['Size', 'Priority']); else if (s.trim()) setTxt(c, lines[1], ['As a', 'I want', 'so that']); parent.insertParagraph(at++, c); pi++; }
     else if (t === T.TABLE) { const tb = parent.insertTable(at++, c); const cell = tb.getRow(0).getCell(0); while (tb.getRow(0).getNumCells() > 1) tb.getRow(0).getCell(1).removeFromParent();
-      const img = cell.getImages()[0]; if (img) swapImg(img, 'E50'); const r = cell.findText('[HE]\\d\\d in Figma.*'); if (r) { const tx = r.getElement().asText(); tx.setLinkUrl(null); tx.setText('E50 in Figma Conversation: Just chat (no fill)'); tx.setLinkUrl(0, 11, FILE + '?node-id=' + NODE.E50 + '&m=dev'); }
-      const c2 = tb.getRow(0).appendTableCell(cell.copy()); const img2 = c2.getImages()[0]; if (img2) swapImg(img2, 'E51'); const r2 = c2.findText('E50 in Figma.*'); if (r2) { const tx = r2.getElement().asText(); tx.setText('E51 in Figma Chat only: Fill this document'); tx.setLinkUrl(0, 11, FILE + '?node-id=' + NODE.E51 + '&m=dev'); } }
+      const img = firstImg(cell); if (img) swapImg(img, 'E50'); const r = cell.findText('[HE]\\d\\d in Figma.*'); if (r) { const tx = r.getElement().asText(); tx.setLinkUrl(null); tx.setText('E50 in Figma Conversation: Just chat (no fill)'); tx.setLinkUrl(0, 11, FILE + '?node-id=' + NODE.E50 + '&m=dev'); }
+      const c2 = tb.getRow(0).appendTableCell(cell.copy()); const img2 = firstImg(c2); if (img2) swapImg(img2, 'E51'); const r2 = c2.findText('E50 in Figma.*'); if (r2) { const tx = r2.getElement().asText(); tx.setText('E51 in Figma Chat only: Fill this document'); tx.setLinkUrl(0, 11, FILE + '?node-id=' + NODE.E51 + '&m=dev'); } }
   }
   LOG.push('RW-57');
 }
