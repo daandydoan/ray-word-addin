@@ -396,7 +396,7 @@ td .cc.sel::before{display:none}
 .scanbar>i{grid-column:1/-1;height:3px;border-radius:2px;background:linear-gradient(90deg,var(--r-accent) var(--p),#DDE3E1 var(--p));transition:background .3s}
 .demoscan{display:inline-flex;align-items:center;gap:4px;padding:1px 8px;border:1px dashed rgba(255,255,255,.7);border-radius:999px;cursor:pointer;font-size:10.5px}.demoscan:hover{background:rgba(255,255,255,.15)}.demoscan .ms{font-size:13px}
 .scanbar i.ind{position:relative;overflow:hidden;background:#DDE3E1}.scanbar i.ind::after{content:"";position:absolute;inset:0;width:35%;background:var(--r-accent);border-radius:2px;animation:gprog 1.2s ease-in-out infinite}
-.scanbar.off img{animation:none}.scanbar:has(.pgb){grid-template-columns:18px 1fr auto}.scanbar em{font-style:normal;font-weight:600;font-size:11px;color:#1F5A47}
+.scanbar.off img{animation:none}.scanbar:has(.pgb){grid-template-columns:18px 1fr auto}.scanbar:has(.pgb):not(:has(img)){grid-template-columns:1fr auto}.scanbar em{font-style:normal;font-weight:600;font-size:11px;color:#1F5A47}
 .pgb{grid-column:1/-1;height:6px;border-radius:3px;background:#CDE9DD;overflow:hidden;margin-top:2px}.pgb b{display:block;height:100%;border-radius:3px;background:#1D9E75;transition:width .8s linear}
 .atag{display:inline-flex;align-items:center;gap:3px;padding:1px 7px 1px 5px;border-radius:999px;background:#E8F5EF;color:#1F5A47;font-size:10px;font-weight:500;white-space:nowrap}.atag .ms{font-size:11px}
 .qnav{display:flex;align-items:center;justify-content:space-between;margin:0 0 6px;font-size:11.5px}
@@ -839,7 +839,7 @@ function cta(){
   const ready=live().filter(id=>stOf(id)==='ready'&&!S.q[id].ai&&!S.q[id].blocked);
   const tip=ready.length?ready.length+' draft'+(ready.length>1?'s':'')+' ready · each lands as a tracked change · Ctrl+Alt+I inserts the next one':'Nothing ready yet — generate or write a draft first';
   const sc=ui.scan;
-  return `<div class="cta">${sc?pageBar('Ray is reading',1):''}<span class="btn ${ready.length?'':'dis'}" data-do="insall" title="${tip}"><span class="ms">keyboard_double_arrow_down</span>Apply to document<span class="cnt" title="Questions in the document">${live().filter(id=>stOf(id)==='done').length}/${live().length}</span></span></div>`;
+  return `<div class="cta">${sc?pageBar('Ray is reading',1,1):''}<span class="btn ${ready.length?'':'dis'}" data-do="insall" title="${tip}"><span class="ms">keyboard_double_arrow_down</span>Apply to document<span class="cnt" title="Questions in the document">${live().filter(id=>stOf(id)==='done').length}/${live().length}</span></span></div>`;
 }
 function genPanel(id){return `<div class="refcard genpick"><div class="rch"><span class="ms">library_add</span><div><b>Draft from a file</b><small>From Tenderfy or this computer</small></div></div><div class="rcb"><span class="btn ghost" data-do="wffmopen" data-q="${id}"><span class="ms">folder_open</span>Select File</span><span class="btn ghost" data-do="genupload" data-q="${id}"><span class="ms">upload_file</span>Upload File</span></div></div>`;}
 function cardBody(id){const q=Q[id],x=S.q[id],st=stOf(id);
@@ -938,8 +938,8 @@ function wfStart(){const r=ui.run;ui.picked=true;Object.assign(r,{stage:'working
 // ponytail: pages read is simulated from run progress (reading = first quarter, filling = the rest); the real add-in reports the page itself
 const PAGES=13;function wfPage(){const r=ui.run,sc=ui.scan;if(!r)return 0;if(r.stage==='done')return r.page=PAGES;if(r.stage!=='working')return r.page||1;
   const f=r.step===0?(r.prog||0)/32:!sc||!sc.total?.25:.25+.75*(sc.total-sc.ids.size)/sc.total;return r.page=Math.max(r.page||1,Math.min(PAGES,Math.ceil(f*PAGES)));}
-const pageBar=(t,live)=>{const r=ui.run,pg=wfPage(),pct=Math.round((r.stage==='working'?pg-1:pg)/PAGES*100);
-  return `<div class="scanbar ${live?'':'off'}"><img src="${RAY}" alt=""><span>${t} <b>page ${pg} of ${PAGES}</b></span><em>${pct}%</em><div class="pgb" role="progressbar" aria-valuenow="${pct}" aria-valuemin="0" aria-valuemax="100"><b style="width:${pct}%"></b></div></div>`;};
+const pageBar=(t,live,icon)=>{const r=ui.run,pg=wfPage(),pct=Math.round((r.stage==='working'?pg-1:pg)/PAGES*100);
+  return `<div class="scanbar ${live?'':'off'}">${icon?`<img src="${RAY}" alt="">`:''}<span>${t} <b>page ${pg} of ${PAGES}</b></span><em>${pct}%</em><div class="pgb" role="progressbar" aria-valuenow="${pct}" aria-valuemin="0" aria-valuemax="100"><b style="width:${pct}%"></b></div></div>`;};
 function wfAsk(){ui.run.stage='working';wfRender();setTimeout(wfTick,300);}
 function wfTick(){const r=ui.run;if(!r||r.stage!=='working')return;
   if(r.step===0){if(++r.prog>=8){r.step=1;return wfAsk();}wfRender();return setTimeout(wfTick,220);}
