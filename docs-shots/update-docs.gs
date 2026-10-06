@@ -1,8 +1,8 @@
 // Ray for Word docs, 7 Oct 2026 update. Run main() once. Safe to re-run: every edit checks before it changes.
 // DOCS (id map) is defined by the caller, which keeps doc ids out of this public file
 const FILE = 'https://www.figma.com/design/yTjFH7kFIb9jbQs19JiPc5';
-const SHOT = { "H01": "https://raw.githubusercontent.com/daandydoan/ray-word-addin/main/docs-shots/H01.png", "H04": "https://raw.githubusercontent.com/daandydoan/ray-word-addin/main/docs-shots/H04.png", "H06": "https://raw.githubusercontent.com/daandydoan/ray-word-addin/main/docs-shots/H06.png", "H07": "https://raw.githubusercontent.com/daandydoan/ray-word-addin/main/docs-shots/H07.png", "E01": "https://raw.githubusercontent.com/daandydoan/ray-word-addin/main/docs-shots/E01.png", "E02": "https://raw.githubusercontent.com/daandydoan/ray-word-addin/main/docs-shots/E02.png", "E03": "https://raw.githubusercontent.com/daandydoan/ray-word-addin/main/docs-shots/E03.png", "E04": "https://raw.githubusercontent.com/daandydoan/ray-word-addin/main/docs-shots/E04.png", "E07": "https://raw.githubusercontent.com/daandydoan/ray-word-addin/main/docs-shots/E07.png", "E08": "https://raw.githubusercontent.com/daandydoan/ray-word-addin/main/docs-shots/E08.png", "E09": "https://raw.githubusercontent.com/daandydoan/ray-word-addin/main/docs-shots/E09.png", "E27": "https://raw.githubusercontent.com/daandydoan/ray-word-addin/main/docs-shots/E27.png", "E34": "https://raw.githubusercontent.com/daandydoan/ray-word-addin/main/docs-shots/E34.png", "E41": "https://raw.githubusercontent.com/daandydoan/ray-word-addin/main/docs-shots/E41.png", "E46": "https://raw.githubusercontent.com/daandydoan/ray-word-addin/main/docs-shots/E46.png", "E48": "https://raw.githubusercontent.com/daandydoan/ray-word-addin/main/docs-shots/E48.png", "E50": "https://raw.githubusercontent.com/daandydoan/ray-word-addin/main/docs-shots/E50.png", "E51": "https://raw.githubusercontent.com/daandydoan/ray-word-addin/main/docs-shots/E51.png"}; // code -> fresh Figma screenshot URL of the frame's pane
-const NODE = { E50: '71-17198', E51: '71-17726' };
+const SHOT = { "H01": "https://raw.githubusercontent.com/daandydoan/ray-word-addin/main/docs-shots/H01.png?v=3", "H04": "https://raw.githubusercontent.com/daandydoan/ray-word-addin/main/docs-shots/H04.png?v=3", "H06": "https://raw.githubusercontent.com/daandydoan/ray-word-addin/main/docs-shots/H06.png?v=3", "H07": "https://raw.githubusercontent.com/daandydoan/ray-word-addin/main/docs-shots/H07.png?v=3", "E01": "https://raw.githubusercontent.com/daandydoan/ray-word-addin/main/docs-shots/E01.png?v=3", "E02": "https://raw.githubusercontent.com/daandydoan/ray-word-addin/main/docs-shots/E02.png?v=3", "E03": "https://raw.githubusercontent.com/daandydoan/ray-word-addin/main/docs-shots/E03.png?v=3", "E04": "https://raw.githubusercontent.com/daandydoan/ray-word-addin/main/docs-shots/E04.png?v=3", "E07": "https://raw.githubusercontent.com/daandydoan/ray-word-addin/main/docs-shots/E07.png?v=3", "E08": "https://raw.githubusercontent.com/daandydoan/ray-word-addin/main/docs-shots/E08.png?v=3", "E09": "https://raw.githubusercontent.com/daandydoan/ray-word-addin/main/docs-shots/E09.png?v=3", "E27": "https://raw.githubusercontent.com/daandydoan/ray-word-addin/main/docs-shots/E27.png?v=3", "E34": "https://raw.githubusercontent.com/daandydoan/ray-word-addin/main/docs-shots/E34.png?v=3", "E41": "https://raw.githubusercontent.com/daandydoan/ray-word-addin/main/docs-shots/E41.png?v=3", "E46": "https://raw.githubusercontent.com/daandydoan/ray-word-addin/main/docs-shots/E46.png?v=3", "E48": "https://raw.githubusercontent.com/daandydoan/ray-word-addin/main/docs-shots/E48.png?v=3", "E50": "https://raw.githubusercontent.com/daandydoan/ray-word-addin/main/docs-shots/E50.png?v=3", "E51": "https://raw.githubusercontent.com/daandydoan/ray-word-addin/main/docs-shots/E51.png?v=3", "E52": "https://raw.githubusercontent.com/daandydoan/ray-word-addin/main/docs-shots/E52.png?v=3"}; // code -> fresh Figma screenshot URL of the frame's pane
+const NODE = { E50: '71-17198', E51: '71-17726', E52: '76-12816' };
 const QS_CAP = { '1. Pick your tender': 'H01', '2. Ray fills the document': 'H07' };
 const CHANGES = '7 Oct 2026: step 4 shows which page Ray is reading and can no longer be stopped (RW-07, RW-47, UC-05 retired); Q&A is read-only during the run; the File Manager has file-type tabs; Just chat with Ray skips filling (RW-57, E50, E51); Figma links open in Dev Mode.';
 const LOG = [];
@@ -13,6 +13,7 @@ function main() {
     devLinks(b, k);
     shots(b, k);
     ({ stories, uc, spec, guide, qs })[k](b);
+    if (k !== 'qs') e52(b, k);
     if (k !== 'qs') control(b);
     doc.saveAndClose();
     Logger.log(k + ': ' + LOG.slice(n0).join(' | '));
@@ -107,6 +108,21 @@ function addShot(b, anchor, code, title) {
   const r = nc.findText(anchor + ' in Figma.*'); if (r) { const tx = r.getElement().asText(); tx.setLinkUrl(null); tx.setText(code + ' in Figma ' + title); tx.setLinkUrl(0, (code + ' in Figma').length - 1, url); }
   LOG.push('addshot ' + code);
 }
+function swapShot(b, from, to, title, skip) {
+  for (const t of b.getTables()) for (let r = 0; r < t.getNumRows(); r++) {
+    const row = t.getRow(r); let rowTxt = ''; for (let i = 0; i < row.getNumCells(); i++) rowTxt += row.getCell(i).getText() + ' / ';
+    if (skip && rowTxt.includes(skip + ' in Figma')) continue;
+    for (let i = 0; i < row.getNumCells(); i++) { const cell = row.getCell(i); if (!cell.getText().includes(from + ' in Figma')) continue;
+      const img = firstImg(cell); if (img) swapImg(img, to);
+      const f = cell.findText(from + ' in Figma.*'); if (f) { const tx = f.getElement().asText(); tx.setLinkUrl(null); tx.setText(to + ' in Figma ' + title); tx.setLinkUrl(0, (to + ' in Figma').length - 1, FILE + '?node-id=' + NODE[to] + '&m=dev'); }
+      LOG.push('swap ' + from + '>' + to); }
+  }
+}
+function e52(b, k) {
+  const T = 'Choose the tender: Just chat with Ray';
+  swapShot(b, 'E50', 'E52', T, 'E51');
+  if (k === 'stories') addShot(b, 'E51', 'E52', T);
+}
 function control(b) {
   const v = rowOf(b, 'Version'); if (v && v.getCell(1).getText().trim() === '0.2') v.getCell(1).editAsText().setText('0.3');
   const d = rowOf(b, 'Date'); if (d && /3 October 2026/.test(d.getCell(1).getText())) d.getCell(1).editAsText().setText('7 October 2026');
@@ -179,10 +195,10 @@ function newStory(b) {
 }
 function uc(b) {
   common(b);
-  rep(b, 'H01, E01, E02', 'H01, E01, E02, E50, E51');
-  addAfter(b, '3a No match: "No tenders match."', '2b Just chat with Ray, under the list, skips filling and opens the chat (E50). Q&A then says questions show once Ray fills the document, with Fill this document to start (E51).', '2b Just chat with Ray');
+  rep(b, 'H01, E01, E02, E50, E51', 'H01, E01, E02, E50, E51, E52'); rep(b, 'H01, E01, E02', 'H01, E01, E02, E50, E51, E52');
+  addAfter(b, '3a No match: "No tenders match."', '2b Just chat with Ray, under the list (E52), skips filling and opens the chat (E50). Q&A then says questions show once Ray fills the document, with Fill this document to start (E51).', '2b Just chat with Ray');
   rep(b, 'the pane returns to Ask Ray with "Confirm the tender first".', 'the pane returns to Ask Ray with "Confirm the tender first", unless the writer chose Just chat with Ray.');
-  addShot(b, 'E02', 'E50', 'Conversation: Just chat (no fill)');
+  // E50 shot added 7 Oct, then swapped to E52 by e52()
   rep(b, 'Select File opens the File Manager sheet: search, Folders, Files.', 'Select File opens the File Manager sheet: search, file-type tabs, Folders, Files.');
   rep(b, '2a A folder card narrows the files. Search covers all folders.', '2a A file-type tab shows only that type and the folders that hold it. A folder card narrows the files further. Search covers the current tab.');
   rep(b, 'Ray shows its steps: read the document, find questions, match the Response Library, draft the rest.', 'A progress bar shows the page Ray is reading, for example "Reading page 6 of 13". The run cannot be stopped.');
@@ -201,14 +217,15 @@ function uc(b) {
 }
 function spec(b) {
   common(b);
-  rep(b, 'Figma file, 48 frames at 1440 × 900', 'Figma file, 65 frames at 1440 × 900 (E05, E06 retired)');
-  rep(b, 'E01 to E34 are edge cases', 'E01 to E51 are edge cases and failure paths');
+  rep(b, 'Figma file, 48 frames at 1440 × 900', 'Figma file, 66 frames at 1440 × 900 (E05, E06 retired)'); rep(b, '65 frames at 1440 × 900', '66 frames at 1440 × 900');
+  rep(b, 'E01 to E34 are edge cases', 'E01 to E52 are edge cases and failure paths'); rep(b, 'E01 to E51 are edge cases', 'E01 to E52 are edge cases');
   rep(b, 'Shown at 55% opacity and disabled until the run finishes.', 'Shown at 55% opacity and disabled until the run finishes, unless the user chose Just chat with Ray (E50).');
   setRow(b, 'E05', [null, null, null, 'Paused (retired)']); setRow(b, 'E06', [null, null, null, 'Undone (retired)']);
   addRowAfter(b, 'E34', ['E50', 'Ask Ray', 'Conversation', 'Just chat (no fill)', 'H01'], FILE + '?node-id=' + NODE.E50 + '&m=dev');
   addRowAfter(b, 'E50', ['E51', 'Q&A list', 'Chat only', 'Fill this document', 'H01'], FILE + '?node-id=' + NODE.E51 + '&m=dev');
-  addRowAfter(b, 'Tender rows', ['Just chat with Ray', '"or" divider, then a ghost button with a chat icon, under the tender list', 'Skips filling and opens the chat (E50). Q&A then says "Questions show here once Ray fills this document." with Fill this document, which brings the steps back (E51)']);
-  addShot(b, 'E02', 'E50', 'Conversation: Just chat (no fill)');
+  addRowAfter(b, 'E51', ['E52', 'Ask Ray', 'Choose the tender', 'Just chat with Ray', 'H01'], FILE + '?node-id=' + NODE.E52 + '&m=dev');
+  addRowAfter(b, 'Tender rows', ['Just chat with Ray', '"or" divider, then a ghost button with a chat icon, under the tender list', 'Skips filling and opens the chat (E52, then E50). Q&A then says "Questions show here once Ray fills this document." with Fill this document, which brings the steps back (E51)']);
+  // E50 shot added 7 Oct, then swapped to E52 by e52()
   setRow(b, 'Status chip', [null, 'Bolt icon and "Reading the document"', 'Static until the run finishes']);
   rep(b, 'Spinner "Working…", then read_document, find_questions, match_library, draft_answers with counts', '"Reading page n of 13", the percent read, and a bar that fills as pages are read');
   rep(b, 'Each step ticks when done', 'The page Ray is reading is the only progress it reports. The run cannot be stopped; Q&A is read-only until it ends (E08)');
@@ -237,7 +254,7 @@ function guide(b) {
   rep(b, 'Undo this run removes everything the run added. Start again reruns it.', 'To take an answer out, reject it in Word\'s Review tab.');
   rep(b, 'Ray is still on it. You can answer anyway', 'Ray is still on it. You can answer when the run ends');
   rep(b, 'Chat opens after the run. Finish the 4 steps.', 'Chat opens after the run. Or choose Just chat with Ray in step 1 to skip filling.');
-  addShot(b, 'H07', 'E50', 'Conversation: Just chat (no fill)');
+  // E50 shot added 7 Oct, then swapped to E52 by e52()
 }
 function qs(b) {
   rep(b, 'Search by name or reference, then click it.', 'Search by name or reference, then click it. Only want to ask Ray something? Choose Just chat with Ray instead.');

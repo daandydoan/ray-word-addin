@@ -161,6 +161,8 @@ document.head.insertAdjacentHTML('beforeend','<style>*,*::before,*::after{animat
   await snap('E37', 'Protected document · rows', "In a protected document each row Ray filled says Couldn't insert, with its own Copy button.", 'edge');
   await fresh(); await run(`$c('[data-do=wfnotenders]')`); await untoast();
   await snap('E38', 'No tenders', 'With no tenders on Tenderfy, step 1 says so and links to Tenderfy to create one.', 'edge');
+  await fresh(); await run(`const p=document.querySelector('.pbody');p.scrollTop=p.scrollHeight`);
+  await snap('E52', 'Choose the tender · Just chat', 'Under the tender list, an "or" divider and Just chat with Ray, which skips filling and opens the chat.', 'edge');
   await fresh(); await run(`$c('[data-do=wfchat]')`);
   await run(`$type('#cin','What is our ABN?');document.querySelector('#cin').dispatchEvent(new KeyboardEvent('keydown',{key:'Enter',bubbles:true}))`); await b.sleep(2600); await untoast();
   await run(`const p=document.querySelector('.pbody');p.scrollTop=p.scrollHeight`);

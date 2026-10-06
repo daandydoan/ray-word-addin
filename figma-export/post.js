@@ -121,7 +121,7 @@ function tag(n, lh) {
 // [set name, class token, keep size in signature]
 const SETS = [
   ['Avatar', 'av', 1], ['Button', 'btn'], ['Pill', 'ins'], ['Tag', 'atag'], ['Section header', 'sec'], ['Select', 'stfsel'],
-  ['Segmented control', 'modes'], ['Inline answer', 'qa'], ['Scan card', 'scanbar'], ['Ray box', 'refine'], ['Editor toolbar', 'ed-tools'],
+  ['Segmented control', 'modes'], ['Inline answer', 'qa'], ['Ray box', 'refine'], ['Editor toolbar', 'ed-tools'],
   ['Status dot', 'st'], ['Toast', '#toast'], ['Word / Tabs', 'wtabs', 1], ['Word / Ribbon', 'ribbon', 1], ['Pane / Header', 'tp-head', 1],
 ];
 const classes = n => (n.n || '').split('.').filter(Boolean);
