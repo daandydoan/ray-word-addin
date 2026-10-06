@@ -396,10 +396,8 @@ td .cc.sel::before{display:none}
 .scanbar>i{grid-column:1/-1;height:3px;border-radius:2px;background:linear-gradient(90deg,var(--r-accent) var(--p),#DDE3E1 var(--p));transition:background .3s}
 .demoscan{display:inline-flex;align-items:center;gap:4px;padding:1px 8px;border:1px dashed rgba(255,255,255,.7);border-radius:999px;cursor:pointer;font-size:10.5px}.demoscan:hover{background:rgba(255,255,255,.15)}.demoscan .ms{font-size:13px}
 .scanbar i.ind{position:relative;overflow:hidden;background:#DDE3E1}.scanbar i.ind::after{content:"";position:absolute;inset:0;width:35%;background:var(--r-accent);border-radius:2px;animation:gprog 1.2s ease-in-out infinite}
-.scanbar.off img{animation:none}.scanbar:has(.pgs){grid-template-columns:18px 1fr auto}.scanbar em{font-style:normal;font-weight:600;font-size:11px;color:#1F5A47}
-.pgs{grid-column:1/-1;display:grid;grid-template-columns:repeat(13,1fr);gap:3px;margin-top:4px}.pgs i{aspect-ratio:3/4;border-radius:2px;background:#fff linear-gradient(#DDE8E3,#DDE8E3) 3px 4px/calc(100% - 6px) 1px no-repeat;border:1px solid #CDE9DD;position:relative;overflow:hidden;transition:background-color .3s,border-color .3s}
-.pgs i.d{background-color:#1D9E75;background-image:linear-gradient(rgba(255,255,255,.55),rgba(255,255,255,.55));border-color:#1D9E75}.pgs i.on{border-color:#1D9E75}
-.pgs i.on::after{content:"";position:absolute;left:0;right:0;bottom:0;background:#1D9E75;opacity:.4;animation:pgfill 1s ease-in-out infinite}@keyframes pgfill{from{height:0}to{height:100%}}.scanbar{background:#E8F5EF;color:#2F6B57}.scanbar b{color:#1F5A47}.scanbar i.ind{background:#CDE9DD}
+.scanbar.off img{animation:none}.scanbar:has(.pgb){grid-template-columns:18px 1fr auto}.scanbar em{font-style:normal;font-weight:600;font-size:11px;color:#1F5A47}
+.pgb{grid-column:1/-1;height:6px;border-radius:3px;background:#CDE9DD;overflow:hidden;margin-top:2px}.pgb b{display:block;height:100%;border-radius:3px;background:#1D9E75;width:var(--to);animation:pgw .4s ease-out}@keyframes pgw{from{width:var(--from)}}
 .atag{display:inline-flex;align-items:center;gap:3px;padding:1px 7px 1px 5px;border-radius:999px;background:#E8F5EF;color:#1F5A47;font-size:10px;font-weight:500;white-space:nowrap}.atag .ms{font-size:11px}
 .qnav{display:flex;align-items:center;justify-content:space-between;margin:0 0 6px;font-size:11.5px}
 .qnav>span{display:inline-flex;align-items:center;gap:2px;color:var(--r-accent);font-weight:500;cursor:pointer;padding:3px 6px;border-radius:8px}.qnav>span:hover{background:var(--r-raise)}.qnav>span.dis{color:var(--r-tx-3);opacity:.5;pointer-events:none}
@@ -939,7 +937,8 @@ function wfStart(){const r=ui.run;ui.picked=true;Object.assign(r,{stage:'working
 // ponytail: pages read is simulated from run progress (reading = first quarter, filling = the rest); the real add-in reports the page itself
 const PAGES=13;function wfPage(){const r=ui.run,sc=ui.scan;if(!r)return 0;if(r.stage==='done')return r.page=PAGES;if(r.stage!=='working')return r.page||1;
   const f=r.step===0?(r.prog||0)/32:!sc||!sc.total?.25:.25+.75*(sc.total-sc.ids.size)/sc.total;return r.page=Math.max(r.page||1,Math.min(PAGES,Math.ceil(f*PAGES)));}
-const pageBar=(t,live)=>{const pg=wfPage();return `<div class="scanbar ${live?'':'off'}"><img src="${RAY}" alt=""><span>${t} <b>page ${pg} of ${PAGES}</b></span><em>${Math.round((r=>r.stage==='working'?pg-1:pg)(ui.run)/PAGES*100)}%</em><div class="pgs">${Array.from({length:PAGES},(_,i)=>`<i class="${i<pg-1||ui.run.stage==='done'?'d':i===pg-1?(live?'on':'d'):''}"></i>`).join('')}</div></div>`;};
+const pageBar=(t,live)=>{const r=ui.run,pg=wfPage(),pct=Math.round((r.stage==='working'?pg-1:pg)/PAGES*100);if(pct!==r.pgTo){r.pgFrom=r.pgTo||0;r.pgTo=pct;r.pgAt=Date.now();}const from=Date.now()-r.pgAt<400?r.pgFrom:pct;
+  return `<div class="scanbar ${live?'':'off'}"><img src="${RAY}" alt=""><span>${t} <b>page ${pg} of ${PAGES}</b></span><em>${pct}%</em><div class="pgb" role="progressbar" aria-valuenow="${pct}" aria-valuemin="0" aria-valuemax="100"><b style="--from:${from}%;--to:${pct}%"></b></div></div>`;};
 function wfAsk(){ui.run.stage='working';wfRender();setTimeout(wfTick,300);}
 function wfTick(){const r=ui.run;if(!r||r.stage!=='working')return;
   if(r.step===0){if(++r.prog>=8){r.step=1;return wfAsk();}wfRender();return setTimeout(wfTick,220);}
