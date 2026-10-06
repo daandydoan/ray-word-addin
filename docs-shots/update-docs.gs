@@ -118,10 +118,21 @@ function swapShot(b, from, to, title, skip) {
       LOG.push('swap ' + from + '>' + to); }
   }
 }
+// like addShot, but only checks the anchor's own row, so RW-57 gets E52 even though RW-01 already has it
+function addShotInRow(b, anchor, code, title) {
+  for (const t of b.getTables()) for (let r = 0; r < t.getNumRows(); r++) {
+    const row = t.getRow(r); let at = null, has = false;
+    for (let i = 0; i < row.getNumCells(); i++) { const s = row.getCell(i).getText(); if (s.includes(code + ' in Figma')) has = true; if (!at && s.includes(anchor + ' in Figma')) at = row.getCell(i); }
+    if (!at || has) continue;
+    const nc = row.appendTableCell(at.copy()); const img = firstImg(nc); if (img) swapImg(img, code);
+    const f = nc.findText(anchor + ' in Figma.*'); if (f) { const tx = f.getElement().asText(); tx.setLinkUrl(null); tx.setText(code + ' in Figma ' + title); tx.setLinkUrl(0, (code + ' in Figma').length - 1, FILE + '?node-id=' + NODE[code] + '&m=dev'); }
+    LOG.push('addshot-row ' + code);
+  }
+}
 function e52(b, k) {
   const T = 'Choose the tender: Just chat with Ray';
   swapShot(b, 'E50', 'E52', T, 'E51');
-  if (k === 'stories') addShot(b, 'E51', 'E52', T);
+  if (k === 'stories') addShotInRow(b, 'E51', 'E52', T);
 }
 function control(b) {
   const v = rowOf(b, 'Version'); if (v && v.getCell(1).getText().trim() === '0.2') v.getCell(1).editAsText().setText('0.3');
